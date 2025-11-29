@@ -1,0 +1,6 @@
+# Jeopardy ScoreBoard V2
+
+This is version 2.0 of the first sscoreboard I did started last year. While the first version i made achieved all of its goals (replacing score keeping by paper, saving games, allowing of game lengthing, etc), I am not satisified with the quality of the code I produced. Initally starting with HTMX, I transitioned to Vue for the project, and while it definitely served me well, the end result was a lot more code than I was hoping for, and a tricky architecture to follow. I will be simplyifing the tech stack with the end result being a scoreboard that is much easier to use and modify.
+
+Here are the following changes I plan on making:
+
