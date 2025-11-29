@@ -4,3 +4,4 @@ This is version 2.0 of the first sscoreboard I did started last year. While the 
 
 Here are the following changes I plan on making:
 
+- For the front end, I will replace Vue with HTMX, Alpine.js and SCSS. On paper, this means I will sacrifice heavy front end tooling for a massively simplified workflow that aligns well the simple styling of the score keeper
