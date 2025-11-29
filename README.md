@@ -16,3 +16,11 @@ Here are the following changes I plan on making:
 * [Go](https://github.com/go-chi/chi)
 * [MongoDB-Atlas](https://www.mongodb.com/cloud/atlas)
 * [Railway](https://railway.com)
+
+## Features
+This version will still retain the following features from v1:
+
+* Single player Jeopardy. Client can add and remove Users to a specific ADAPT location, and add and subtract points to them.
+* Tournament/Team jeopardy mode where the client can choose the host location for the game, and which teams are playing.
+* The ability to save games, both single player and team jeopardy.
+* Viewing games, which will include the winner of the game, and the total and average amount of points earned during the game.
