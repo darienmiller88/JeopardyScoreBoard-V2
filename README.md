@@ -4,4 +4,6 @@ This is version 2.0 of the first sscoreboard I did started last year. While the 
 
 Here are the following changes I plan on making:
 
-- For the front end, I will replace Vue with HTMX, Alpine.js and SCSS. On paper, this means I will sacrifice heavy front end tooling for a massively simplified workflow that aligns well the simple styling of the score keeper
+- For the front end, I will replace Vue with HTMX, Alpine.js and SCSS. On paper, this means I will sacrifice heavy front end tooling for a massively simplified workflow that aligns well the simple styling of the score keeper.
+
+- For the back end, I will stick with go, but instead of it serving JSON to seperate front end, it will instead serve HTML fragments and HTMX pages instead. The HTMX will make request to end points on the server, receive fragments, and place them onto the HTMX page directly.
