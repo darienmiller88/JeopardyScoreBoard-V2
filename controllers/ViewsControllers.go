@@ -8,7 +8,7 @@ import (
 
 type ViewsController struct{
 	Router *chi.Mux
-	tmpl *template.Template
+	tmpl   *template.Template
 }
 
 func (v *ViewsController) Init(){
