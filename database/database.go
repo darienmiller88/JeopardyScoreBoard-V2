@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	// "go.mongodb.org/mongo-driver/mongo"
-	// "go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
-	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 var client *mongo.Client
@@ -28,8 +25,8 @@ func Init() {
 	if err != nil {
 		panic(err)
 	}
-	
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+
+	if err := client.Ping(context.TODO(), nil); err != nil {
 		panic(err)
 	}	
 
