@@ -9,5 +9,5 @@ type Index struct{
 }
 
 func (i *Index) Init(){
-	
+	i.Router = chi.NewRouter()
 }
