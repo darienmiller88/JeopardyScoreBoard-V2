@@ -15,7 +15,7 @@ RUN go build -o jeopardy-scoreboard .
 
 
 # This is the run stage now, pulling from gcr
-FROM gcr.io/distroless/base-debian12 AS runtime
+FROM gcr.io/distroless/base-debian12
 
 # Create a new directory for the run time image
 WORKDIR /app
@@ -33,14 +33,3 @@ EXPOSE 8080
 # Finally, run the go binary!
 
 CMD [ "./jeopardy-scoreboard" ]
-
-# WORKDIR /app
-
-# COPY go.mod go.sum ./
-# RUN go mod download
-
-# COPY . .
-
-# RUN go build -o app .
-
-# CMD ["./app"]
