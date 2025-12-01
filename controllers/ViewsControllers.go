@@ -21,6 +21,7 @@ func (v *ViewsController) Init(){
 	v.Router.Get("/", v.CreateGame)
 	v.Router.Get("/team-mode", v.TeamMode)
 	v.Router.Get("/add-player", v.AddPlayer)
+	v.Router.Get("/view-games", v.ViewGames)
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
@@ -37,6 +38,12 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
 
 func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
 	if err := v.pagesTemplate.ExecuteTemplate(res, "AddPlayer.html", nil); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
+	if err := v.pagesTemplate.ExecuteTemplate(res, "ViewGames.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
