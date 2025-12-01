@@ -35,20 +35,24 @@ func (t *Team) checkDuplicateTeamPlayers (field interface{}) error{
 	}
 	
 	//Create a map of string to int (value is irrelevant, I only care about the key)
-	uniqueNames := make(map[string]int)
+	uniqueNames := make(map[string]struct{})
 
 	//In order to see how if there are duplicate names, add all of the names the client passed into the map I just made.
 	//Let's say players len = 5. If all 5 names are unique, that map will also have 5 elements. If there is one
-	//duplicate (m, n, k, l, l), the map will have a length of 4 because the second "l" in that example is not given 
+	//duplicate (m, n, l, k, l), the map will have a length of 4 because the second "l" in that example is not given 
 	//its own bucket in the map, the value of the first "l" is simply overridden.
 	for _, player := range players{
-		uniqueNames[player] = 0
-	}
-	
-	//When the map is made, check to see if the len of the players array is greater than the map. If so, 
-	//then there are duplicates!
-	if len(players) > len(uniqueNames) {
-		return fmt.Errorf("no duplicate names allowed! [%s]", strings.Join(players, ", "))
+		
+		//turn all player names to lower, and remove all spaces to prevent anamolies like "alice" and " A L ICE "
+		//from passing as non-duplicates.
+		player = strings.ReplaceAll(strings.ToLower(player), " ", "")
+
+		//Check if the editted name exists in the map. If it does, a duplicate was found.
+		if _, exists := uniqueNames[player]; exists{
+			return fmt.Errorf("no duplicate name allowed! %s", player)
+		}
+
+		uniqueNames[player] = struct{}{}
 	}
 
 	//If not, return nil signifying validation success.
