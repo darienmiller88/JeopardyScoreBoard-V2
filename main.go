@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"JeopardyScoreBoardV2/database"
+	"JeopardyScoreBoardV2/controllers"
 )
 
 func main(){
@@ -26,9 +27,12 @@ func main(){
 	database.Init()
 	defer database.DisconnectClient()
 
-	router.Get("/", func(res http.ResponseWriter, req *http.Request) {
-		res.Write([]byte("Hello world!"))
-	})
+	//Initialize the parent controller router, and its children
+	index := controllers.Index{}
+	index.Init()
+
+	//Afterwards, mount that router onto this one.
+	router.Mount("/", index.Router)
 
 	//Finally, listen and serve on the port in the env, which is 8080 on local machine.
 	fmt.Println("Listening on Port:", os.Getenv("PORT"))
