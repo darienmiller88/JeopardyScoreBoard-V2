@@ -87,11 +87,11 @@ func (t *Team) checkForValidTeamPlayers(field interface{}) error {
 		return fmt.Errorf("length of players field cannot exceed total amount of people at ADAPT location: %d > %d", numPlayers, numPeopleAtLocation)
 	}
 
-	uniquePlayersMap := make(map[string]int)
+	uniquePlayersMap := make(map[string]struct{})
 	
 	//First create a map out of the players at a given adapt location to allow constant time lookup for each person.
 	for _, player := range location.Users{
-		uniquePlayersMap[player.Name] = 0
+		uniquePlayersMap[player.Name] = struct{}{}
 	}
 
 	//Afterwards, check each player the client sent to see if it exists in the map. If not, return the following error.
