@@ -1,5 +1,0 @@
-# JeopardyScoreBoardV2
-.\main.go:37:2: declared and not used: fs
-.\main.go:38:16: not enough arguments in call to router.Handle
-	have (string)
-	want (string, http.Handler)
