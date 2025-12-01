@@ -20,6 +20,7 @@ func (v *ViewsController) Init(){
 
 	v.Router.Get("/", v.CreateGame)
 	v.Router.Get("/team-mode", v.TeamMode)
+	v.Router.Get("/add-player", v.AddPlayer)
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
