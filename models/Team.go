@@ -12,9 +12,9 @@ import (
 )
 
 type Team struct{
-	Score     int      `bson:"score"      json:"score"` 
-	TeamName  string   `bson:"team_name"  json:"team_name"`
-	Players   []string `bson:"players"    json:"players"`
+	Score     int      `bson:"score"` 
+	TeamName  string   `bson:"team_name"`
+	Players   []string `bson:"players"`
 	
 }
 
@@ -80,7 +80,7 @@ func (t *Team) checkForValidTeamPlayers(field interface{}) error {
 	//Save the amount of people in the players array sent by the client, as well as the number of people at the 
 	//actual ADAPT location.
 	numPlayers          := len(players)
-	numPeopleAtLocation := len(location.Users) 
+	numPeopleAtLocation := len(location.Players) 
 	
 	//If the client sent more players than actual people at this ADAPT location, send an error to prevent time wasting.
 	if numPlayers > numPeopleAtLocation {
@@ -90,7 +90,7 @@ func (t *Team) checkForValidTeamPlayers(field interface{}) error {
 	uniquePlayersMap := make(map[string]struct{})
 	
 	//First create a map out of the players at a given adapt location to allow constant time lookup for each person.
-	for _, player := range location.Users{
+	for _, player := range location.Players{
 		uniquePlayersMap[player.Name] = struct{}{}
 	}
 

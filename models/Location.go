@@ -11,15 +11,15 @@ import (
 
 // This struct will represent the ADAPT community network location where a jeopardy game was played.
 type Location struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"` 
-	CreatedAt    time.Time          `bson:"created_at"    json:"created_at"` 
-	UpdatedAt    time.Time          `bson:"updated_at"    json:"updated_at"`
+	ID           primitive.ObjectID `bson:"_id,omitempty"` 
+	CreatedAt    time.Time          `bson:"created_at"` 
+	UpdatedAt    time.Time          `bson:"updated_at"`
 
 	//The name of the ADAPT location (Pelham Bay, Lawrence, Elmwood, etc)
-	LocationName string             `bson:"location_name" json:"location_name"`
+	LocationName string             `bson:"location_name"`
 
 	//Here are all of the users that played in the game.
-	Users        []PlayerCard         `bson:"users"         json:"users"`
+	Players     []PlayerCard         `bson:"users"`
 }
 
 func (l *Location) InitCreatedAtAndUpdatedAt(){
@@ -27,13 +27,13 @@ func (l *Location) InitCreatedAtAndUpdatedAt(){
 	l.UpdatedAt = time.Now()
 
 	//If this field is not initialized, it is interpreted as "null" by mongoDB, and not an empty array.
-	l.Users = []PlayerCard{}
+	l.Players = []PlayerCard{}
 }
 
 func (l *Location) Validate() error{
 	return validation.ValidateStruct(
 		l,
-		validation.Field(&l.Users, validation.Required, validation.Length(1, 0)),
+		validation.Field(&l.Players, validation.Required, validation.Length(1, 0)),
 		validation.Field(&l.LocationName, validation.Required, validation.By(l.findAndSetLocation)),
 	)
 }
@@ -57,7 +57,7 @@ func (l *Location) findAndSetLocation(field interface{}) error{
 
 		//If the client sent a correct location, assign the users at that location to this instance of a location.
 		if locationName == location.LocationName {
-			l.Users = location.Users
+			l.Players = location.Players
 
 			return nil
 		}
