@@ -8,19 +8,21 @@ import (
 )
 
 type ViewsController struct{
-	Router *chi.Mux
-	tmpl   *template.Template
+	Router           *chi.Mux
+	pagesTemplate    *template.Template
+	partialsTemplate *template.Template
 }
 
 func (v *ViewsController) Init(){
 	v.Router = chi.NewRouter()
-	v.tmpl   = template.Must(template.ParseFiles("templates/*.html", "templates/partials/*.html"))
+	v.pagesTemplate  = template.Must(template.ParseGlob("templates/*.html"))
+	v.partialsTemplate = template.Must(template.ParseGlob("templates/partials/*.html"))
 
 	v.Router.Get("/", v.CreateGame)
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
-	if err := v.tmpl.ExecuteTemplate(res, "CreateGame", nil); err != nil{
+	if err := v.pagesTemplate.ExecuteTemplate(res, "CreateGame.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
