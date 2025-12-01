@@ -31,5 +31,4 @@ COPY --from=build-stage /app/static ./static
 EXPOSE 8080
 
 # Finally, run the go binary!
-
 CMD [ "./jeopardy-scoreboard" ]
