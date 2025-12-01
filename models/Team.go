@@ -52,6 +52,8 @@ func (t *Team) checkDuplicateTeamPlayers (field interface{}) error{
 			return fmt.Errorf("no duplicate name allowed! %s", player)
 		}
 
+		//Afterwards, add the name to the map. On the second name, it will be compared to the first, the
+		//third will be compared to the first and second, and so on.
 		uniqueNames[player] = struct{}{}
 	}
 
