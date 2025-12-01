@@ -1,42 +1,129 @@
- package services
+package services
 
-// import (
-// 	"net/http"
+import (
+	"net/http"
 
-// 	"go.mongodb.org/mongo-driver/bson"
-// 	"go.mongodb.org/mongo-driver/bson/primitive"
-// 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 
-// 	"JeopardyScoreBoardV2/database"
-// 	"JeopardyScoreBoardV2/models"
-// )
+	"JeopardyScoreBoardV2/database"
+	"JeopardyScoreBoardV2/models"
+)
 
-// //This is a comment from my temp laptop to test commit success.
-// func GetAllSavedGames(req *http.Request) models.Result[[]models.SavedGame] {
-// 	findResult, err := database.GetSavedGamesCollections().Find(req.Context(), bson.D{})
+
+func GetAllSavedGames(req *http.Request) models.Result[[]models.SavedGame] {
+	findResult, err := database.GetSavedGamesCollections().Find(req.Context(), bson.D{})
 	
-// 	//Initialize the result after trying to find all current saved games.
-// 	savedGamesResult := models.Result[[]models.SavedGame]{
-// 		StatusCode: http.StatusInternalServerError,
-// 		Err: err,
-// 	}
+	//Initialize the result after trying to find all current saved games.
+	savedGamesResult := models.Result[[]models.SavedGame]{
+		StatusCode: http.StatusInternalServerError,
+		Err: err,
+	}
 
-// 	if err != nil {
-// 		return savedGamesResult
-// 	}
+	if err != nil {
+		return savedGamesResult
+	}
 
-// 	savedGames := []models.SavedGame{}
+	savedGames := []models.SavedGame{}
 
-// 	//Unmarshall the mongo cursor into the array of saved games.
-// 	if err := findResult.All(req.Context(), &savedGames); err != nil{
-// 		savedGamesResult.Err = err
-// 		savedGamesResult.StatusCode = http.StatusInternalServerError
+	//Unmarshall the mongo cursor into the array of saved games.
+	if err := findResult.All(req.Context(), &savedGames); err != nil{
+		savedGamesResult.Err = err
+		savedGamesResult.StatusCode = http.StatusInternalServerError
 		
-// 		return savedGamesResult
-// 	}
+		return savedGamesResult
+	}
 
-// 	savedGamesResult.ResultData = savedGames
-// 	savedGamesResult.StatusCode = http.StatusOK
+	savedGamesResult.ResultData = savedGames
+	savedGamesResult.StatusCode = http.StatusOK
 
-// 	return savedGamesResult
-// }
+	return savedGamesResult
+}
+
+func GetAllSavedGamesFromLocation(req *http.Request, locationName string) models.Result[[]models.SavedGame] {
+	savedGames           := []models.SavedGame{}
+	savedGamesCollection := database.GetSavedGamesCollections()
+	findResult, err      := savedGamesCollection.Find(req.Context(), bson.D{
+		{ Key: "location_name", Value: locationName },
+	})
+	
+	savedGamesResult := models.Result[[]models.SavedGame]{
+		StatusCode: http.StatusInternalServerError,
+	}
+	
+	//If finding all saved games from a certain location fails, send back the proper error.
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			savedGamesResult.StatusCode = http.StatusNotFound
+		} 
+
+		savedGamesResult.Err = err
+		return savedGamesResult
+	}
+
+	//Try and marshall all of the saved game documents in the saved games array, and send an error if it fails.
+	if err := findResult.All(req.Context(), &savedGames); err != nil{
+		savedGamesResult.Err = err
+
+		return savedGamesResult
+	}
+
+
+	//After checking for all error possibilities after retrieving all saved games, send back the data and a 200
+	savedGamesResult.StatusCode = http.StatusOK
+	savedGamesResult.ResultData = savedGames
+
+	return savedGamesResult	
+}
+
+func DeleteSavedGame(req *http.Request, savedGameId primitive.ObjectID) models.Result[*mongo.DeleteResult]{
+	deleteSavedGameResult := models.Result[*mongo.DeleteResult]{}
+	result, err := database.GetSavedGamesCollections().DeleteOne(req.Context(), bson.M{
+		"_id": savedGameId,
+	})
+
+	//Try deleting a saved game by id, and add an error if it fails.
+	if err != nil {
+		deleteSavedGameResult.Err = err
+		deleteSavedGameResult.StatusCode = http.StatusBadRequest
+
+		return deleteSavedGameResult
+	}
+
+	deleteSavedGameResult.ResultData = result
+	deleteSavedGameResult.StatusCode = http.StatusOK
+
+	return deleteSavedGameResult
+}
+
+func AddSavedGame(req *http.Request, savedGame models.SavedGame) models.Result[models.SavedGame]{
+	//Initialize the saved game's created and updated fields.
+	savedGame.InitCreatedAtAndUpdatedAt()
+
+	//Calculate both the total amount of points earned, as well as the average.
+	savedGame.CalcTotalPoints()
+	savedGame.CalcAveragePoints()
+	
+	//Calculate the winner of the game that was played.
+	savedGame.CalculateWinner()
+	
+	//create the result object, get the saved games collection, and insert the saved game into the database.
+	savedGamesResult     := models.Result[models.SavedGame]{}
+	savedGamesCollection := database.GetSavedGamesCollections()
+	insertResult, err    := savedGamesCollection.InsertOne(req.Context(), &savedGame)
+
+	if err != nil{ 
+		savedGamesResult.Err = err
+		savedGamesResult.StatusCode = http.StatusInternalServerError
+		
+		return savedGamesResult
+	}
+	
+	//Finally, attach the id of the newly created saved game.
+	savedGame.ID = insertResult.InsertedID.(primitive.ObjectID)
+	savedGamesResult.ResultData = savedGame
+	savedGamesResult.StatusCode = http.StatusOK
+
+	return savedGamesResult
+}
