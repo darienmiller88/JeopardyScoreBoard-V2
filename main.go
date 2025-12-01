@@ -34,6 +34,10 @@ func main(){
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
 
+	//Serve static files along the "/" route
+	fs := http.FileServer(http.Dir("static"))
+	router.Handle("/", fs)
+
 	//Finally, listen and serve on the port in the env, which is 8080 on local machine.
 	fmt.Println("Listening on Port:", os.Getenv("PORT"))
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router)
