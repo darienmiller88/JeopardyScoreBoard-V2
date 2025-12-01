@@ -19,10 +19,17 @@ func (v *ViewsController) Init(){
 	v.partialsTemplate = template.Must(template.ParseGlob("templates/partials/*.html"))
 
 	v.Router.Get("/", v.CreateGame)
+	v.Router.Get("/team-mode", v.TeamMode)
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
 	if err := v.pagesTemplate.ExecuteTemplate(res, "CreateGame.html", nil); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
+	if err := v.pagesTemplate.ExecuteTemplate(res, "TeamMode.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
