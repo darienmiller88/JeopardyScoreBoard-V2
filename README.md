@@ -29,7 +29,7 @@ This version will still retain the following features from v1:
 
 * Clone repo using `git clone https://github.com/darienmiller88/JeopardyScoreBoard-V2`
 * Migrate the necessary information to your local `.env` as described in the `.env_sample` file
-* Run go build to create a root level `JeopardyScoreBoard-V2.exe` file, and then run `.\JeopardyScoreBoard-V2` to run the executable. If an executable is not needed, simply input `go run main.go` instead, or `.\fresh` to enable a server restart on change.
+* Run go build to create a root level `JeopardyScoreBoardV2.exe` file, and then run `.\JeopardyScoreBoard-V2` to run the executable. If an executable is not needed, simply input `go run main.go` instead, or `.\fresh` to enable a server restart on change.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
