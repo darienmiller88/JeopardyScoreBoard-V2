@@ -21,7 +21,7 @@ func (v *ViewsController) Init(){
 	v.Router.Get("/add-player", v.AddPlayer)
 	v.Router.Get("/view-games", v.ViewGames)
 	v.Router.Get("/log-in", v.LogIn)
-	v.Router.NotFound()
+	v.Router.NotFound(v.NotFound)
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
@@ -55,5 +55,7 @@ func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request){
-	
+	if err := v.pagesTemplate.ExecuteTemplate(res, "NotFound.html", nil); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
