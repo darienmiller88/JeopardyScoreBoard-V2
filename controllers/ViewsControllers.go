@@ -25,7 +25,9 @@ func (v *ViewsController) Init(){
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "CreateGame.html", nil); err != nil{
+	// t, _ := template.ParseFiles("templates/Base.html", "templates/CreateGame.html")
+	
+	if err := v.pagesTemplate.ExecuteTemplate(res, "Base.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
