@@ -1,29 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="shortcut icon" href="../static/img/sb_3.png" type="image/x-icon">
-        <link rel="stylesheet" href="../static/css/NotFound.css">
-        <title>404 Not Found</title>
-    </head>
-    <body>
-        <div class="message-wrapper">
-            <div class="error-code">
-                404
-            </div>
-            <div class="oops">
-                Oops, This Page Is Not Found!
-            </div>
-            <div class="broken-link">
-                This link might be corrupted.
-            </div>
-            <div class="removed">
-                or the page may have been removed
-            </div>
-            <button>
-                Go Back Home
-            </button>
-        </div>
-    </body>
-</html>
+{{ define "title" }}404 Not Found{{ end }}
+
+{{ define "css" }}
+<link rel="stylesheet" href="../static/css/NotFound.css">
+{{ end }}
+
+{{ define "content" }}
+<div class="message-wrapper">
+    <div class="error-code">
+        404
+    </div>
+    <div class="oops">
+        Oops, This Page Is Not Found!
+    </div>
+    <div class="broken-link">
+        This link might be corrupted.
+    </div>
+    <div class="removed">
+        or the page may have been removed
+    </div>
+    <button>
+        Go Back Home
+    </button>
+</div>
+{{ end }}

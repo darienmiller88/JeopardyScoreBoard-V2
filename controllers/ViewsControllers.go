@@ -57,7 +57,7 @@ func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "NotFound.html", nil); err != nil{
+	if err := v.pagesTemplate.ExecuteTemplate(res, "Base.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
