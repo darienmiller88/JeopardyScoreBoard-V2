@@ -25,15 +25,13 @@ func (v *ViewsController) Init(){
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
-	// t, _ := template.ParseFiles("templates/Base.html", "templates/CreateGame.html")
-	
 	if err := v.pagesTemplate.ExecuteTemplate(res, "Base.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "TeamMode.html", nil); err != nil{
+	if err := v.pagesTemplate.ExecuteTemplate(res, "Base.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -57,7 +55,7 @@ func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "Base.html", nil); err != nil{
+	if err := v.pagesTemplate.ExecuteTemplate(res, "NotFound.html", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
