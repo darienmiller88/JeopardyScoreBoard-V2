@@ -43,13 +43,13 @@ func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "ViewGames.html", nil); err != nil{
+	if err := v.pagesTemplate.ExecuteTemplate(res, "Base", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "LogIn.html", nil); err != nil{
+	if err := v.pagesTemplate.ExecuteTemplate(res, "Base", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
