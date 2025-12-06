@@ -37,7 +37,7 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "AddPlayer.html", nil); err != nil{
+	if err := v.pagesTemplate.ExecuteTemplate(res, "Base", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
