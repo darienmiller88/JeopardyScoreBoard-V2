@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/foolin/goview"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 
-	"JeopardyScoreBoardV2/database"
 	"JeopardyScoreBoardV2/controllers"
+	"JeopardyScoreBoardV2/database"
 )
 
 func main(){
@@ -19,6 +20,16 @@ func main(){
 
 	//Create new chi router instance to push handlers to.
 	router := chi.NewRouter()
+
+	//Create new template engine
+	goview.Use(goview.New(goview.Config{
+		Root:      "templates",
+		Extension: ".html",
+		Master:    "templates/Base",
+		Partials:  []string{"partials/*.html"},
+		DisableCache: true,
+		Delims:       goview.Delims{Left: "{{", Right: "}}"},
+	}))
 
 	//Middleware stack, keeping it basic for now.
 	router.Use(middleware.Logger, middleware.Recoverer)

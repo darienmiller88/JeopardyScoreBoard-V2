@@ -2,7 +2,10 @@ module JeopardyScoreBoardV2
 
 go 1.25.0
 
+require go.mongodb.org/mongo-driver v1.17.6
+
 require (
+	github.com/foolin/goview v0.3.0 // indirect
 	github.com/go-chi/chi/v5 v5.2.3 // indirect
 	github.com/go-chi/httprate v0.15.0 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
@@ -15,7 +18,6 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
-	go.mongodb.org/mongo-driver v1.17.6
 	go.mongodb.org/mongo-driver/v2 v2.4.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
