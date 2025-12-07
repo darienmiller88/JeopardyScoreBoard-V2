@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/foolin/goview"
 )
 
 type ViewsController struct{
@@ -25,7 +26,7 @@ func (v *ViewsController) Init(){
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
-	if err := v.pagesTemplate.ExecuteTemplate(res, "CreateGame", nil); err != nil{
+	if err := goview.Render(res, http.StatusOK, "CreateGame", nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
