@@ -25,10 +25,9 @@ func main(){
 	goview.Use(goview.New(goview.Config{
 		Root:      "templates",
 		Extension: ".html",
-		Master:    "templates/Base",
-		Partials:  []string{"partials/*.html"},
-		DisableCache: true,
-		Delims:       goview.Delims{Left: "{{", Right: "}}"},
+		Master:    "Base",
+		Partials:  []string{"partials/navbar"},
+		DisableCache: false,
 	}))
 
 	//Middleware stack, keeping it basic for now.
