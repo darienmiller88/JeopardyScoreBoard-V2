@@ -75,5 +75,7 @@ func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request){
-	
+	if err := v.templates["NotFound"].Execute(res, nil); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}	
 }
