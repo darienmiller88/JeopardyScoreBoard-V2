@@ -63,7 +63,9 @@ func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
-	
+	if err := v.templates["ViewGames"].Execute(res, nil); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
