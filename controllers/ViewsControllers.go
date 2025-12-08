@@ -69,7 +69,9 @@ func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
-	
+	if err := v.templates["LogIn"].Execute(res, nil); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request){
