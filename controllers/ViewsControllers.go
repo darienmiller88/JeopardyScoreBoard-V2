@@ -18,31 +18,33 @@ type ViewsController struct{
 }
 
 func (v *ViewsController) Init(){
-	v.Router = chi.NewRouter()
-	v.pagesTemplate  = template.Must(template.ParseGlob("templates/*.html"))
+	v.Router        = chi.NewRouter()
+	v.templates     = make(map[string]*template.Template)
+	v.pagesTemplate = template.Must(template.ParseGlob("templates/*.html"))
 
-	entries, err := os.ReadDir("./templates")
+	//Initialize template map
+	v.InitTemplateMap()
 
-	if err != nil {
-		fmt.Println("err:", err)
-	}else{
-		for _, entry := range entries{
-			if !strings.HasPrefix(entry.Name(), "Base"){
-				fmt.Println("entry:", entry.Name())
-
-				// name, _ := strings.CutSuffix(entry.Name(), ".html")
-				// v.templates[name] = template.Must(template.ParseFiles("templates/Base.html", fmt.Sprintf("template/%s.html", )))
-			}
-		}
-	}
-
-
+	//Initialize view routes
 	v.Router.Get("/", v.CreateGame)
 	v.Router.Get("/team-mode", v.TeamMode)
 	v.Router.Get("/add-player", v.AddPlayer)
 	v.Router.Get("/view-games", v.ViewGames)
 	v.Router.Get("/log-in", v.LogIn)
 	v.Router.NotFound(v.NotFound)
+}
+
+func (v *ViewsController) InitTemplateMap(){
+	entries, err := os.ReadDir("./templates/pages")
+
+	if err != nil {
+		fmt.Println("err:", err)
+	}else{
+		for _, entry := range entries{
+				name, _ := strings.CutSuffix(entry.Name(), ".html")
+				v.templates[name] = template.Must(template.ParseFiles("templates/Base.html", fmt.Sprintf("templates/pages/%s.html", name)))
+		}
+	}
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){

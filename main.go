@@ -23,10 +23,10 @@ func main(){
 
 	//Create new template engine
 	goview.Use(goview.New(goview.Config{
-		Root:      "templates",
+		Root:      "templates/pages",
 		Extension: ".html",
-		Master:    "Base",
-		Partials:  []string{"partials/navbar"},
+		Master:    "../Base",
+		Partials:  []string{"../partials/navbar"},
 		DisableCache: false,
 	}))
 
