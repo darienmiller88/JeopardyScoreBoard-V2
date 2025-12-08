@@ -16,8 +16,8 @@ type ViewsController struct{
 }
 
 func (v *ViewsController) Init(){
-	v.Router        = chi.NewRouter()
-	v.templates     = make(map[string]*template.Template)
+	v.Router    = chi.NewRouter()
+	v.templates = make(map[string]*template.Template)
 
 	//Initialize template map
 	v.InitTemplateMap()
@@ -57,7 +57,9 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
-	
+	if err := v.templates["AddPlayer"].Execute(res, nil); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){

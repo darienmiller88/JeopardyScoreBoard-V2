@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/foolin/goview"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -20,15 +19,6 @@ func main(){
 
 	//Create new chi router instance to push handlers to.
 	router := chi.NewRouter()
-
-	//Create new template engine
-	goview.Use(goview.New(goview.Config{
-		Root:      "templates/pages",
-		Extension: ".html",
-		Master:    "../Base",
-		Partials:  []string{"../partials/navbar"},
-		DisableCache: false,
-	}))
 
 	//Middleware stack, keeping it basic for now.
 	router.Use(middleware.Logger, middleware.Recoverer)
