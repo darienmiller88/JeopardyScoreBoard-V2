@@ -1,5 +1,3 @@
-{{ define "Base" }}
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -7,11 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="../static/img/sb_3.png" type="image/x-icon">
         <title>{{ template "title" . }}</title>
-        {{ template "css" }}
+        {{ template "css" .}}
     </head>
     <body>
     {{ template "content" . }}
     </body>
 </html>
-
-{{ end }}
