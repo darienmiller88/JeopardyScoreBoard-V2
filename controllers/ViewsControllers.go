@@ -12,7 +12,7 @@ import (
 
 type ViewsController struct{
 	templates map[string]*template.Template
-	Router    *chi.Mux
+	Router   *chi.Mux
 }
 
 func (v *ViewsController) Init(){
@@ -39,7 +39,9 @@ func (v *ViewsController) InitTemplateMap(){
 	}else{
 		for _, entry := range entries{
 			name, _ := strings.CutSuffix(entry.Name(), ".html")
-			v.templates[name] = template.Must(template.ParseFiles("templates/Base.html", fmt.Sprintf("templates/pages/%s.html", name)))
+			v.templates[name] = template.Must(
+				template.ParseFiles("templates/Base.html", fmt.Sprintf("templates/pages/%s.html", name)),
+			)
 		}
 	}
 }
@@ -75,6 +77,7 @@ func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request){
+	res.WriteHeader(http.StatusNotFound)
 	if err := v.templates["NotFound"].Execute(res, nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}	
