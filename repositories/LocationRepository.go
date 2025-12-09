@@ -6,6 +6,11 @@ import(
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+const(
+	push string = ""
+	pull string = ""
+)
+
 type LocationRepository interface{
 	AddLocation()                    models.Result[models.Location]
 	GetLocations()                   models.Result[models.Location]
@@ -14,7 +19,6 @@ type LocationRepository interface{
 
 type MongoLocationRepository struct{
 	locationCollection *mongo.Collection
-
 }
 
 //Receive a new instance of Location repository using a mongo collection as the database. 
@@ -27,5 +31,9 @@ func (m *MongoLocationRepository) AddLocation() models.Result[models.Location]{
 }
 
 func (m *MongoLocationRepository) GetLocations() models.Result[models.Location]{
+	return models.Result[models.Location]{}
+}
+
+func (m *MongoLocationRepository) GetLocation(locationName string) models.Result[models.Location]{
 	return models.Result[models.Location]{}
 }
