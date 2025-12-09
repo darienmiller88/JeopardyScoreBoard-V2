@@ -21,3 +21,7 @@ type MongoLocationRepository struct{
 func GetMongoLocationCollection() *MongoLocationRepository{
 	return &MongoLocationRepository{ locationCollection: database.GetLocationsCollection().Clone() }
 }
+
+func (m *MongoLocationRepository) AddLocation() models.Result[models.Location]{
+	return models.Result[models.Location]{}
+}
