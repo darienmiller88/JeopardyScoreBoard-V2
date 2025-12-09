@@ -1,7 +1,9 @@
 package repositories
 
-import(
+import (
 	"JeopardyScoreBoardV2/models"
+	"context"
+
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -10,10 +12,12 @@ const(
 	pull string = "$pull"
 )
 
+//LocationRepository interface to allow mocking when testing the service. The test can provide the service 
+//a dummy implementation 
 type LocationRepository interface{
-	AddLocation()                    models.Result[models.Location]
-	GetLocations()                   models.Result[models.Location]
-	GetLocation(locationName string) models.Result[models.Location]
+	AddLocation(ctx context.Context)  models.Result[models.Location]
+	GetLocations(ctx context.Context) models.Result[models.Location]
+	GetLocation(ctx context.Context, locationName string) models.Result[models.Location]
 }
 
 type MongoLocationRepository struct{
