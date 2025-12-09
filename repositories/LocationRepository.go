@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -19,7 +20,7 @@ const(
 type LocationRepository interface{
 	AddLocation(ctx context.Context, location models.Location) models.Result[models.Location]
 	GetLocation(ctx context.Context, locationName string)      models.Result[models.Location]
-	GetLocations(ctx context.Context)                          models.Result[models.Location]
+	GetAllLocations(ctx context.Context)                       models.Result[[]models.Location]
 }
 
 type MongoLocationRepository struct{
@@ -52,8 +53,21 @@ func (m *MongoLocationRepository) AddLocation(ctx context.Context, location mode
 	return locationResult
 }
 
-func (m *MongoLocationRepository) GetLocations() models.Result[models.Location]{
-	return models.Result[models.Location]{}
+//Retrieve all Locations from database
+func (m *MongoLocationRepository) GetAllLocations(ctx context.Context) models.Result[[]models.Location]{
+	findResult, err := m.locationCollection.Find(ctx, bson.D{})
+
+	if err != nil {
+		return models.Result[[]models.Location]{ StatusCode: http.StatusInternalServerError, Err: err }
+	}
+
+	locations := []models.Location{}
+
+	if err := findResult.All(ctx, &locations); err != nil {
+		return models.Result[[]models.Location]{ StatusCode: http.StatusInternalServerError, Err: err }
+	}
+
+	return models.Result[[]models.Location]{ StatusCode: http.StatusOK, ResultData: locations }
 }
 
 func (m *MongoLocationRepository) GetLocation(locationName string) models.Result[models.Location]{
