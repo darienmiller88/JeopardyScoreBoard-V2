@@ -3,6 +3,7 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/models"
 	"context"
+	"fmt"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -70,6 +71,29 @@ func (m *MongoLocationRepository) GetAllLocations(ctx context.Context) models.Re
 	return models.Result[[]models.Location]{ StatusCode: http.StatusOK, ResultData: locations }
 }
 
-func (m *MongoLocationRepository) GetLocation(locationName string) models.Result[models.Location]{
-	return models.Result[models.Location]{}
+//Get one location from the database
+func (m *MongoLocationRepository) GetLocation(ctx context.Context, locationName string) models.Result[models.Location]{
+	location := &models.Location{}
+	result   := models.Result[models.Location]{}
+	err      := m.locationCollection.FindOne(
+		ctx, 
+		bson.D{{Key: "location_name", Value: locationName}},
+	).Decode(&location)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			result.Err = fmt.Errorf("location \"%s\" does not exist. Please try another one", locationName)
+			result.StatusCode = http.StatusNotFound
+		} else {
+			result.Err = err
+			result.StatusCode = http.StatusInternalServerError
+		}
+
+		return result
+	}
+
+	result.ResultData = *location
+	result.StatusCode = http.StatusOK
+
+	return result
 }
