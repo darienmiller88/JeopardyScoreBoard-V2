@@ -25,3 +25,7 @@ func GetMongoLocationCollection() *MongoLocationRepository{
 func (m *MongoLocationRepository) AddLocation() models.Result[models.Location]{
 	return models.Result[models.Location]{}
 }
+
+func (m *MongoLocationRepository) GetLocations() models.Result[models.Location]{
+	return models.Result[models.Location]{}
+}
