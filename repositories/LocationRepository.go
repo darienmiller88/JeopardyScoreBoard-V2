@@ -2,7 +2,6 @@ package repositories
 
 import(
 	"JeopardyScoreBoardV2/models"
-	"JeopardyScoreBoardV2/database"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -22,8 +21,8 @@ type MongoLocationRepository struct{
 }
 
 //Receive a new instance of Location repository using a mongo collection as the database. 
-func GetMongoLocationCollection() *MongoLocationRepository{
-	return &MongoLocationRepository{ locationCollection: database.GetLocationsCollection().Clone() }
+func GetMongoLocationCollection(newCollection *mongo.Collection) *MongoLocationRepository{
+	return &MongoLocationRepository{ locationCollection: newCollection.Clone() }
 }
 
 func (m *MongoLocationRepository) AddLocation() models.Result[models.Location]{
