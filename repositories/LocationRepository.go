@@ -7,8 +7,8 @@ import(
 )
 
 const(
-	push string = ""
-	pull string = ""
+	push string = "$push"
+	pull string = "$pull"
 )
 
 type LocationRepository interface{
