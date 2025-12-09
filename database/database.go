@@ -33,9 +33,9 @@ func Init() {
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 }
 
-func GetDB() *mongo.Client{
-	return client
-}
+// func GetDB() *mongo.Client{
+// 	return client
+// }
 
 //Retrieve the "locations" collection from the database.
 func GetLocationsCollection() *mongo.Collection {
