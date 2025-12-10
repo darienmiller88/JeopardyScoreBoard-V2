@@ -10,6 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+const(
+	push string = "$push"
+	pull string = "$pull"
+)
+
 type PlayerCardRepository interface {
 	UpdatePlayerName(ctx context.Context, locationName string, oldPlayerName string, newPlayerName string) models.Result[*mongo.UpdateResult]
 	AddPlayerToLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]
@@ -21,63 +26,36 @@ type MongoPlayerCardRepository struct{
 }
 
 func (m *MongoPlayerCardRepository) UpdatePlayerName(ctx context.Context, locationName string, oldPlayerName string, newPlayerName string) models.Result[*mongo.UpdateResult]{
-	updateUserResult := models.Result[*mongo.UpdateResult]{
-		StatusCode: http.StatusInternalServerError,
-	}
-	
-	//Filter first for the location, and then for the player in the "users" array field. Target the "name" 
-	//field for each player field in the location collection
-	filter := bson.M{ "location_name": locationName, "users.name": oldPlayerName }
-	update := bson.M{ "$set": bson.M{ "users.$.name": newPlayerName } }
-
-	//Using the above filters, find the specific user in the array at the specific location, and change their name.
-	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
-
-	if err != nil{
-		updateUserResult.Err = err
-
-		return updateUserResult
-	}
-
-	//If the update was succesful, return an Ok(200) and the update return data.
-	updateUserResult.ResultData = updateOneResult
-	updateUserResult.StatusCode = http.StatusOK
-
-	return updateUserResult
+	return models.Result[*mongo.UpdateResult]{}
 }
 
 //Add a single player to a given location.
 func (m *MongoPlayerCardRepository) AddPlayerToLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]{
-	updateUserResult := models.Result[*mongo.UpdateResult]{
-		StatusCode: http.StatusInternalServerError,
-	}
-
 	filter := bson.M{ "location_name": locationName }
 	update := bson.M{ "$push": bson.M{"users": bson.M{"name": playerName} } }
  	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
 
 	if err != nil{
-		updateUserResult.Err = err
-		
-		return updateUserResult
+		return models.Result[*mongo.UpdateResult]{ Err: err, StatusCode: http.StatusInternalServerError }
 	}
 
 	if updateOneResult.ModifiedCount == 0 {
-		updateUserResult.Err = fmt.Errorf("no location \"%s\" found", locationName)
-		updateUserResult.StatusCode = http.StatusNotFound
-
-		return updateUserResult
+		return models.Result[*mongo.UpdateResult]{ 
+			Err: fmt.Errorf("no location \"%s\" found", locationName), 
+			StatusCode: http.StatusNotFound,
+		}
 	}
 
-	updateUserResult.ResultData = updateOneResult
-	updateUserResult.StatusCode = http.StatusOK
-
-	return updateUserResult
+	return models.Result[*mongo.UpdateResult]{ ResultData: updateOneResult, StatusCode: http.StatusOK }
 }
 
 func (m *MongoPlayerCardRepository) RemovePlayerFromLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]{
+	return models.Result[*mongo.UpdateResult]{}
+}
+
+func (m *MongoPlayerCardRepository) updateHelper(ctx context.Context, mongoOperator string, locationName string, playerName string) models.Result[*mongo.UpdateResult]{
 	filter := bson.M{ "location_name": locationName }
-	update := bson.M{ "$pull": bson.M{"users": bson.M{"name": playerName} } }
+	update := bson.M{ mongoOperator: bson.M{"users": bson.M{"name": playerName} } }
  	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
 
 	if err != nil{		
