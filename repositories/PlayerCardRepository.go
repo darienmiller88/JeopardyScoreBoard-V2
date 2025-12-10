@@ -76,5 +76,21 @@ func (m *MongoPlayerCardRepository) AddPlayerToLocation(ctx context.Context, loc
 }
 
 func (m *MongoPlayerCardRepository) RemovePlayerFromLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]{
-	return models.Result[*mongo.UpdateResult]{}
+	filter := bson.M{ "location_name": locationName }
+	update := bson.M{ "$pull": bson.M{"users": bson.M{"name": playerName} } }
+ 	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
+
+	if err != nil{		
+		return models.Result[*mongo.UpdateResult]{Err: err, StatusCode: http.StatusInternalServerError}
+	}
+
+	//If there were no documents modified, return an error and 404 signaling this.
+	if updateOneResult.ModifiedCount == 0 {
+		return models.Result[*mongo.UpdateResult]{
+			Err: fmt.Errorf("no location \"%s\" found", locationName),
+			StatusCode: http.StatusNotFound,
+		}
+	}
+
+	return models.Result[*mongo.UpdateResult]{ ResultData: updateOneResult, StatusCode: http.StatusOK }
 }
