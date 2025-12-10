@@ -25,8 +25,20 @@ type MongoPlayerCardRepository struct{
 	locationCollection *mongo.Collection
 }
 
+//Function to update a players name for a given location.
 func (m *MongoPlayerCardRepository) UpdatePlayerName(ctx context.Context, locationName string, oldPlayerName string, newPlayerName string) models.Result[*mongo.UpdateResult]{
-	return models.Result[*mongo.UpdateResult]{}
+	//Filter first for the location, and then for the player in the "users" array field.
+	filter := bson.M{ "location_name": locationName, "users.name": oldPlayerName }
+	update := bson.M{ "$set": bson.M{ "users.$.name": newPlayerName } }
+
+	//Using the above filters, find the specific user in the array at the specific location, and change their name.
+	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
+
+	if err != nil{
+		return models.Result[*mongo.UpdateResult]{ Err: err, StatusCode: http.StatusInternalServerError }
+	}
+
+	return models.Result[*mongo.UpdateResult]{ ResultData: updateOneResult, StatusCode: http.StatusOK }
 }
 
 //Add a single player to a given location.
