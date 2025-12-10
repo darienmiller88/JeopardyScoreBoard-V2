@@ -22,3 +22,4 @@ type MongoSavedGameRepository struct{
 func GetNewMongoSavedGameRepository(newCollection *mongo.Collection) *MongoSavedGameRepository{
 	return &MongoSavedGameRepository{ savedGameCollection: newCollection }
 }
+

@@ -25,6 +25,10 @@ type MongoPlayerCardRepository struct{
 	locationCollection *mongo.Collection
 }
 
+func GetNewMongoPlayerCardRepository(newCollection *mongo.Collection) *MongoPlayerCardRepository{
+	return &MongoPlayerCardRepository{ locationCollection: newCollection }
+}
+
 //Function to update a players name for a given location.
 func (m *MongoPlayerCardRepository) UpdatePlayerName(ctx context.Context, locationName string, oldPlayerName string, newPlayerName string) models.Result[*mongo.UpdateResult]{
 	//Filter first for the location, and then for the player in the "users" array field.
