@@ -31,26 +31,12 @@ func (m *MongoPlayerCardRepository) UpdatePlayerName(ctx context.Context, locati
 
 //Add a single player to a given location.
 func (m *MongoPlayerCardRepository) AddPlayerToLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]{
-	filter := bson.M{ "location_name": locationName }
-	update := bson.M{ "$push": bson.M{"users": bson.M{"name": playerName} } }
- 	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
-
-	if err != nil{
-		return models.Result[*mongo.UpdateResult]{ Err: err, StatusCode: http.StatusInternalServerError }
-	}
-
-	if updateOneResult.ModifiedCount == 0 {
-		return models.Result[*mongo.UpdateResult]{ 
-			Err: fmt.Errorf("no location \"%s\" found", locationName), 
-			StatusCode: http.StatusNotFound,
-		}
-	}
-
-	return models.Result[*mongo.UpdateResult]{ ResultData: updateOneResult, StatusCode: http.StatusOK }
+	return m.updateHelper(ctx, push, locationName, playerName)
 }
 
+//Remove a single player from a given location.
 func (m *MongoPlayerCardRepository) RemovePlayerFromLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]{
-	return models.Result[*mongo.UpdateResult]{}
+	return m.updateHelper(ctx, pull, locationName, playerName)
 }
 
 func (m *MongoPlayerCardRepository) updateHelper(ctx context.Context, mongoOperator string, locationName string, playerName string) models.Result[*mongo.UpdateResult]{
