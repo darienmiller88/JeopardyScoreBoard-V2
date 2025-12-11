@@ -25,6 +25,7 @@ type MongoPlayerCardRepository struct{
 	locationCollection *mongo.Collection
 }
 
+//Receive new Instance of MongoPlayerCardRepository.
 func GetNewMongoPlayerCardRepository(newCollection *mongo.Collection) *MongoPlayerCardRepository{
 	return &MongoPlayerCardRepository{ locationCollection: newCollection }
 }
