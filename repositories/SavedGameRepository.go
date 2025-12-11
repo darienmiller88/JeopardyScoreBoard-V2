@@ -73,7 +73,16 @@ func (m *MongoSavedGameRepository) GetAllSavedGamesFromLocation(ctx context.Cont
 
 //Delete a saved game
 func (m *MongoSavedGameRepository) DeleteSavedGame(ctx context.Context, savedGameId primitive.ObjectID) models.Result[*mongo.DeleteResult]{
-	return models.Result[*mongo.DeleteResult]{}
+	deleteResult, err := m.savedGameCollection.DeleteOne(ctx, bson.M{
+		"_id": savedGameId,
+	})
+
+	//Try deleting a saved game by id, and add an error if it fails.
+	if err != nil {
+		return models.Result[*mongo.DeleteResult]{ Err: err, StatusCode: http.StatusBadRequest }
+	}
+
+	return models.Result[*mongo.DeleteResult]{ ResultData: deleteResult, StatusCode: http.StatusOK }
 }
 
 //Add a new saved game
