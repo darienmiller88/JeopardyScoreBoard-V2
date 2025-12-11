@@ -82,10 +82,21 @@ func (m *MongoSavedGameRepository) DeleteSavedGame(ctx context.Context, savedGam
 		return models.Result[*mongo.DeleteResult]{ Err: err, StatusCode: http.StatusBadRequest }
 	}
 
+	//Return the delete result and a 200
 	return models.Result[*mongo.DeleteResult]{ ResultData: deleteResult, StatusCode: http.StatusOK }
 }
 
 //Add a new saved game
 func (m *MongoSavedGameRepository) AddSavedGame(ctx context.Context, savedGame models.SavedGame) models.Result[models.SavedGame]{
-	return models.Result[models.SavedGame]{}
+	insertResult, err := m.savedGameCollection.InsertOne(ctx, &savedGame)
+
+	if err != nil{ 
+		return models.Result[models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+	}
+	
+	//Finally, attach the id of the newly created saved game.
+	savedGame.ID = insertResult.InsertedID.(primitive.ObjectID)
+	
+	//And return the saved game with its id along with a 200.
+	return models.Result[models.SavedGame]{ ResultData: savedGame, StatusCode: http.StatusOK }
 }
