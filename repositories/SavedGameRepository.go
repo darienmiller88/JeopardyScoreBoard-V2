@@ -39,10 +39,7 @@ func (m *MongoSavedGameRepository) GetAllSavedGames(ctx context.Context) models.
 
 	//Unmarshall the mongo cursor into the array of saved games.
 	if err := findResult.All(ctx, &savedGames); err != nil{
-		return models.Result[[]models.SavedGame]{
-			Err: err,
-			StatusCode: http.StatusInternalServerError,
-		}
+		return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
 	}
 
 	//Return the retrieved saved games.
@@ -51,7 +48,27 @@ func (m *MongoSavedGameRepository) GetAllSavedGames(ctx context.Context) models.
 
 //Get all saved games played at a specific location.
 func (m *MongoSavedGameRepository) GetAllSavedGamesFromLocation(ctx context.Context, locationName string) models.Result[[]models.SavedGame]{
-	return models.Result[[]models.SavedGame]{}
+	savedGames      := []models.SavedGame{}
+	findResult, err := m.savedGameCollection.Find(ctx, bson.D{
+		{ Key: "location_name", Value: locationName },
+	})
+	
+	//If finding all saved games from a certain location fails, send back the proper error.
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusNotFound }
+		} 
+
+		return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+	}
+
+	//Try and marshall all of the saved game documents in the saved games array, and send an error if it fails.
+	if err := findResult.All(ctx, &savedGames); err != nil{
+		return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+	}
+
+	//After checking for all error possibilities after retrieving all saved games, send back the data and a 200
+	return models.Result[[]models.SavedGame]{ ResultData: savedGames, StatusCode: http.StatusOK }	
 }
 
 //Delete a saved game
