@@ -11,10 +11,10 @@ import (
 )
 
 type SavedGameRepository interface {
-	GetAllSavedGames(ctx context.Context) models.Result[[]models.SavedGame]
 	GetAllSavedGamesFromLocation(ctx context.Context, locationName string) models.Result[[]models.SavedGame]
-	DeleteSavedGame(ctx context.Context, savedGameId primitive.ObjectID) models.Result[*mongo.DeleteResult]
-	AddSavedGame(ctx context.Context, savedGame models.SavedGame) models.Result[models.SavedGame]
+	DeleteSavedGame(ctx context.Context, savedGameId primitive.ObjectID)   models.Result[*mongo.DeleteResult]
+	AddSavedGame(ctx context.Context, savedGame models.SavedGame)          models.Result[models.SavedGame]
+	GetAllSavedGames(ctx context.Context)                                  models.Result[[]models.SavedGame]
 }
 
 type MongoSavedGameRepository struct{
