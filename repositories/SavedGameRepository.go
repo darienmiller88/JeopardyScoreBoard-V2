@@ -5,14 +5,13 @@ import (
 	"context"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type SavedGameRepository interface {
 	GetAllSavedGamesFromLocation(ctx context.Context, locationName string) models.Result[[]models.SavedGame]
-	DeleteSavedGame(ctx context.Context, savedGameId primitive.ObjectID)   models.Result[*mongo.DeleteResult]
+	DeleteSavedGame(ctx context.Context, savedGameId bson.ObjectID)   models.Result[*mongo.DeleteResult]
 	AddSavedGame(ctx context.Context, savedGame models.SavedGame)          models.Result[models.SavedGame]
 	GetAllSavedGames(ctx context.Context)                                  models.Result[[]models.SavedGame]
 }
@@ -72,7 +71,7 @@ func (m *MongoSavedGameRepository) GetAllSavedGamesFromLocation(ctx context.Cont
 }
 
 //Delete a saved game
-func (m *MongoSavedGameRepository) DeleteSavedGame(ctx context.Context, savedGameId primitive.ObjectID) models.Result[*mongo.DeleteResult]{
+func (m *MongoSavedGameRepository) DeleteSavedGame(ctx context.Context, savedGameId bson.ObjectID) models.Result[*mongo.DeleteResult]{
 	deleteResult, err := m.savedGameCollection.DeleteOne(ctx, bson.M{
 		"_id": savedGameId,
 	})
@@ -95,7 +94,7 @@ func (m *MongoSavedGameRepository) AddSavedGame(ctx context.Context, savedGame m
 	}
 	
 	//Finally, attach the id of the newly created saved game.
-	savedGame.ID = insertResult.InsertedID.(primitive.ObjectID)
+	savedGame.ID = insertResult.InsertedID.(bson.ObjectID)
 	
 	//And return the saved game with its id along with a 200.
 	return models.Result[models.SavedGame]{ ResultData: savedGame, StatusCode: http.StatusOK }

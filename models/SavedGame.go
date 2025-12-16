@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/go-ozzo/ozzo-validation/v4"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type SavedGame struct {
-	ID            primitive.ObjectID `bson:"_id,omitempty"` // The MongoDB document ID
+	ID            bson.ObjectID `bson:"_id,omitempty"` // The MongoDB document ID
 	CreatedAt     time.Time          `bson:"created_at"`
 	UpdatedAt     time.Time          `bson:"updated_at"`
 	LocationName  string			 `bson:"location_name"`
