@@ -10,6 +10,7 @@ import (
 )
 
 var client *mongo.Client
+
 const (
 	databaseName string = "AdaptDB"
 	locationsCollection string = "locations"

@@ -29,4 +29,3 @@ func (s *SaveGameService) AddSavedGame(ctx context.Context, savedGame models.Sav
 func (s *SaveGameService) DeleteSavedGame(ctx context.Context, savedGameId bson.ObjectID) models.Result[*mongo.DeleteResult]{
 	return s.Repository.DeleteSavedGame(ctx, savedGameId)
 }
-
