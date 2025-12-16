@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,7 +11,6 @@ import (
 
 	"JeopardyScoreBoardV2/controllers"
 	"JeopardyScoreBoardV2/database"
-	"JeopardyScoreBoardV2/repositories"
 )
 
 
@@ -33,17 +31,6 @@ func main(){
 	//Initialize the parent controller router, and its children
 	index := controllers.Index{}
 	index.Init()
-
-	locationRepo := repositories.GetMongoLocationCollection(database.GetLocationsCollection())
-	result := locationRepo.GetAllLocations(context.Background())
-
-	if result.Err != nil{
-		fmt.Println("repo doesnt work:", result.Err)
-	}else{
-		fmt.Println("rresult:", result.ResultData)
-
-	}
-
 
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
