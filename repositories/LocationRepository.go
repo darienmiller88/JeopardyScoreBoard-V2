@@ -1,17 +1,18 @@
 package repositories
 
 import (
+	"JeopardyScoreBoardV2/database"
 	"JeopardyScoreBoardV2/models"
 	"context"
 	"fmt"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-//LocationRepository interface to allow mocking when testing the service. The test can provide the service 
-//a dummy implementation 
+//LocationRepository interface to allow mocking when testing the service. The test can provide the service
+//a dummy implementation
 type LocationRepository interface{
 	GetLocation(ctx context.Context, locationName string) models.Result[models.Location]
 	GetAllLocations(ctx context.Context)                  models.Result[[]models.Location]
@@ -28,7 +29,7 @@ func GetMongoLocationCollection(newCollection *mongo.Collection) *MongoLocationR
 
 //Retrieve all Locations from database
 func (m *MongoLocationRepository) GetAllLocations(ctx context.Context) models.Result[[]models.Location]{
-	findResult, err := m.locationCollection.Find(ctx, bson.D{})
+	findResult, err := database.GetLocationsCollection().Find(ctx, bson.D{})
 
 	if err != nil {
 		return models.Result[[]models.Location]{ StatusCode: http.StatusInternalServerError, Err: err }

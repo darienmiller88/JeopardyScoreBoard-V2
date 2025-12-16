@@ -19,8 +19,7 @@ const (
 func Init() {
 	var err error
 
-	uri := os.Getenv("MONGO_URI")
-	client, err := mongo.Connect(options.Client().ApplyURI(uri))
+	client, err = mongo.Connect(options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 	
 	if err != nil {
 		panic(err)

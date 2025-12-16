@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -28,7 +27,7 @@ func AddNewAdaptLocation(req *http.Request, location models.Location) models.Res
 		return locationResult
 	}
 	
-	location.ID = insertOneResult.InsertedID.(primitive.ObjectID)
+	location.ID = insertOneResult.InsertedID.(bson.ObjectID)
 	locationResult.ResultData = location
 	locationResult.StatusCode = http.StatusOK
 
