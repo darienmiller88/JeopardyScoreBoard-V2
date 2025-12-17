@@ -11,7 +11,7 @@ import (
 
 type SavedGameRepository interface {
 	GetAllSavedGamesFromLocation(ctx context.Context, locationName string) models.Result[[]models.SavedGame]
-	DeleteSavedGame(ctx context.Context, savedGameId bson.ObjectID)   models.Result[*mongo.DeleteResult]
+	DeleteSavedGame(ctx context.Context, savedGameId bson.ObjectID)        models.Result[*mongo.DeleteResult]
 	AddSavedGame(ctx context.Context, savedGame models.SavedGame)          models.Result[models.SavedGame]
 	GetAllSavedGames(ctx context.Context)                                  models.Result[[]models.SavedGame]
 }
