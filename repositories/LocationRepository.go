@@ -16,6 +16,7 @@ import (
 type LocationRepository interface{
 	GetPlayersFromLocation(ctx context.Context, locationName string) models.Result[[]models.PlayerCard]
 	GetLocation(ctx context.Context, locationName string)            models.Result[models.Location]
+	GetAllPlayersFromAllLocations(ctx context.Context)               models.Result[[]models.PlayerCard]
 	GetAllLocations(ctx context.Context)                             models.Result[[]models.Location]
 }
 
