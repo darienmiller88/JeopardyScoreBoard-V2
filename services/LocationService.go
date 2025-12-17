@@ -17,6 +17,15 @@ func (l *LocationService) GetAllLocations(ctx context.Context) models.Result[[]m
 func (l *LocationService) GetLocation(ctx context.Context, locationName string) models.Result[models.Location]{
 	return l.Repository.GetLocation(ctx, locationName)
 }
+
+func (l *LocationService) GetPlayersFromLocation(ctx context.Context, locationName string) models.Result[[]models.PlayerCard]{
+	return l.Repository.GetPlayersFromLocation(ctx, locationName)
+}
+
+func (l *LocationService) GetAllPlayersFromAllLocations(ctx context.Context) models.Result[[]models.PlayerCard]{
+	return l.Repository.GetAllPlayersFromAllLocations(ctx)
+}
+
 //Add a new adapt location, which for now, I will not expose.
 // func AddNewAdaptLocation(req *http.Request, location models.Location) models.Result[models.Location]{
 // 	insertOneResult, err := database.GetLocationsCollection().InsertOne(req.Context(), location)
