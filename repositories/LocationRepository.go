@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
+
 //LocationRepository interface to allow mocking when testing the service. The test can provide the service
 //a dummy implementation
 type LocationRepository interface{
@@ -32,35 +33,54 @@ func (m *MongoLocationRepository) GetAllLocations(ctx context.Context) models.Re
 	findResult, err := m.locationCollection.Find(ctx, bson.D{})
 
 	if err != nil {
-		return models.Result[[]models.Location]{ StatusCode: http.StatusInternalServerError, Err: err }
+		return GetResult(err, http.StatusInternalServerError, []models.Location{})
 	}
 
 	locations := []models.Location{}
 
 	if err := findResult.All(ctx, &locations); err != nil {
-		return models.Result[[]models.Location]{ StatusCode: http.StatusInternalServerError, Err: err }
+		return GetResult(err, http.StatusInternalServerError, []models.Location{})
 	}
 
-	return models.Result[[]models.Location]{ StatusCode: http.StatusOK, ResultData: locations }
+	return GetResult(nil, http.StatusOK, locations)
 }
 
 //Get one location from the database
 func (m *MongoLocationRepository) GetLocation(ctx context.Context, locationName string) models.Result[models.Location]{
 	location := models.Location{}
-	err      := m.locationCollection.FindOne(
-		ctx, 
-		bson.D{{Key: "location_name", Value: locationName}},
-	).Decode(&location)
+	err      := m.locationCollection.FindOne(ctx, bson.D{{Key: "location_name", Value: locationName}}).Decode(&location)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			err := fmt.Errorf("location \"%s\" does not exist. Please try another one", locationName)
 			
-			return models.Result[models.Location]{ Err: err, StatusCode: http.StatusNotFound }
+			return GetResult(err, http.StatusNotFound, models.Location{})
 		} 
 
-		return models.Result[models.Location]{ Err: err, StatusCode: http.StatusInternalServerError }
+		return GetResult(err, http.StatusInternalServerError, models.Location{})
 	}
 
-	return models.Result[models.Location]{ ResultData: location, StatusCode: http.StatusOK }
+	return GetResult(nil, http.StatusOK, location)
+}
+
+//Return the array of players from a particular location
+func (m *MongoLocationRepository) GetPlayersFromLocation(ctx context.Context, locationName string) models.Result[[]models.PlayerCard]{
+	locationResult := m.GetLocation(ctx, locationName)
+
+	//Return the error from the above call if an error occurs
+	if locationResult.Err != nil {
+		return GetResult(locationResult.Err, http.StatusInternalServerError, []models.PlayerCard{})
+	}
+
+	//IF not, return all of the players for for that location.
+	return GetResult(nil, http.StatusOK, locationResult.ResultData.Players)
+}
+
+//Helper function to allow repos to send result payloads with less text.
+func GetResult[T any](err error, statusCode int, payload T) models.Result[T] {
+	return models.Result[T]{
+		StatusCode: statusCode,
+		Err: err,
+		ResultData: payload,
+	}
 }
