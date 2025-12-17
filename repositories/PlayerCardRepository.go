@@ -40,10 +40,10 @@ func (m *MongoPlayerCardRepository) UpdatePlayerName(ctx context.Context, locati
 	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
 
 	if err != nil{
-		return models.Result[*mongo.UpdateResult]{ Err: err, StatusCode: http.StatusInternalServerError }
+		return getResult(err, http.StatusInternalServerError, &mongo.UpdateResult{})
 	}
 
-	return models.Result[*mongo.UpdateResult]{ ResultData: updateOneResult, StatusCode: http.StatusOK }
+	return getResult(nil, http.StatusOK, updateOneResult)
 }
 
 //Add a single player to a given location.

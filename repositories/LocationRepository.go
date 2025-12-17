@@ -33,16 +33,16 @@ func (m *MongoLocationRepository) GetAllLocations(ctx context.Context) models.Re
 	findResult, err := m.locationCollection.Find(ctx, bson.D{})
 
 	if err != nil {
-		return GetResult(err, http.StatusInternalServerError, []models.Location{})
+		return getResult(err, http.StatusInternalServerError, []models.Location{})
 	}
 
 	locations := []models.Location{}
 
 	if err := findResult.All(ctx, &locations); err != nil {
-		return GetResult(err, http.StatusInternalServerError, []models.Location{})
+		return getResult(err, http.StatusInternalServerError, []models.Location{})
 	}
 
-	return GetResult(nil, http.StatusOK, locations)
+	return getResult(nil, http.StatusOK, locations)
 }
 
 //Get one location from the database
@@ -54,13 +54,13 @@ func (m *MongoLocationRepository) GetLocation(ctx context.Context, locationName 
 		if err == mongo.ErrNoDocuments {
 			err := fmt.Errorf("location \"%s\" does not exist. Please try another one", locationName)
 			
-			return GetResult(err, http.StatusNotFound, models.Location{})
+			return getResult(err, http.StatusNotFound, models.Location{})
 		} 
 
-		return GetResult(err, http.StatusInternalServerError, models.Location{})
+		return getResult(err, http.StatusInternalServerError, models.Location{})
 	}
 
-	return GetResult(nil, http.StatusOK, location)
+	return getResult(nil, http.StatusOK, location)
 }
 
 //Return the array of players from a particular location
@@ -69,15 +69,15 @@ func (m *MongoLocationRepository) GetPlayersFromLocation(ctx context.Context, lo
 
 	//Return the error from the above call if an error occurs
 	if locationResult.Err != nil {
-		return GetResult(locationResult.Err, http.StatusInternalServerError, []models.PlayerCard{})
+		return getResult(locationResult.Err, http.StatusInternalServerError, []models.PlayerCard{})
 	}
 
 	//IF not, return all of the players for for that location.
-	return GetResult(nil, http.StatusOK, locationResult.ResultData.Players)
+	return getResult(nil, http.StatusOK, locationResult.ResultData.Players)
 }
 
 //Helper function to allow repos to send result payloads with less text.
-func GetResult[T any](err error, statusCode int, payload T) models.Result[T] {
+func getResult[T any](err error, statusCode int, payload T) models.Result[T] {
 	return models.Result[T]{
 		StatusCode: statusCode,
 		Err: err,
