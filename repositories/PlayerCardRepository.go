@@ -62,16 +62,13 @@ func (m *MongoPlayerCardRepository) updateHelper(ctx context.Context, mongoOpera
  	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
 
 	if err != nil{		
-		return models.Result[*mongo.UpdateResult]{Err: err, StatusCode: http.StatusInternalServerError}
+		return getResult(err, http.StatusInternalServerError, &mongo.UpdateResult{})
 	}
 
 	//If there were no documents modified, return an error and 404 signaling this.
 	if updateOneResult.ModifiedCount == 0 {
-		return models.Result[*mongo.UpdateResult]{
-			Err: fmt.Errorf("no location \"%s\" found", locationName),
-			StatusCode: http.StatusNotFound,
-		}
+		return getResult(fmt.Errorf("no location \"%s\" found", locationName), http.StatusInternalServerError, &mongo.UpdateResult{})
 	}
 
-	return models.Result[*mongo.UpdateResult]{ ResultData: updateOneResult, StatusCode: http.StatusOK }
+	return getResult(nil, http.StatusOK, updateOneResult)
 }
