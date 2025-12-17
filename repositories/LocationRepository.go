@@ -77,6 +77,25 @@ func (m *MongoLocationRepository) GetPlayersFromLocation(ctx context.Context, lo
 	return getResult(nil, http.StatusOK, locationResult.ResultData.Players)
 }
 
+//Return every single player at every single location.
+func (m *MongoLocationRepository) GetAllPlayersFromAllLocations(ctx context.Context) models.Result[[]models.PlayerCard]{
+	locationsResult := m.GetAllLocations(ctx)	
+
+	if locationsResult.Err != nil {
+		return getResult(locationsResult.Err, locationsResult.StatusCode, []models.PlayerCard{})
+	}
+
+	players := []models.PlayerCard{}
+
+	//Range over each location, and extract all of the players for each location.
+	for _, location := range locationsResult.ResultData {
+		players = append(players, location.Players...)
+	}
+
+	//Return the list of all players in the database.
+	return getResult(nil, http.StatusOK, players)
+}
+
 //Helper function to allow repos to send result payloads with less text.
 func getResult[T any](err error, statusCode int, payload T) models.Result[T] {
 	return models.Result[T]{
