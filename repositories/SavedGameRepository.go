@@ -31,43 +31,41 @@ func (m *MongoSavedGameRepository) GetAllSavedGames(ctx context.Context) models.
 	
 	//If there was an error retrieving all documents, return the error, and a 500
 	if err != nil {
-		return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
 
 	savedGames := []models.SavedGame{}
 
 	//Unmarshall the mongo cursor into the array of saved games.
 	if err := findResult.All(ctx, &savedGames); err != nil{
-		return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
 
 	//Return the retrieved saved games.
-	return models.Result[[]models.SavedGame]{ ResultData: savedGames, StatusCode: http.StatusOK }
+	return getResult(nil, http.StatusOK, savedGames)
 }
 
 //Get all saved games played at a specific location.
 func (m *MongoSavedGameRepository) GetAllSavedGamesFromLocation(ctx context.Context, locationName string) models.Result[[]models.SavedGame]{
 	savedGames      := []models.SavedGame{}
-	findResult, err := m.savedGameCollection.Find(ctx, bson.D{
-		{ Key: "location_name", Value: locationName },
-	})
+	findResult, err := m.savedGameCollection.Find(ctx, bson.D{{ Key: "location_name", Value: locationName }})
 	
 	//If finding all saved games from a certain location fails, send back the proper error.
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusNotFound }
+			return getResult(err, http.StatusNotFound, []models.SavedGame{})
 		} 
 
-		return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
 
 	//Try and marshall all of the saved game documents in the saved games array, and send an error if it fails.
 	if err := findResult.All(ctx, &savedGames); err != nil{
-		return models.Result[[]models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
 
 	//After checking for all error possibilities after retrieving all saved games, send back the data and a 200
-	return models.Result[[]models.SavedGame]{ ResultData: savedGames, StatusCode: http.StatusOK }	
+	return getResult(nil, http.StatusOK, savedGames)
 }
 
 //Delete a saved game
@@ -78,11 +76,11 @@ func (m *MongoSavedGameRepository) DeleteSavedGame(ctx context.Context, savedGam
 
 	//Try deleting a saved game by id, and add an error if it fails.
 	if err != nil {
-		return models.Result[*mongo.DeleteResult]{ Err: err, StatusCode: http.StatusBadRequest }
+		return getResult(err, http.StatusInternalServerError, &mongo.DeleteResult{})
 	}
 
 	//Return the delete result and a 200
-	return models.Result[*mongo.DeleteResult]{ ResultData: deleteResult, StatusCode: http.StatusOK }
+	return getResult(nil, http.StatusOK, deleteResult)
 }
 
 //Add a new saved game
@@ -90,12 +88,12 @@ func (m *MongoSavedGameRepository) AddSavedGame(ctx context.Context, savedGame m
 	insertResult, err := m.savedGameCollection.InsertOne(ctx, &savedGame)
 
 	if err != nil{ 
-		return models.Result[models.SavedGame]{ Err: err, StatusCode: http.StatusInternalServerError }
+		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 	
 	//Finally, attach the id of the newly created saved game.
 	savedGame.ID = insertResult.InsertedID.(bson.ObjectID)
 	
 	//And return the saved game with its id along with a 200.
-	return models.Result[models.SavedGame]{ ResultData: savedGame, StatusCode: http.StatusOK }
+	return getResult(nil, http.StatusOK, savedGame)
 }
