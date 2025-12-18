@@ -40,6 +40,9 @@ func (m *MongoPlayerCardRepository) UpdatePlayerName(ctx context.Context, locati
 	updateOneResult, err := m.locationCollection.UpdateOne(ctx, filter, update)
 
 	if err != nil{
+		if err == mongo.ErrNoDocuments {
+			return getResult(err, int(http.StatusNotFound), &mongo.UpdateResult{})
+		}
 		return getResult(err, http.StatusInternalServerError, &mongo.UpdateResult{})
 	}
 
