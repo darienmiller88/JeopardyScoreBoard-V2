@@ -12,6 +12,6 @@ type PlayerCard struct{
 func (p *PlayerCard) Validate() error{
 	return validation.ValidateStruct(
 		p,
-		validation.Field(&p.Name, ),
+		validation.Field(&p.Name, validation.Length(3, 31)),
 	)
 }
