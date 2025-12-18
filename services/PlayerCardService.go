@@ -42,13 +42,6 @@ func (p *PlayerCardService) UpdatePlayerName(ctx context.Context, locationName s
 	if locationResult.Err != nil {
 		return models.Result[*mongo.UpdateResult]{ Err: locationResult.Err,StatusCode: http.StatusNotFound }
 	}
-
-	//Validate the old name to check to see if it actually exists the ADAPT location
-	if !slices.Contains(locationResult.ResultData.Players, models.PlayerCard{ Name: playerNames.OldPlayerName }) {		
-		err := fmt.Errorf("player '%s' at location '%s' does not exist", playerNames.OldPlayerName, locationName)
-
-		return models.Result[*mongo.UpdateResult]{ Err: err, StatusCode: http.StatusNotFound }
-	}
 	
 	//Check to see if the new name the client is trying to send is already taken.
 	if slices.Contains(locationResult.ResultData.Players, models.PlayerCard{ Name: playerNames.NewPlayerName }) {
@@ -57,6 +50,8 @@ func (p *PlayerCardService) UpdatePlayerName(ctx context.Context, locationName s
 		return models.Result[*mongo.UpdateResult]{ Err: err, StatusCode: http.StatusConflict }
 	}
 	
+	//Finally, after checking to see if the names aren't blank, the new name is 3 < x < 31, and the new name
+	//isn't taken, change the old name to the new name.
 	return p.PlayerCardRepository.UpdatePlayerName(ctx, locationName, oldPlayerName, newPlayerName)
 }
 
