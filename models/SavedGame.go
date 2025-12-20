@@ -51,9 +51,6 @@ func (s *SavedGame) Validate() error{
 
 			//Afterwards, enforce a requirement for the players field when there is no Teams field
 			validation.Required.When(s.Teams == nil).Error("Must include at least one player"), 
-
-			//When both checks pass, validate each player the client sent 
-			validation.By(s.validatePlayers),
 		),
 	)
 }
@@ -123,40 +120,6 @@ func (s *SavedGame) validatePlayersAndTeams(field interface{}) error{
 	}
 
 	return nil
-}
-
-//Validate each player in the array of players to gurauntee they all exist as real players in the database.
-func (s *SavedGame) validatePlayers(field interface{}) error{
-	if s.Players != nil {
-		locations, err := getLocations()
-
-		if err != nil {
-			return err
-		}
-
-		players := []PlayerCard{}
-
-		//Extract all of the players from all of the locations
-		for _, location := range locations {
-			players = append(players, location.Players...)
-		}
-
-		uniquePlayerNames := make(map[string]int)
-
-		//Add each player to a map for easier indexing when comparing the list players sent here by the client.
-		for _, player := range players{
-			uniquePlayerNames[player.Name] = 0
-		}
-
-		//Check to see if any player in the list of players sent by the client exists.
-		for _, player := range *s.Players{
-			if _, exists := uniquePlayerNames[player.Name]; !exists {
-				return fmt.Errorf("player '%s' does not exist", player.Name)
-			}
-		}
-	}	
-
-	return  nil
 }
 
 func (s *SavedGame) validateLocationName(field interface{}) error {
