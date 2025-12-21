@@ -4,7 +4,7 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4"
 )
 
-type PlayerCard struct{
+type PlayerCard struct{ 
 	Score int    `bson:"score"` 
 	Name  string `bson:"name"`
 }
