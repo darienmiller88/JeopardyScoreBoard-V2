@@ -5,17 +5,39 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
+
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var client *mongo.Client
+var db *sqlx.DB
 
 const (
 	databaseName string = "AdaptDB"
 	locationsCollection string = "locations"
 	savedGamesCollection string = "saved_games"
 )
+
+func InitSQL(){
+	_db, err := sqlx.Connect("postgres", os.Getenv("POSTGRES_URL"))
+
+	if err != nil{
+		panic(err)
+	}
+
+	err = _db.Ping()
+
+	if err != nil {
+		fmt.Println("db connection fail:", err)
+	}else{
+		fmt.Println("Connection established! :)")
+	}
+
+	db = _db
+}
 
 func Init() {
 	var err error

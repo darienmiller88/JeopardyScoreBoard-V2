@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS SavedGames(
     -- table specific fields
     winner VARCHAR(60) NOT NULL,
     total_score INT NOT NULL,
-    average_score DOUBLE PRECISION NOT NULL,
+    average_score DECIMAL NOT NULL,
     is_team_game BOOLEAN NOT NULL,
  
     -- foreign key 

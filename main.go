@@ -28,6 +28,8 @@ func main(){
 	database.Init()
 	defer database.DisconnectClient()
 
+	database.InitSQL()
+
 	//Initialize the parent controller router, and its children
 	index := controllers.Index{}
 	index.Init()
