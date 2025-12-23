@@ -12,11 +12,14 @@ CREATE TABLE IF NOT EXISTS Teams(
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    -- Foreign key
-    location_id UUID NOT NULL UNIQUE
+    -- Foreign key (UNIQUE ensures one team per location)
+    location_id UUID NOT NULL UNIQUE,
 
     -- constraint
-    FOREIGN KEY (location_id) REFERENCES Locations(id) ON DELETE CASCADE
+    FOREIGN KEY (location_id) REFERENCES Locations(id) ON DELETE CASCADE,
+    
+    -- Explicit composite unique constraint for the foreign key reference
+    UNIQUE (id, location_id)
 );
 
 CREATE TABLE IF NOT EXISTS SavedGames(
@@ -33,7 +36,7 @@ CREATE TABLE IF NOT EXISTS SavedGames(
     -- foreign key 
     location_id UUID NOT NULL,
 
-    --Constraint
+    -- Constraint
     FOREIGN KEY (location_id) REFERENCES Locations(id) ON DELETE CASCADE
 );
 
@@ -43,7 +46,7 @@ CREATE TABLE IF NOT EXISTS Players(
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     -- Table specific fields
-    player_name varchar(60) NOT NULL,
+    player_name VARCHAR(60) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     left_at TIMESTAMPTZ,
 
@@ -52,6 +55,7 @@ CREATE TABLE IF NOT EXISTS Players(
     team_id UUID,
 
     -- Constraints
+    FOREIGN KEY (location_id) REFERENCES Locations(id) ON DELETE CASCADE,
     FOREIGN KEY (team_id, location_id) REFERENCES Teams(id, location_id)
 );
 
@@ -66,7 +70,10 @@ CREATE TABLE IF NOT EXISTS GameParticipation(
     team_id UUID,
 
     -- Constraints
-    FOREIGN KEY (saved_game_id) REFERENCES SavedGames(id) ON DELETE CASCADE
-    FOREIGN KEY (player_id) REFERENCES Players(id)
-    FOREIGN KEY (team_id) REFERENCES Teams(id)
+    FOREIGN KEY (saved_game_id) REFERENCES SavedGames(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES Players(id),
+    FOREIGN KEY (team_id) REFERENCES Teams(id),
+    
+    -- Prevent duplicate participations
+    UNIQUE (saved_game_id, player_id)
 );

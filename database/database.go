@@ -22,7 +22,7 @@ const (
 )
 
 func InitSQL(){
-	_db, err := sqlx.Connect("postgres", os.Getenv("POSTGRES_URL"))
+	_db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 
 	if err != nil{
 		panic(err)
@@ -67,6 +67,12 @@ func GetSavedGamesCollections() *mongo.Collection {
 
 func DisconnectClient(){
 	if err := client.Disconnect(context.TODO()); err != nil{
+		panic(err)
+	}
+}
+
+func CloseSQLDB(){
+	if err := db.Close(); err != nil{
 		panic(err)
 	}
 }
