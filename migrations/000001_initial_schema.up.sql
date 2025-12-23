@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS Locations(
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     -- field name
-    location_name VARCHAR(60)
+    location_name VARCHAR(60) 
 );
 
 CREATE TABLE IF NOT EXISTS Teams(

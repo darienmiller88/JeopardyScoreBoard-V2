@@ -1,0 +1,1 @@
+ALTER TABLE locations DROP CONSTRAINT IF EXISTS locations_location_name_key;
