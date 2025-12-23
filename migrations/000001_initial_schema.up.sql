@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS Locations(
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS Locations(
 );
 
 CREATE TABLE IF NOT EXISTS Teams(
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     -- Foreign key (UNIQUE ensures one team per location)
-    location_id UUID NOT NULL UNIQUE,
+    location_id SERIAL NOT NULL UNIQUE,
 
     -- constraint
     FOREIGN KEY (location_id) REFERENCES Locations(id) ON DELETE CASCADE,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS Teams(
 );
 
 CREATE TABLE IF NOT EXISTS SavedGames(
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -34,14 +34,14 @@ CREATE TABLE IF NOT EXISTS SavedGames(
     is_team_game BOOLEAN NOT NULL,
  
     -- foreign key 
-    location_id UUID NOT NULL,
+    location_id SERIAL NOT NULL,
 
     -- Constraint
     FOREIGN KEY (location_id) REFERENCES Locations(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Players(
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS Players(
     left_at TIMESTAMPTZ,
 
     -- Foreign keys
-    location_id UUID NOT NULL,
-    team_id UUID,
+    location_id SERIAL NOT NULL,
+    team_id SERIAL,
 
     -- Constraints
     FOREIGN KEY (location_id) REFERENCES Locations(id) ON DELETE CASCADE,
@@ -60,14 +60,14 @@ CREATE TABLE IF NOT EXISTS Players(
 );
 
 CREATE TABLE IF NOT EXISTS GameParticipation(
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     -- Table specific fields
-    saved_game_id UUID NOT NULL,
-    player_id UUID NOT NULL,
-    team_id UUID,
+    saved_game_id SERIAL NOT NULL,
+    player_id SERIAL NOT NULL,
+    team_id SERIAL,
 
     -- Constraints
     FOREIGN KEY (saved_game_id) REFERENCES SavedGames(id) ON DELETE CASCADE,

@@ -13,7 +13,6 @@ import (
 	"JeopardyScoreBoardV2/database"
 )
 
-
 func main(){
 	//Load env file immediately at the start of the program
 	godotenv.Load()
