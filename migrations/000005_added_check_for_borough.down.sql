@@ -1,1 +1,0 @@
-ALTER TABLE locations DROP CONSTRAINT borough_check;
