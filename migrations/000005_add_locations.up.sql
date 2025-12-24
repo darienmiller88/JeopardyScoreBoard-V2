@@ -1,1 +1,0 @@
-INSERT INTO Locations VALUES(location_name) VALUES ('Manhattan')
