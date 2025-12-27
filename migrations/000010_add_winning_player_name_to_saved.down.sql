@@ -1,0 +1,1 @@
+ALTER TABLE savedgamesplayers DROP COLUMN winning_player_name;
