@@ -43,7 +43,7 @@ func (s *SaveGameService) DeleteSavedGame(ctx context.Context, savedGameId bson.
 }
 
 //Validate each player in the array of players to gurauntee they all exist as real players in the database.
-func (s *SaveGameService) validatePlayers(ctx context.Context, playersToValidate []models.PlayerCard) error{
+func (s *SaveGameService) validatePlayers(ctx context.Context, playersToValidate []models.Player) error{
 	locationsResult := s.LocationRepository.GetAllLocations()
 
 	if locationsResult.Err != nil {

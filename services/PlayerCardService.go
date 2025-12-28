@@ -11,7 +11,7 @@ import (
 )
 
 type PlayerCardService struct{
-	PlayerCardRepository repositories.PlayerCardRepository
+	PlayerCardRepository repositories.PlayerRepository
 	LocationRepository repositories.LocationRepository
 }
 

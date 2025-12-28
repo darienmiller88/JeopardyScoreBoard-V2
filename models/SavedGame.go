@@ -14,11 +14,11 @@ type SavedGame struct {
 	CreatedAt     time.Time          `bson:"created_at"`
 	UpdatedAt     time.Time          `bson:"updated_at"`
 	LocationName  string			 `bson:"location_name"`
-	Players       *[]PlayerCard      `bson:",omitempty"`
+	Players       *[]Player      `bson:",omitempty"`
 	Teams         *[]Team            `bson:",omitempty"`
 	TotalPoints   int 			     `bson:"total_points"`
 	AveragePoints float64            `bson:"average_points"`
-	Winner        PlayerCard         `bson:"winner"`
+	Winner        Player         `bson:"winner"`
 }
 
 func (s *SavedGame) Validate() error{

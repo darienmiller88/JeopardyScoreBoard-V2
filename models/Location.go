@@ -17,7 +17,7 @@ type Location struct {
 	LocationName string     `bson:"location_name"`
 
 	//Here are all of the users that played in the game.
-	Players     []PlayerCard `bson:"users"`
+	Players     []Player `bson:"users"`
 }
 
 func (l *Location) InitCreatedAtAndUpdatedAt(){
@@ -25,7 +25,7 @@ func (l *Location) InitCreatedAtAndUpdatedAt(){
 	l.UpdatedAt = time.Now()
 
 	//If this field is not initialized, it is interpreted as "null" by mongoDB, and not an empty array.
-	l.Players = []PlayerCard{}
+	l.Players = []Player{}
 }
 
 func (l *Location) Validate() error{
