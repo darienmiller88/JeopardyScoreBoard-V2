@@ -16,9 +16,11 @@ const(
 )
 
 type PlayerCardRepository interface {
-	UpdatePlayerName(ctx context.Context, locationName string, oldPlayerName string, newPlayerName string) models.Result[*mongo.UpdateResult]
-	AddPlayerToLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]
-	RemovePlayerFromLocation(ctx context.Context, locationName string, playerName string) models.Result[*mongo.UpdateResult]
+	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[string]
+	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[string]
+	AddPlayerToLocation(locationName string, playerName string)                       models.Result[string]
+	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.PlayerCard]
+	GetAllPlayersFromAllLocations()                                                   models.Result[[]models.PlayerCard]
 }
 
 type MongoPlayerCardRepository struct{
