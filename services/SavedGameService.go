@@ -24,17 +24,6 @@ func (s *SaveGameService) GetAllSavedGames(ctx context.Context) models.Result[[]
 }
 
 func (s *SaveGameService) AddSavedGame(ctx context.Context, savedGame models.SavedGame) models.Result[models.SavedGame]{
-	//First, initialize the saved game, filling its created at field.
-	savedGame.InitCreatedAtAndUpdatedAt()
-
-	//Calculate the total amounts
-	savedGame.CalcTotalPoints()
-
-	//
-	savedGame.CalcAveragePoints()
-
-
-
 	return s.SavedGameRepository.AddSavedGame(ctx, savedGame)
 }
 

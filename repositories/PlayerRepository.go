@@ -44,3 +44,11 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, playerNam
 func (s *sqlPlayerRepository) RemovePlayerFromLocation(ctx context.Context, locationName string, playerName string) models.Result[models.Player]{
 	return getResult(nil, http.StatusOK, models.Player{})
 }
+
+func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player]{
+	return getResult(nil, 200, []models.Player{})
+}
+
+func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player]{
+	return getResult(nil, 200, []models.Player{})
+}

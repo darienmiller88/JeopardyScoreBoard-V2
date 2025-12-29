@@ -1,0 +1,2 @@
+ALTER TABLE players ADD COLUMN is_active BOOLEAN;
+ALTER TABLE players ADD COLUMN left_at TIMESTAMPTZ;

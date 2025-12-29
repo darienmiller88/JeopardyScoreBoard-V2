@@ -89,11 +89,7 @@ func (t *Team) checkForValidTeamPlayers(field interface{}) error {
 
 	uniquePlayersMap := make(map[string]struct{})
 	
-	//First create a map out of the players at a given adapt location to allow constant time lookup for each person.
-	for _, player := range location.Players{
-		uniquePlayersMap[player.Name] = struct{}{}
-	}
-
+	
 	//Afterwards, check each player the client sent to see if it exists in the map. If not, return the following error.
 	for _, newlyAddedplayer := range players{
 		if _, exists := uniquePlayersMap[newlyAddedplayer]; !exists {

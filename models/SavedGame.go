@@ -6,20 +6,31 @@ import (
 	"time"
 
 	"github.com/go-ozzo/ozzo-validation/v4"
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type SavedGame struct {
-	ID            bson.ObjectID `bson:"_id,omitempty"` // The MongoDB document ID
-	CreatedAt     time.Time          `bson:"created_at"`
-	UpdatedAt     time.Time          `bson:"updated_at"`
-	LocationName  string			 `bson:"location_name"`
+	ID            int       `db:"id"` // The MongoDB document ID
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	LocationName  string    `db:"location_name"`
 	Players       *[]Player      `bson:",omitempty"`
 	Teams         *[]Team            `bson:",omitempty"`
 	TotalPoints   int 			     `bson:"total_points"`
 	AveragePoints float64            `bson:"average_points"`
-	Winner        Player         `bson:"winner"`
+	Winner        string    `db:"winner"`
 }
+
+// type SavedGame struct {
+// 	ID            bson.ObjectID `bson:"_id,omitempty"` // The MongoDB document ID
+// 	CreatedAt     time.Time          `bson:"created_at"`
+// 	UpdatedAt     time.Time          `bson:"updated_at"`
+// 	LocationName  string			 `bson:"location_name"`
+// 	Players       *[]Player      `bson:",omitempty"`
+// 	Teams         *[]Team            `bson:",omitempty"`
+// 	TotalPoints   int 			     `bson:"total_points"`
+// 	AveragePoints float64            `bson:"average_points"`
+// 	Winner        Player         `bson:"winner"`
+// }
 
 func (s *SavedGame) Validate() error{
 	return validation.ValidateStruct(
@@ -67,49 +78,6 @@ func (s *SavedGame) CalcAveragePoints(){
 		s.AveragePoints = math.Round(float64(s.TotalPoints) / float64(len(*s.Teams)))
 	}else{
 		s.AveragePoints = math.Round(float64(s.TotalPoints) / float64(len(*s.Players)))
-	}
-}
-
-func (s *SavedGame) CalcTotalPoints(){
-	//If the user is playing a team game, calculate the total points using the teams, otherwise calculate it
-	//using each player at location.
-	if s.Teams != nil {
-		for _, team := range *s.Teams {
-			s.TotalPoints += team.Score
-		}
-	} else {
-		for _, user := range *s.Players {
-			s.TotalPoints += user.Score
-		}
-	}
-}
-
-func (s *SavedGame) CalculateWinner() {
-	if s.Teams != nil {
-		teams := *s.Teams
-		winningTeam := teams[0]
-
-		//Set the first team as the winning team, and compare each subsequent team to see whose score is the highest
-		for _, team := range teams[1:]{
-			if team.Score > winningTeam.Score {
-				winningTeam = team
-			}
-		}
-
-		s.Winner.Name = winningTeam.TeamName
-		s.Winner.Score = winningTeam.Score
-	} else{
-		players := *s.Players
-		winningPlayer := players[0]
-
-		//Set the first player as the winning player, and compare each subsequent player to see whose score is the highest
-		for _, player := range players[1:]{
-			if player.Score > winningPlayer.Score{
-				winningPlayer = player
-			}
-		}
-
-		s.Winner = winningPlayer
 	}
 }
 

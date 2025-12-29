@@ -85,14 +85,7 @@ func (m *MongoSavedGameRepository) DeleteSavedGame(ctx context.Context, savedGam
 
 //Add a new saved game
 func (m *MongoSavedGameRepository) AddSavedGame(ctx context.Context, savedGame models.SavedGame) models.Result[models.SavedGame]{
-	insertResult, err := m.savedGameCollection.InsertOne(ctx, &savedGame)
-
-	if err != nil{ 
-		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
-	}
 	
-	//Finally, attach the id of the newly created saved game.
-	savedGame.ID = insertResult.InsertedID.(bson.ObjectID)
 	
 	//And return the saved game with its id along with a 200.
 	return getResult(nil, http.StatusOK, savedGame)
