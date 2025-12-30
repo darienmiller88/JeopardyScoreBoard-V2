@@ -25,8 +25,20 @@ const(
 	`
 
 	//Get player(s)
-	GetAllPlayers string = `
+	GetAllPlayerNames string = `
 		SELECT player_name FROM players
+	`
+
+	GetPlayerById string = `
+		SELECT player_name FROM players WHERE id=$1
+	`
+
+	GetAllPlayersFromLocation string = `
+		SELECT players.player_name
+		FROM players 
+		JOIN locations 
+		ON locations.id=players.location_id
+		WHERE locations.location_name=$1
 	`
 
 	//UPDATE
