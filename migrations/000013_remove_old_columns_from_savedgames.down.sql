@@ -1,0 +1,1 @@
+ALTER TABLE savedgames ADD COLUMN winner VARCHAR(60) NOT NULL;
