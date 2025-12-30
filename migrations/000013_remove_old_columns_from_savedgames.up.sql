@@ -1,0 +1,1 @@
+ALTER TABLE savedgames DROP COLUMN winner;

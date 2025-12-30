@@ -3,6 +3,8 @@ package models
 import (
 	"database/sql"
 	"time"
+
+	"github.com/go-ozzo/ozzo-validation/v4"
 )
 
 type Player struct{ 
@@ -14,9 +16,9 @@ type Player struct{
 	TeamID     sql.NullInt32 `db:"team_id"`
 }
 
-// func (p *Player) Validate() error{
-// 	return validation.ValidateStruct(
-// 		p,
-// 		validation.Field(&p.Name, validation.Length(3, 31)),
-// 	)
-// }
+func (p *Player) Validate() error{
+	return validation.ValidateStruct(
+		p,
+		validation.Field(&p.PlayerName, validation.Length(3, 40)),
+	)
+}
