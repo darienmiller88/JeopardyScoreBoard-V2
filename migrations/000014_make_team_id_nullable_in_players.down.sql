@@ -1,0 +1,1 @@
+ALTER TABLE players ALTER COLUMN team_id SET NOT NULL;
