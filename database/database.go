@@ -11,30 +11,40 @@ import (
 // var client *mongo.Client
 var db *sqlx.DB
 
-const (
-	databaseName string = "AdaptDB"
-	locationsCollection string = "locations"
-	savedGamesCollection string = "saved_games"
-)
-
 func Init(){
 	_db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
 
 	if err != nil{
 		panic(err)
 	}
-
+	
 	err = _db.Ping()
-
+	
 	if err != nil {
 		fmt.Println("db connection fail:", err)
 	}else{
 		fmt.Println("Connection established! :)")
 	}
-
+	
 	db = _db
 }
+	
+func GetDB() *sqlx.DB{
+	return db
+}
 
+func CloseSQLDB(){
+	if err := db.Close(); err != nil{
+		panic(err)
+	}
+}
+	
+// const (
+// 	databaseName string = "AdaptDB"
+// 	locationsCollection string = "locations"
+// 	savedGamesCollection string = "saved_games"
+// )
+	
 // func Init() {
 // 	var err error
 
@@ -51,9 +61,6 @@ func Init(){
 // 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 // }
 
-func getDB() *sqlx.DB{
-	return db
-}
 
 //Retrieve the "locations" collection from the database.
 // func GetLocationsCollection() *mongo.Collection {
@@ -70,9 +77,3 @@ func getDB() *sqlx.DB{
 // 		panic(err)
 // 	}
 // }
-
-func CloseSQLDB(){
-	if err := db.Close(); err != nil{
-		panic(err)
-	}
-}

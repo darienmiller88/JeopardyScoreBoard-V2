@@ -29,7 +29,7 @@ func main(){
 
 	//Initialize the parent controller router, and its children
 	index := controllers.Index{}
-	// index.InitControllers()
+	index.InitControllers(database.GetDB())
 	
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
