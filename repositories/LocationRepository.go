@@ -1,10 +1,12 @@
 package repositories
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
-	
-	"JeopardyScoreBoardV2/models"
+
 	"JeopardyScoreBoardV2/constants"
+	"JeopardyScoreBoardV2/models"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -40,7 +42,11 @@ func (s *sqlLocationRepository) GetAllLocations() models.Result[[]string]{
 func (s *sqlLocationRepository) GetLocation(locationName string) models.Result[string]{
 	location := ""
 	
-	if err := s.db.Get(&location, constants.GetLocation, location); err != nil{
+	if err := s.db.Get(&location, constants.GetLocation, locationName); err != nil{
+		if err == sql.ErrNoRows {
+			return getResult(fmt.Errorf("No location found with name %s", locationName), http.StatusNotFound, "")	
+		}
+
 		return getResult(err, http.StatusInternalServerError, "")
 	}
 
