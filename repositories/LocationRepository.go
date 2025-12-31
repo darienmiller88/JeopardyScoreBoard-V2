@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"net/http"
 	
 	"JeopardyScoreBoardV2/models"
@@ -38,7 +37,7 @@ func (s *sqlLocationRepository) GetAllLocations() models.Result[[]string]{
 }
 
 //Get one location from the database
-func (s *sqlLocationRepository) GetLocation(ctx context.Context, locationName string) models.Result[string]{
+func (s *sqlLocationRepository) GetLocation(locationName string) models.Result[string]{
 	location := ""
 	
 	if err := s.db.Get(&location, constants.GetLocation, location); err != nil{
