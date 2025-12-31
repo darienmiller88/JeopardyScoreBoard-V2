@@ -1,0 +1,2 @@
+# JeopardyScoreBoardV2/controllers
+controllers\Index.go:22:28: invalid composite literal type services.LocationService

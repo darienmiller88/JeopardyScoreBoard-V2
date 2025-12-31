@@ -5,14 +5,19 @@ import (
 	"JeopardyScoreBoardV2/repositories"
 ) 
 
-type LocationService struct{
+type LocationService interface{
+	GetAllLocations() models.Result[[]string]
+	GetLocation(locationName string) models.Result[string]
+}
+
+type LocationServiceImpl struct{
 	Repository repositories.LocationRepository
 }
 
-func (l *LocationService) GetAllLocations() models.Result[[]string]{
+func (l *LocationServiceImpl) GetAllLocations() models.Result[[]string]{
 	return l.Repository.GetAllLocations()
 }
 
-func (l *LocationService) GetLocation(locationName string) models.Result[string]{
+func (l *LocationServiceImpl) GetLocation(locationName string) models.Result[string]{
 	return l.Repository.GetLocation(locationName)
 }
