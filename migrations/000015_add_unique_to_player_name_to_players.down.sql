@@ -1,0 +1,1 @@
+ALTER TABLE players DROP CONSTRAINT players_player_name_key;
