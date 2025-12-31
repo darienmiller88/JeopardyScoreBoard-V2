@@ -20,7 +20,7 @@ type sqlLocationRepository struct{
 	db *sqlx.DB
 }
 
-//Receive a new instance of Location repository using a mongo collection as the database. 
+//Receive a new instance of Location repository using postgres as the database. 
 func GetSqlLocationRepository(newDb *sqlx.DB) *sqlLocationRepository{
 	return &sqlLocationRepository{ db: newDb }
 }

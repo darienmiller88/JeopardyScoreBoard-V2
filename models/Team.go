@@ -1,14 +1,10 @@
 package models
 
 import (
-	"JeopardyScoreBoardV2/database"
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/go-ozzo/ozzo-validation/v4"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Team struct{
@@ -58,39 +54,4 @@ func (t *Team) checkDuplicateTeamPlayers (field interface{}) error{
 
 	//If not, return nil signifying validation success.
 	return nil
-}
-
-//Function to retrieve all ADAPT locations from database. Sadly, I cannot use the service for this as that would result
-// in a circular dependency :(
-func getLocations() ([]Location, error){
-	locationsCollection := database.GetLocationsCollection()
-	result, err := locationsCollection.Find(context.Background(), bson.D{})
-
-	if err != nil {
-		return []Location{}, err
-	}
-
-	locations := []Location{}
-
-	if err := result.All(context.Background(), &locations); err != nil {
-		return []Location{}, err
-	}
-
-	return locations, nil
-}
-
-func getLocationByName(locationName string) (Location, error){
-	location := Location{}
-	locationsCollection := database.GetLocationsCollection()
-	err := locationsCollection.FindOne(context.Background(),  bson.D{{Key: "location_name", Value: locationName}}).Decode(&location)
-
-	if err != nil {
-		if err == mongo.ErrNoDocuments{
-			return Location{}, fmt.Errorf("Location '%s' not a valid location", locationName)
-		}else{
-			return Location{}, err
-		}
-	}
-
-	return location, nil
 }

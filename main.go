@@ -23,16 +23,14 @@ func main(){
 	//Middleware stack, keeping it basic for now.
 	router.Use(middleware.Logger, middleware.Recoverer)
 	
-	//Initiate the database connection to mongodb, and defer its disconnection.
+	//Initiate the database connection to SQL, and defer its disconnection.
 	database.Init()
-	defer database.DisconnectClient()
-
-	database.InitSQL()
+	defer database.CloseSQLDB()
 
 	//Initialize the parent controller router, and its children
 	index := controllers.Index{}
-	index.Init()
-
+	// index.InitControllers()
+	
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
 

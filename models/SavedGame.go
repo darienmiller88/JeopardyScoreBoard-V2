@@ -37,7 +37,7 @@ func (s *SavedGame) Validate() error{
 		s,
 
 		//Order matters here! Validate the location name first to ensure that the Location field is not nil.
-		validation.Field(&s.LocationName, validation.Required, validation.By(s.validateLocationName)),
+		validation.Field(&s.LocationName, validation.Required),
 
 		//Validate the teams field if the user chooses to add it.
 		validation.Field(
@@ -85,22 +85,6 @@ func (s *SavedGame) CalcAveragePoints(){
 func (s *SavedGame) validatePlayersAndTeams(field interface{}) error{
 	if s.Players != nil && s.Teams != nil {
 		return fmt.Errorf("field 'players' and field 'teams' both cannot be included")
-	}
-
-	return nil
-}
-
-func (s *SavedGame) validateLocationName(field interface{}) error {
-	locationName, ok := field.(string)
-
-	if !ok {
-		return fmt.Errorf("could not parse %T into object", field)	
-	}
-
-	_, err := getLocationByName(locationName)
-
-	if err != nil {
-		return err
 	}
 
 	return nil
