@@ -35,6 +35,16 @@ func getJeopardyController(service services.LocationService) *chi.Mux{
 	return jeopardyController.Router
 }
 
+func getResponseFromController(router *chi.Mux, route string) (*http.Response, *httptest.ResponseRecorder){
+	//The jeopardy controller will create two routes: "/" and "/{location_name}"
+	req := httptest.NewRequest(http.MethodGet, route, nil)
+	res := httptest.NewRecorder()
+
+	router.ServeHTTP(res, req)
+	
+	return res.Result(), res
+}
+
 func TestGetAllLocations_Ok(t *testing.T) {
 
 	//Create a mock service that returns a list of locations alongside a 200. This will simulate the Jeopardy
@@ -48,15 +58,10 @@ func TestGetAllLocations_Ok(t *testing.T) {
 		},
 	})
 
-	//The jeopardy controller will create two routes: "/" and "/{location_name}"
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	res := httptest.NewRecorder()
-
-	router.ServeHTTP(res, req)
-	response := res.Result()
+	result, res := getResponseFromController(router, "/")
 
 	//check status code and return value from the response, and see if the status code is 200
-	assert.Equal(t, http.StatusOK, response.StatusCode)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
 
 	//Check to see if the return body contains the following locations.
 	assert.Contains(t, res.Body.String(), "Pelham Bay")
@@ -73,14 +78,9 @@ func TestGetAllLocations_InternalServerError(t *testing.T) {
 		},
 	})
 
-	//The jeopardy controller will create two routes: "/" and "/{location_name}"
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	res := httptest.NewRecorder()
+	result, res := getResponseFromController(router, "/")
 
-	router.ServeHTTP(res, req)
-	response := res.Result()
-
-	assert.Equal(t, http.StatusInternalServerError, response.StatusCode)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Database error")
 }
 
