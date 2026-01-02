@@ -2,8 +2,9 @@ package controllers
 
 import (
 	// "fmt"
-	"net/http/httptest"
+	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -63,7 +64,24 @@ func TestGetAllLocations_Ok(t *testing.T) {
 }
 
 func TestGetAllLocations_InternalServerError(t *testing.T) {
-	assert.True(t, true, "True is true!")
+	//Create a mock service that returns a 500, and an empty list. This will simulate a internal server
+	//error when retirieving the locations
+	router := getJeopardyController(&mockService{ 
+		getAllLocationsResult: models.Result[[]string]{
+			Err: errors.New("Database error"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	})
+
+	//The jeopardy controller will create two routes: "/" and "/{location_name}"
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	res := httptest.NewRecorder()
+
+	router.ServeHTTP(res, req)
+	response := res.Result()
+
+	assert.Equal(t, http.StatusInternalServerError, response.StatusCode)
+	assert.Contains(t, res.Body.String(), "Database error")
 }
 
 func TestGetLocation_Ok(t *testing.T) {
