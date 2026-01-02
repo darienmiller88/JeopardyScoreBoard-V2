@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	// "net/http/httptest"
 	// "fmt"
-	// "net/http"
+	"net/http/httptest"
+	"net/http"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -15,7 +15,7 @@ import (
 
 type mockService struct{
 	getAllLocationsResult models.Result[[]string]
-	getLocationResult models.Result[string]
+	getLocationResult     models.Result[string]
 }
 
 func (m *mockService) GetAllLocations() models.Result[[]string]{
@@ -26,7 +26,7 @@ func (m *mockService) GetLocation(locationName string) models.Result[string]{
 	return m.getLocationResult
 }
 
-func GetJeopardyController(service services.LocationService) *chi.Mux{
+func getJeopardyController(service services.LocationService) *chi.Mux{
 	jeopardyController := JeopardyController{}
 
 	jeopardyController.Init(service)
@@ -36,13 +36,30 @@ func GetJeopardyController(service services.LocationService) *chi.Mux{
 
 func TestGetAllLocations_Ok(t *testing.T) {
 
-	//Get the controller, and pass it a service
+	//Create a mock service that returns a list of locations alongside a 200. This will simulate the Jeopardy
+	//controller calling the location service, which retrieves the ADAPT locations from the database through
+	//the repository
+	router := getJeopardyController(&mockService{ 
+		getAllLocationsResult: models.Result[[]string]{
+			Err: nil,
+			StatusCode: http.StatusOK,
+			ResultData: []string{"Pelham Bay", "Elmwood"},
+		},
+	})
 
-	//make http request to router
+	//The jeopardy controller will create two routes: "/" and "/{location_name}"
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	res := httptest.NewRecorder()
 
-	//check status code and return value from the response
+	router.ServeHTTP(res, req)
+	response := res.Result()
 
-	assert.True(t, true, "True is true!")
+	//check status code and return value from the response, and see if the status code is 200
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	//Check to see if the return body contains the following locations.
+	assert.Contains(t, res.Body.String(), "Pelham Bay")
+	assert.Contains(t, res.Body.String(), "Elmwood")
 }
 
 func TestGetAllLocations_InternalServerError(t *testing.T) {
