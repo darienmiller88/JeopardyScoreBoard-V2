@@ -1,0 +1,12 @@
+Jeopardy ScoreKeeper checklist
+
+Backend
+[] - Complete Player Repository
+[] - Complete Player Repository tests
+[] - Complete Player Service
+[] - Complete Player Service tests
+[] - Complete Save Game Repository
+[] - Complete Saved Game Repository tests
+
+
+Frontend

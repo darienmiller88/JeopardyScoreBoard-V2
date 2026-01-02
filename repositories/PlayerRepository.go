@@ -26,7 +26,7 @@ type sqlPlayerRepository struct{
 }
 
 //Receive new Instance of MongoPlayerCardRepository.
-func GetNewMongoPlayerCardRepository(newDB *sqlx.DB) *sqlPlayerRepository{
+func GetSqlPlayerCardRepository(newDB *sqlx.DB) *sqlPlayerRepository{
 	return &sqlPlayerRepository{ db: newDB }
 }
 
