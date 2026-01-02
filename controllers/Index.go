@@ -19,6 +19,8 @@ func (i *Index) InitControllers(db *sqlx.DB){
 
 	//Initialize the views controller
 	i.viewsController.Init()
+
+	//Initialize the jeopardy controller, and chose the service and repo implementation
 	i.jeopardyController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db) })
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router
