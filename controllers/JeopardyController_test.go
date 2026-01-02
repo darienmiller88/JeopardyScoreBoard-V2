@@ -85,13 +85,31 @@ func TestGetAllLocations_InternalServerError(t *testing.T) {
 }
 
 func TestGetLocation_Ok(t *testing.T) {
-	assert.True(t, true, "True is true!")
+	//Create a mock service that returns a 500, and an empty list. This will simulate a internal server
+	//error when retirieving the locations
+	router := getJeopardyController(&mockService{ 
+		getLocationResult: models.Result[string]{
+			Err: nil,
+			ResultData: "Elmwood",
+			StatusCode: http.StatusOK,
+		},
+	})
+
+	//The jeopardy controller will create two routes: "/" and "/{location_name}"
+	req := httptest.NewRequest(http.MethodGet, "/Elmwood", nil)
+	res := httptest.NewRecorder()
+
+	router.ServeHTTP(res, req)
+	response := res.Result()
+	
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+	assert.Contains(t, res.Body.String(), "Elmwood")
 }
 
 func TestGetLocation_NotFound(t *testing.T) {
 	assert.True(t, true, "True is true!")
 }
 
-func TestGetLocation_InternalServerErro(t *testing.T) {
+func TestGetLocation_InternalServerError(t *testing.T) {
 	assert.True(t, true, "True is true!")
 }
