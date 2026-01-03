@@ -1,13 +1,14 @@
 package models
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 //Test for a valid player name
-//EXPECTED ERROR MESSAGE: nil   
+//EXPECTED ERROR MESSAGE: nil
 func TestPlayerModelValidation_Ok(t *testing.T) {
 	player := Player{
 		PlayerName: "Test Name",
@@ -27,11 +28,17 @@ func TestPlayerModelValidation_NameTooShort(t *testing.T) {
 
 	err := player.Validate()
 
-	assert.Equal(t, "edssxw", err)
+	assert.Contains(t, err.Error(), fmt.Sprintf("Player name must be between %d and %d", minLength, maxLength))
 }
 
 func TestPlayerModelValidation_NameTooLong(t *testing.T) {
-	
+	player := Player{
+		PlayerName: "Tdedxchufedxiucfixmuebfxdbxzwubxzbinwjbdhzsedbxywhzsnuebyfdxzwse",
+	}
+
+	err := player.Validate()
+
+	assert.Contains(t, err.Error(), fmt.Sprintf("Player name must be between %d and %d", minLength, maxLength))
 }
 
 
