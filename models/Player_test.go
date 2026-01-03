@@ -6,9 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//Test for getting all 8 locations
-//EXPECTED PAYLOAD:       All 8 locations
-//EXPECTED STATUS CODE:   200
+//Test for a valid player name
 //EXPECTED ERROR MESSAGE: nil   
 func TestPlayerModelValidation_Ok(t *testing.T) {
 	player := Player{
@@ -20,8 +18,16 @@ func TestPlayerModelValidation_Ok(t *testing.T) {
 	assert.Equal(t, nil, err)
 }
 
+//Test for a valid player name
+//EXPECTED ERROR MESSAGE: nil 
 func TestPlayerModelValidation_NameTooShort(t *testing.T) {
-	
+	player := Player{
+		PlayerName: "Te",
+	}
+
+	err := player.Validate()
+
+	assert.Equal(t, "edssxw", err)
 }
 
 func TestPlayerModelValidation_NameTooLong(t *testing.T) {

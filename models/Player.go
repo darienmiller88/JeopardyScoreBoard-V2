@@ -18,10 +18,20 @@ type Player struct{
 	TeamID     sql.NullInt32 `db:"team_id"`
 }
 
+const(
+	minLength int = 4
+	maxLength int = 40
+)
+
 func (p *Player) Validate() error{
 	return validation.ValidateStruct(
 		p,
-		validation.Field(&p.PlayerName, validation.Required, validation.Length(5, 40), validation.By(p.validatePlayerNameHasTwoParts)),
+		validation.Field(
+			&p.PlayerName, 
+			validation.Required, 
+			validation.Length(minLength, maxLength).Error(fmt.Sprintf("Player name must be between %d and %d", minLength, maxLength)), 
+			validation.By(p.validatePlayerNameHasTwoParts),
+		),
 	)
 }
 
