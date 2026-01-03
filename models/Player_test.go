@@ -43,9 +43,15 @@ func TestPlayerModelValidation_NameTooLong(t *testing.T) {
 
 
 func TestPlayerModelValidation_NameHasOnePart(t *testing.T) {
-	
+	player := Player{
+		PlayerName: "ThisnameisOnePart",
+	}
+
+	err := player.Validate()
+
+	assert.Contains(t, err.Error(), "Player name must have exactly two parts: ex -> 'jane doe'")
 }
 
-func TestPlayerModelValidation_NameHasThreeParts(t *testing.T) {
+func TestPlayerModelValidation_NameHasMoreThanTwoParts(t *testing.T) {
 	
 }
