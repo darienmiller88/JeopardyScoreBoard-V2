@@ -1,6 +1,11 @@
 Jeopardy ScoreKeeper checklist
 
 Backend
+[x] - Complete Location Model Tests
+[x] - Complete Location Repository
+[x] - Complete Location Repository tests
+[x] - Complete Location Service
+[x] - Complete Location Service tests
 [] - Complete Player Model Tests
 [] - Complete Player Repository
 [] - Complete Player Repository tests

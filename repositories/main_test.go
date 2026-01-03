@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -23,7 +22,6 @@ func TestMain(m *testing.M) {
 	db, err = sqlx.Connect("postgres", os.Getenv("TEST_DATABASE_URL"))
 
     if err != nil {
-		fmt.Println("test database:", os.Getenv("TEST_DATABASE_URL"))
         log.Fatal(err)
     }
 
