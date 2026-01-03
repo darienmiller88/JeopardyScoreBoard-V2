@@ -30,13 +30,13 @@ func GetSqlPlayerCardRepository(newDB *sqlx.DB) *sqlPlayerRepository{
 	return &sqlPlayerRepository{ db: newDB }
 }
 
-//Function to update a players name for a given location.
-func (s *sqlPlayerRepository) UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]{
+//Add a single player to a given location.
+func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player]{
 	return getResult(nil, 200, models.Player{})
 }
 
-//Add a single player to a given location.
-func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player]{
+//Function to update a players name for a given location.
+func (s *sqlPlayerRepository) UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]{
 	return getResult(nil, 200, models.Player{})
 }
 
