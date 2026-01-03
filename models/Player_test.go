@@ -53,5 +53,11 @@ func TestPlayerModelValidation_NameHasOnePart(t *testing.T) {
 }
 
 func TestPlayerModelValidation_NameHasMoreThanTwoParts(t *testing.T) {
-	
+	player := Player{
+		PlayerName: "   This name is multiple Parts   ",
+	}
+
+	err := player.Validate()
+
+	assert.Contains(t, err.Error(), "Player name must have exactly two parts: ex -> 'jane doe'")
 }
