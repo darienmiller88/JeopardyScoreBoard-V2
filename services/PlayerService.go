@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"net/http"
 
 	"JeopardyScoreBoardV2/models"
@@ -10,20 +9,28 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4"
 )
 
-type PlayerCardService struct{
-	PlayerCardRepository repositories.PlayerRepository
+type PlayerService interface{
+	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[string]
+	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[string]
+	AddPlayerToLocation(locationName string, playerName string)                       models.Result[string]
+	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.Player]
+	GetAllPlayersFromAllLocations()                                                   models.Result[[]models.Player]
+}
+
+type PlayerServiceImpl struct{
+	PlayerRepository repositories.PlayerRepository
 	LocationRepository repositories.LocationRepository
 }
 
-func (p *PlayerCardService) UpdatePlayerName(ctx context.Context, locationName string, oldPlayerName string, newPlayerName string) models.Result[string]{
+func (p *PlayerServiceImpl) UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[string]{
 	playerNames := struct{
 		NewPlayerName string 
 		OldPlayerName string		
 	}{ OldPlayerName: oldPlayerName, NewPlayerName: newPlayerName }
 
-	//Validate the above struct to ensure both fields are included, and that the new name is between 3 and 30 chars.
+	//Validate the above struct to ensure both fields are included, and that the new name is between 5 and 40 chars.
 	err := validation.ValidateStruct(&playerNames,
-		validation.Field(&playerNames.NewPlayerName, validation.Required, validation.Length(3, 31)),
+		validation.Field(&playerNames.NewPlayerName, validation.Required, validation.Length(5, 40)),
 		validation.Field(&playerNames.OldPlayerName, validation.Required),
 	)
 
@@ -32,23 +39,17 @@ func (p *PlayerCardService) UpdatePlayerName(ctx context.Context, locationName s
 		return models.Result[string]{ Err: err, StatusCode: http.StatusBadRequest }
 	}
 	
-	//Afterwards, get the location to ensure the client sent one that actually exists. 
-	locationResult := p.LocationRepository.GetLocation(locationName)
-
-	// If not, return a 404 or 500.
-	if locationResult.Err != nil {
-		return models.Result[string]{ Err: locationResult.Err,StatusCode: http.StatusNotFound }
-	}
-	
 	//Finally, after checking to see if the names aren't blank, the new name is 3 < x < 31, and the new name
 	//isn't taken, change the old name to the new name.
-	return p.PlayerCardRepository.UpdatePlayerName(locationName, oldPlayerName, newPlayerName)
+	return p.PlayerRepository.UpdatePlayerName(locationName, oldPlayerName, newPlayerName)
 }
 
-func (p *PlayerCardService) AddPlayerToLocation(ctx context.Context, locationName string, playerName string) models.Result[string] {
-	return p.PlayerCardRepository.AddPlayerToLocation(locationName, playerName)
+func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[string] {
+	
+	
+	return p.PlayerRepository.AddPlayerToLocation(locationName, playerName)
 }
 
-func (p *PlayerCardService) RemovePlayerFromLocation(ctx context.Context, locationName string, playerName string) models.Result[string]{
-	return  p.PlayerCardRepository.RemovePlayerFromLocation(locationName, playerName)
+func (p *PlayerServiceImpl) RemovePlayerFromLocation(locationName string, playerName string) models.Result[string]{
+	return  p.PlayerRepository.RemovePlayerFromLocation(locationName, playerName)
 }

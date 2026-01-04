@@ -58,7 +58,7 @@ func (l *LocationsController) getLocationByName(res http.ResponseWriter, req *ht
 		return
 	}
 	
-	res.Header().Add("Content-type", "application/lson")
+	res.Header().Add("Content-type", "application/json")
 	res.WriteHeader(200)
 	res.Write(data)
 }

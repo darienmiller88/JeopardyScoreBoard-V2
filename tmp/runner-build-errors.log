@@ -1,2 +1,0 @@
-# JeopardyScoreBoardV2/controllers
-controllers\Index.go:29:33: i.loc undefined (type *Index has no field or method loc)

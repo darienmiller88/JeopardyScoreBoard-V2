@@ -48,7 +48,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, playerNam
 			return getResult(fmt.Errorf("No location %s found", locationName), http.StatusNotFound, models.Player{})
 		}
 		
-		return getResult(err, int(http.StatusInternalServerError), models.Player{})	
+		return getResult(err, http.StatusInternalServerError, models.Player{})	
 	}
 	
 	return getResult(nil, http.StatusOK, player)
