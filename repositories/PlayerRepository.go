@@ -1,9 +1,12 @@
 package repositories
 
 import (
-	"context"
-	"net/http"
+	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"context"
+	"database/sql"
+	"fmt"
+	"net/http"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -32,7 +35,23 @@ func GetSqlPlayerCardRepository(newDB *sqlx.DB) *sqlPlayerRepository{
 
 //Add a single player to a given location.
 func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player]{
-	return getResult(nil, 200, models.Player{})
+	statement, err := s.db.PrepareNamed(constants.InsertNewPlayerWithoutTeam)
+
+	if err != nil {
+		return getResult(err, http.StatusInternalServerError, models.Player{})
+	}
+
+	player := models.Player{}
+
+	if err := statement.Get(&player.ID, player); err != nil{
+		if err == sql.ErrNoRows {
+			return getResult(fmt.Errorf("No location %s found", locationName), http.StatusNotFound, models.Player{})
+		}
+		
+		return getResult(err, int(http.StatusInternalServerError), models.Player{})	
+	}
+	
+	return getResult(nil, http.StatusOK, player)
 }
 
 //Function to update a players name for a given location.

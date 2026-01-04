@@ -2,9 +2,16 @@ package constants
 
 const(
 	//CREATE
-	InsertNewPlayer string = `
+	InsertNewPlayerWithTeam string = `
 		INSERT INTO players (player_name, location_id, team_id)
 		VALUES(:player_name, :location_id, :team_id) RETURNING id
+	`
+
+	InsertNewPlayerWithoutTeam string = `
+		INSERT INTO players (player_name, location_id)
+		VALUES(:player_name,
+			(SELECT id FROM locations WHERE location_name=$1)
+		) RETURNING id
 	`
 
 	InsertNewSavedGame string = `
