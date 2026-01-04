@@ -3,7 +3,6 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
-	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -17,9 +16,9 @@ const(
 )
 
 type PlayerRepository interface {
-	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[string]
-	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[string]
-	AddPlayerToLocation(locationName string, playerName string)                       models.Result[string]
+	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]
+	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[models.Player]
+	AddPlayerToLocation(locationName string, playerName string)                       models.Result[models.Player]
 	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.Player]
 	GetAllPlayersFromAllLocations()                                                   models.Result[[]models.Player]
 }
@@ -60,7 +59,7 @@ func (s *sqlPlayerRepository) UpdatePlayerName(locationName string, oldPlayerNam
 }
 
 //Remove a single player from a given location.
-func (s *sqlPlayerRepository) RemovePlayerFromLocation(ctx context.Context, locationName string, playerName string) models.Result[models.Player]{
+func (s *sqlPlayerRepository) RemovePlayerFromLocation(locationName string, playerName string) models.Result[models.Player]{
 	return getResult(nil, http.StatusOK, models.Player{})
 }
 

@@ -10,19 +10,18 @@ import (
 )
 
 type PlayerService interface{
-	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[string]
-	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[string]
-	AddPlayerToLocation(locationName string, playerName string)                       models.Result[string]
+	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]
+	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[models.Player]
+	AddPlayerToLocation(locationName string, playerName string)                       models.Result[models.Player]
 	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.Player]
 	GetAllPlayersFromAllLocations()                                                   models.Result[[]models.Player]
 }
 
 type PlayerServiceImpl struct{
-	PlayerRepository repositories.PlayerRepository
-	LocationRepository repositories.LocationRepository
+	Repository repositories.PlayerRepository
 }
 
-func (p *PlayerServiceImpl) UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[string]{
+func (p *PlayerServiceImpl) UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]{
 	playerNames := struct{
 		NewPlayerName string 
 		OldPlayerName string		
@@ -36,20 +35,26 @@ func (p *PlayerServiceImpl) UpdatePlayerName(locationName string, oldPlayerName 
 
 	//If the first round of validation does not pass, return the following error.
 	if err != nil{
-		return models.Result[string]{ Err: err, StatusCode: http.StatusBadRequest }
+		return models.Result[models.Player]{ Err: err, StatusCode: http.StatusBadRequest }
 	}
 	
-	//Finally, after checking to see if the names aren't blank, the new name is 3 < x < 31, and the new name
-	//isn't taken, change the old name to the new name.
-	return p.PlayerRepository.UpdatePlayerName(locationName, oldPlayerName, newPlayerName)
+	//Finally, after checking to see if the names aren't blank, the new name is 5 <= x <= 40, 
+	//change the old name to the new name.
+	return p.Repository.UpdatePlayerName(locationName, oldPlayerName, newPlayerName)
 }
 
-func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[string] {
-	
-	
-	return p.PlayerRepository.AddPlayerToLocation(locationName, playerName)
+func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {
+	return p.Repository.AddPlayerToLocation(locationName, playerName)
 }
 
-func (p *PlayerServiceImpl) RemovePlayerFromLocation(locationName string, playerName string) models.Result[string]{
-	return  p.PlayerRepository.RemovePlayerFromLocation(locationName, playerName)
+func (p *PlayerServiceImpl) RemovePlayerFromLocation(locationName string, playerName string) models.Result[models.Player]{
+	return  p.Repository.RemovePlayerFromLocation(locationName, playerName)
+}
+
+func (p *PlayerServiceImpl) GetAllPlayersFromAllLocations() models.Result[[]models.Player]{
+	return p.Repository.GetAllPlayersFromAllLocations()
+}
+
+func (p *PlayerServiceImpl) GetPlayersFromLocation(locationName string) models.Result[[]models.Player]{
+	return p.Repository.GetPlayersFromLocation(locationName)
 }
