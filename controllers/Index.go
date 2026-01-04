@@ -11,7 +11,7 @@ import (
 type Index struct{
 	Router *chi.Mux
 	viewsController ViewsController
-	jeopardyController JeopardyController
+	locationsController LocationsController
 }
 
 func (i *Index) InitControllers(db *sqlx.DB){
@@ -21,10 +21,10 @@ func (i *Index) InitControllers(db *sqlx.DB){
 	i.viewsController.Init()
 
 	//Initialize the jeopardy controller, and chose the service and repo implementation
-	i.jeopardyController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db) })
+	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db) })
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router
 	//in main.go
 	i.Router.Mount("/", i.viewsController.Router)
-	i.Router.Mount("/locations", i.jeopardyController.Router)
+	i.Router.Mount("/locations", i.locationsController.Router)
 }

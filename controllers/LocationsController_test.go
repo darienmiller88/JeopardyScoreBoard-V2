@@ -27,8 +27,8 @@ func (m *mockService) GetLocation(locationName string) models.Result[string]{
 	return m.getLocationResult
 }
 
-func getJeopardyController(service services.LocationService) *chi.Mux{
-	jeopardyController := JeopardyController{}
+func getLocationsController(service services.LocationService) *chi.Mux{
+	jeopardyController := LocationsController{}
 
 	jeopardyController.Init(service)
 
@@ -36,7 +36,6 @@ func getJeopardyController(service services.LocationService) *chi.Mux{
 }
 
 func getResponseFromController(router *chi.Mux, route string) (*http.Response, *httptest.ResponseRecorder){
-	//The jeopardy controller will create two routes: "/" and "/{location_name}"
 	req := httptest.NewRequest(http.MethodGet, route, nil)
 	res := httptest.NewRecorder()
 
@@ -46,11 +45,10 @@ func getResponseFromController(router *chi.Mux, route string) (*http.Response, *
 }
 
 func TestGetAllLocations_Ok(t *testing.T) {
-
 	//Create a mock service that returns a list of locations alongside a 200. This will simulate the Jeopardy
 	//controller calling the location service, which retrieves the ADAPT locations from the database through
 	//the repository
-	router := getJeopardyController(&mockService{ 
+	router := getLocationsController(&mockService{ 
 		getAllLocationsResult: models.Result[[]string]{
 			Err: nil,
 			StatusCode: http.StatusOK,
@@ -71,7 +69,7 @@ func TestGetAllLocations_Ok(t *testing.T) {
 func TestGetAllLocations_InternalServerError(t *testing.T) {
 	//Create a mock service that returns a 500, and an empty list. This will simulate a internal server
 	//error when retirieving the locations
-	router := getJeopardyController(&mockService{ 
+	router := getLocationsController(&mockService{ 
 		getAllLocationsResult: models.Result[[]string]{
 			Err: errors.New("Database error"),
 			StatusCode: http.StatusInternalServerError,
@@ -86,7 +84,7 @@ func TestGetAllLocations_InternalServerError(t *testing.T) {
 
 func TestGetLocation_Ok(t *testing.T) {
 	//Create a mock service that returns a 200, and a location. 
-	router := getJeopardyController(&mockService{ 
+	router := getLocationsController(&mockService{ 
 		getLocationResult: models.Result[string]{
 			Err: nil,
 			ResultData: "Elmwood",
@@ -102,7 +100,7 @@ func TestGetLocation_Ok(t *testing.T) {
 
 func TestGetLocation_NotFound(t *testing.T) {
 	//Create a mock service that returns a 404. This will simulate the database not finding a location.
-	router := getJeopardyController(&mockService{ 
+	router := getLocationsController(&mockService{ 
 		getLocationResult: models.Result[string]{
 			Err: errors.New("Location not found"),
 			StatusCode: http.StatusNotFound,
@@ -118,7 +116,7 @@ func TestGetLocation_NotFound(t *testing.T) {
 func TestGetLocation_InternalServerError(t *testing.T) {
 	//Create a mock service that returns a 500. This will simulate a internal server error when retirieving 
 	//one location
-	router := getJeopardyController(&mockService{ 
+	router := getLocationsController(&mockService{ 
 		getLocationResult: models.Result[string]{
 			Err: errors.New("Internal Server Error"),
 			StatusCode: http.StatusInternalServerError,
