@@ -32,16 +32,16 @@ const(
 	`
 
 	//Get player(s)
-	GetAllPlayerNames string = `
-		SELECT player_name FROM players
+	GetAllPlayers string = `
+		SELECT * FROM players
 	`
 
 	GetPlayerById string = `
-		SELECT player_name FROM players WHERE id=$1
+		SELECT * FROM players WHERE id=$1
 	`
 
 	GetAllPlayersFromLocation string = `
-		SELECT players.player_name
+		SELECT *
 		FROM players 
 		JOIN locations 
 		ON locations.id=players.location_id

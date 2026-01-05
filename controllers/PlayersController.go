@@ -25,7 +25,16 @@ func (p *PlayersController) Init(service services.PlayerService){
 }
 
 func (p *PlayersController) GetAllPlayers(res http.ResponseWriter, req *http.Request){
+	result := p.playerService.GetAllPlayersFromAllLocations()
 
+	if result.Err != nil{
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(result)
 }
 
 func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter, req *http.Request){
@@ -81,15 +90,8 @@ func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.
 		http.Error(res, result.Err.Error(), result.StatusCode)
 		return
 	}
-
-	data, err := json.Marshal(&result)
-
-	if err != nil{
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	
 	res.Header().Add("Content-type", "application/json")
 	res.WriteHeader(200)
-	res.Write(data)
+	json.NewEncoder(res).Encode(result)
 }
