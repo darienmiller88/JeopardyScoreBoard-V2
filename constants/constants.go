@@ -49,7 +49,9 @@ const(
 	`
 
 	//UPDATE
-
+	UpdatePlayerName string = `
+		UPDATE players SET player_name=:new_player_name WHERE player_name=:old_player_name
+	`
 
 	//DELETE
 )

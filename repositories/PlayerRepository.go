@@ -16,7 +16,7 @@ const(
 )
 
 type PlayerRepository interface {
-	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]
+	UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]
 	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[models.Player]
 	AddPlayerToLocation(locationName string, player models.Player)                    models.Result[models.Player]
 	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.Player]
@@ -57,7 +57,27 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 }
 
 //Function to update a players name for a given location.
-func (s *sqlPlayerRepository) UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]{
+func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
+	statement, err := s.db.PrepareNamed(constants.UpdatePlayerName)
+
+	if err != nil {
+		return getResult(err, http.StatusInternalServerError, models.Player{})
+	}
+
+	player := models.Player{}
+	params := map[string]interface{}{
+		"old_player_name": oldPlayerName,
+		"new_player_name": newPlayerName,
+	}
+
+	if err := statement.Get(&player.ID, params); err != nil{
+		if err == sql.ErrNoRows {
+			return getResult(fmt.Errorf("No player with name %s found", oldPlayerName), http.StatusNotFound, models.Player{})
+		}
+		
+		return getResult(err, http.StatusInternalServerError, models.Player{})	
+	}
+	
 	return getResult(nil, 200, models.Player{})
 }
 
