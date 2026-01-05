@@ -16,11 +16,11 @@ const(
 )
 
 type PlayerRepository interface {
-	UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]
-	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[models.Player]
-	AddPlayerToLocation(locationName string, player models.Player)                    models.Result[models.Player]
-	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.Player]
-	GetAllPlayersFromAllLocations()                                                   models.Result[[]models.Player]
+	UpdatePlayerName(oldPlayerName string, newPlayerName string)   models.Result[models.Player]
+	AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]
+	GetPlayersFromLocation(locationName string)                    models.Result[[]models.Player]
+	RemovePlayer(playerName string)                                models.Result[models.Player]
+	GetAllPlayersFromAllLocations()                                models.Result[[]models.Player]
 }
 
 type sqlPlayerRepository struct{
@@ -82,7 +82,7 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 }
 
 //Remove a single player from a given location.
-func (s *sqlPlayerRepository) RemovePlayerFromLocation(locationName string, playerName string) models.Result[models.Player]{
+func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[models.Player]{
 	return getResult(nil, http.StatusOK, models.Player{})
 }
 

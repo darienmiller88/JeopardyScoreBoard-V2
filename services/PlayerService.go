@@ -9,10 +9,10 @@ import (
 
 type PlayerService interface{
 	UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]
-	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[models.Player]
-	AddPlayerToLocation(locationName string, playerName string)                       models.Result[models.Player]
-	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.Player]
-	GetAllPlayersFromAllLocations()                                                   models.Result[[]models.Player]
+	AddPlayerToLocation(locationName string, playerName string)  models.Result[models.Player]
+	RemovePlayer(playerName string)                              models.Result[models.Player]
+	GetPlayersFromLocation(locationName string)                  models.Result[[]models.Player]
+	GetAllPlayersFromAllLocations()                              models.Result[[]models.Player]
 }
 
 type PlayerServiceImpl struct{
@@ -39,8 +39,8 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 	return p.Repository.AddPlayerToLocation(locationName, player)
 }
 
-func (p *PlayerServiceImpl) RemovePlayerFromLocation(locationName string, playerName string) models.Result[models.Player]{
-	return  p.Repository.RemovePlayerFromLocation(locationName, playerName)
+func (p *PlayerServiceImpl) RemovePlayer(playerName string) models.Result[models.Player]{
+	return  p.Repository.RemovePlayer(playerName)
 }
 
 func (p *PlayerServiceImpl) GetAllPlayersFromAllLocations() models.Result[[]models.Player]{
