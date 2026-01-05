@@ -35,7 +35,7 @@ const(
 	GetAllPlayers string = `
 		SELECT * FROM players
 	`
-
+	
 	GetPlayerById string = `
 		SELECT * FROM players WHERE id=$1
 	`

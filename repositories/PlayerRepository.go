@@ -28,7 +28,7 @@ type sqlPlayerRepository struct{
 }
 
 //Receive new Instance of MongoPlayerCardRepository.
-func GetSqlPlayerCardRepository(newDB *sqlx.DB) *sqlPlayerRepository{
+func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository{
 	return &sqlPlayerRepository{ db: newDB }
 }
 
@@ -79,6 +79,10 @@ func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[mode
 
 func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player]{
 	players := []models.Player{}
+
+	if err := s.db.Select(&players, constants.GetAllPlayersFromLocation, locationName); err != nil {
+		return getResult(err, http.StatusInternalServerError, players)
+	} 
 
 	return getResult(nil, http.StatusOK, players)
 }
