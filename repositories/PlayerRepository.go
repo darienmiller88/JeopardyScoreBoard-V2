@@ -18,7 +18,7 @@ const(
 type PlayerRepository interface {
 	UpdatePlayerName(locationName string, oldPlayerName string, newPlayerName string) models.Result[models.Player]
 	RemovePlayerFromLocation(locationName string, playerName string)                  models.Result[models.Player]
-	AddPlayerToLocation(locationName string, playerName string)                       models.Result[models.Player]
+	AddPlayerToLocation(locationName string, player models.Player)                    models.Result[models.Player]
 	GetPlayersFromLocation(locationName string)                                       models.Result[[]models.Player]
 	GetAllPlayersFromAllLocations()                                                   models.Result[[]models.Player]
 }
@@ -33,16 +33,19 @@ func GetSqlPlayerCardRepository(newDB *sqlx.DB) *sqlPlayerRepository{
 }
 
 //Add a single player to a given location.
-func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player]{
+func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]{
 	statement, err := s.db.PrepareNamed(constants.InsertNewPlayerWithoutTeam)
 
 	if err != nil {
 		return getResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	player := models.Player{}
+	params := map[string]interface{}{
+		"player_name":  player.PlayerName,
+		"location_name": locationName,
+	}
 
-	if err := statement.Get(&player.ID, player); err != nil{
+	if err := statement.Get(&player.ID, params); err != nil{
 		if err == sql.ErrNoRows {
 			return getResult(fmt.Errorf("No location %s found", locationName), http.StatusNotFound, models.Player{})
 		}

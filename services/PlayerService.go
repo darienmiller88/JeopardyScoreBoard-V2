@@ -44,7 +44,13 @@ func (p *PlayerServiceImpl) UpdatePlayerName(locationName string, oldPlayerName 
 }
 
 func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {
-	return p.Repository.AddPlayerToLocation(locationName, playerName)
+	player := models.Player{ PlayerName: playerName }
+
+	if err := player.Validate(); err != nil {
+		return models.Result[models.Player]{ Err: err, StatusCode: http.StatusUnprocessableEntity }
+	}
+	
+	return p.Repository.AddPlayerToLocation(locationName, player)
 }
 
 func (p *PlayerServiceImpl) RemovePlayerFromLocation(locationName string, playerName string) models.Result[models.Player]{

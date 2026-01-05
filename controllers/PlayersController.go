@@ -57,7 +57,6 @@ func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *ht
 	res.Header().Add("Content-type", "application/json")
 	res.WriteHeader(200)
 	res.Write(data)
-
 }
 
 func (p *PlayersController) RemovePlayerFromLocation(res http.ResponseWriter, req *http.Request){

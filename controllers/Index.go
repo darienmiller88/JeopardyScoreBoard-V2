@@ -29,4 +29,5 @@ func (i *Index) InitControllers(db *sqlx.DB){
 	//in main.go
 	i.Router.Mount("/", i.viewsController.Router)
 	i.Router.Mount("/locations", i.locationsController.Router)
+	i.Router.Mount("/players", i.playersController.Router)
 }
