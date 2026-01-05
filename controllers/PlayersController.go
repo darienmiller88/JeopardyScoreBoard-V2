@@ -21,6 +21,7 @@ func (p *PlayersController) Init(service services.PlayerService){
 	p.Router.Get("/", p.GetAllPlayers)
 	p.Router.Get("/{location_name}", p.GetAllPlayersFromOneLocation)
 	p.Router.Post("/{location_name}", p.AddPlayerToLocation)
+	p.Router.Put("/", p.UpdatePlayerName)
 }
 
 func (p *PlayersController) GetAllPlayers(res http.ResponseWriter, req *http.Request){
@@ -64,5 +65,31 @@ func (p *PlayersController) RemovePlayerFromLocation(res http.ResponseWriter, re
 }
 
 func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.Request){
+	names := struct{
+		OldPlayerName string `json:"old_player_name"`
+		NewPlayerName string `json:"new_player_name"`
+	}{}
+	
+	if err := json.NewDecoder(req.Body).Decode(&names); err !=nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
 
+	result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName)
+
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	data, err := json.Marshal(&result)
+
+	if err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	res.Write(data)
 }

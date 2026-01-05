@@ -58,27 +58,18 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 
 //Function to update a players name for a given location.
 func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
-	statement, err := s.db.PrepareNamed(constants.UpdatePlayerName)
-
-	if err != nil {
+	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
+	numRowsAffected, _ := result.RowsAffected()
+	
+	if numRowsAffected == 0 {
+		return getResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
+	}
+	
+	if err != nil {	
 		return getResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	player := models.Player{}
-	params := map[string]interface{}{
-		"old_player_name": oldPlayerName,
-		"new_player_name": newPlayerName,
-	}
-
-	if err := statement.Get(&player.ID, params); err != nil{
-		if err == sql.ErrNoRows {
-			return getResult(fmt.Errorf("No player with name %s found", oldPlayerName), http.StatusNotFound, models.Player{})
-		}
-		
-		return getResult(err, http.StatusInternalServerError, models.Player{})	
-	}
-	
-	return getResult(nil, 200, models.Player{})
+	return getResult(nil, http.StatusOK, models.Player{ PlayerName: newPlayerName })
 }
 
 //Remove a single player from a given location.
