@@ -3,11 +3,12 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
-	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 const(
@@ -34,23 +35,17 @@ func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository{
 
 //Add a single player to a given location.
 func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]{
-	statement, err := s.db.PrepareNamed(constants.InsertNewPlayerWithoutTeam)
+	if err := s.db.Get(&player.ID, constants.InsertNewPlayerWithoutTeam, player.PlayerName, locationName); err != nil{
+		var pqErr *pq.Error
 
-	if err != nil {
+		if errors.As(err, &pqErr) {
+            switch pqErr.Code {
+            case "23502", "23503": // NOT NULL or FK violation
+                return getResult(fmt.Errorf("no location '%s' found", locationName), http.StatusNotFound, models.Player{})
+            }
+        }
+
 		return getResult(err, http.StatusInternalServerError, models.Player{})
-	}
-
-	params := map[string]interface{}{
-		"player_name":  player.PlayerName,
-		"location_name": locationName,
-	}
-
-	if err := statement.Get(&player.ID, params); err != nil{
-		if err == sql.ErrNoRows {
-			return getResult(fmt.Errorf("No location %s found", locationName), http.StatusNotFound, models.Player{})
-		}
-		
-		return getResult(err, http.StatusInternalServerError, models.Player{})	
 	}
 	
 	return getResult(nil, http.StatusOK, player)
