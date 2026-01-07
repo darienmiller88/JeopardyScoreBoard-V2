@@ -5,28 +5,33 @@
 {{ end }}
 
 {{ define "content" }}
-<div class="card" style="max-width: 600px; margin: 40px auto; border-top: 4px solid var(--primary);">
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <span style="font-size: 3rem;">🏆</span>
-        <h2 style="margin: 0.5rem 0;">Clark Kent</h2>
-        <div style="color: var(--success); font-size: 2rem; font-weight: 800;">7,009 pts</div>
-        <p style="color: var(--text-dim); font-size: 0.9rem;">Lawrence • Aug 1, 2025</p>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
-        <div>
-            <div style="color: var(--text-dim); font-size: 0.8rem;">TOTAL POINTS</div>
-            <div style="font-weight: bold;">10,509</div>
+<div style="max-width: 32rem; margin: 0 auto;">
+    <h1 class="gradient-text" style="text-align: center; font-size: 3rem; margin-bottom: 2rem;">Saved Games</h1>
+    
+    <div class="glass" style="border: 1px solid rgba(250, 204, 21, 0.4);">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <span style="font-size: 3rem;">⭐</span>
+            <p style="color: var(--primary); font-size: 0.9rem; letter-spacing: 0.1rem;">WINNER</p>
+            <h2 style="font-size: 2.25rem;">Clark Kent</h2>
+            <div style="font-size: 3.5rem; font-weight: 900; color: var(--success);">7009</div>
+            <span style="font-size: 3rem;">⭐</span>
         </div>
-        <div>
-            <div style="color: var(--text-dim); font-size: 0.8rem;">AVG PER PLAYER</div>
-            <div style="font-weight: bold;">3,503</div>
-        </div>
-    </div>
 
-    <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 10px;">
-        <button class="btn btn-outline">View All Players</button>
-        <button class="btn btn-danger" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3);">Delete Game Record</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="glass" style="padding: 1rem; text-align: center; background: rgba(0,0,0,0.2);">
+                <div style="font-size: 1.5rem; font-weight: 700;">10509</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim);">TOTAL POINTS</div>
+            </div>
+            <div class="glass" style="padding: 1rem; text-align: center; background: rgba(0,0,0,0.2);">
+                <div style="font-size: 1.5rem; font-weight: 700;">3503</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim);">AVERAGE</div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+            <button class="btn" style="flex: 1; background: var(--primary-glow); color: white;">View Players</button>
+            <button class="btn" style="flex: 1; background: var(--danger); color: white;">Delete Game</button>
+        </div>
     </div>
 </div>
 {{ end }}

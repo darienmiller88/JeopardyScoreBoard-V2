@@ -5,36 +5,40 @@
 {{ end }}
 
 {{ define "content" }}
-<main class="container">
-    <header style="text-align: center; margin: 2rem 0;">
-        <h1>Game in Session</h1>
-        <p style="color: var(--text-dim)">Total Points: <span style="color: var(--primary); font-size: 1.5rem;">4,200</span></p>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button class="btn btn-outline" hx-post="/reset-all">Reset All</button>
-            <button class="btn btn-outline">Sort by Score</button>
+<div style="max-width: 56rem; margin: 0 auto;">
+    <h1 class="gradient-text" style="text-align: center; font-size: 3rem; margin-bottom: 2rem;">Create New Game</h1>
+    
+    <div class="glass">
+        <div style="margin-bottom: 2rem;">
+            <label style="color: var(--primary); font-size: 1.25rem; display: block; margin-bottom: 0.75rem;">Choose Site:</label>
+            <select style="font-size: 1.1rem; background: linear-gradient(to right, rgba(34,211,238,0.1), rgba(14,165,233,0.1));">
+                <option>Flushing</option>
+                <option>Pelham Bay</option>
+                <option>Lawrence</option>
+            </select>
         </div>
-    </header>
 
-    <div class="player-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px;">
-        <div class="card" style="text-align: center;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="margin: 0;">Brandon S</h3>
-                <button class="btn-danger" style="padding: 4px 8px; font-size: 0.7rem; border-radius: 4px;">Remove</button>
-            </div>
+        <div style="margin-bottom: 2rem;">
+            <h2 style="color: var(--primary); margin-bottom: 1rem;">
+                Players Available: <span style="color: white;">3</span>
+            </h2>
             
-            <div style="font-size: 3rem; font-weight: bold; margin: 1rem 0;">1,200</div>
-            
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-danger" style="flex: 1; font-size: 1.5rem;">-</button>
-                <button class="btn btn-primary" style="flex: 1; font-size: 1.5rem;">+</button>
-            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div class="player-row">
+                    <span style="font-size: 1.25rem; font-weight: 600;">Brandon S</span>
+                    <button class="btn" style="background: linear-gradient(to right, #fbbf24, #f97316); color: #000; padding: 0.5rem 1rem;">
+                        + Add To Game
+                    </button>
+                </div>
+                </div>
         </div>
+
+        <button class="btn btn-primary" 
+                hx-get="/game/session" 
+                hx-target="#main-content"
+                style="width: 100%; font-size: 1.5rem; padding: 1.25rem;">
+            ▶ Start Game!
+        </button>
     </div>
-
-    <footer style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 1rem;">
-         <button class="btn btn-danger">Close Game</button>
-         <button class="btn btn-primary" style="background: var(--accent)">Save Game</button>
-         <button class="btn btn-outline" style="background: var(--card-bg)">Add Players</button>
-    </footer>
-</main>
+</div>
 {{ end }}
