@@ -5,5 +5,28 @@
 {{ end }}
 
 {{ define "content" }}
-<h1>View games</h1>
+<div class="card" style="max-width: 600px; margin: 40px auto; border-top: 4px solid var(--primary);">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <span style="font-size: 3rem;">🏆</span>
+        <h2 style="margin: 0.5rem 0;">Clark Kent</h2>
+        <div style="color: var(--success); font-size: 2rem; font-weight: 800;">7,009 pts</div>
+        <p style="color: var(--text-dim); font-size: 0.9rem;">Lawrence • Aug 1, 2025</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+        <div>
+            <div style="color: var(--text-dim); font-size: 0.8rem;">TOTAL POINTS</div>
+            <div style="font-weight: bold;">10,509</div>
+        </div>
+        <div>
+            <div style="color: var(--text-dim); font-size: 0.8rem;">AVG PER PLAYER</div>
+            <div style="font-weight: bold;">3,503</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn btn-outline">View All Players</button>
+        <button class="btn btn-danger" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3);">Delete Game Record</button>
+    </div>
+</div>
 {{ end }}
