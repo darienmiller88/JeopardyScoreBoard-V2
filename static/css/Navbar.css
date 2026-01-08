@@ -65,7 +65,9 @@
 }
 
 /* Mobile Hamburger Logic */
-.nav-toggle { display: none; }
+.nav-toggle { 
+    display: none;
+ }
 
 .nav-toggle-label {
     display: none;
