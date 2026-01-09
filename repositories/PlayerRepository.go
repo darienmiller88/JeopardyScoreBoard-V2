@@ -37,13 +37,12 @@ func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository{
 func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]{
 	if err := s.db.Get(&player.ID, constants.InsertNewPlayerWithoutTeam, player.PlayerName, locationName); err != nil{
 		var pqErr *pq.Error
-
-		fmt.Println("err:", err)
+		
 		if errors.As(err, &pqErr) {
             switch pqErr.Code {
             case "23502", "23503": // NOT NULL or FK violation
                 return getResult(fmt.Errorf("no location '%s' found", locationName), http.StatusNotFound, models.Player{})
-			case "23505":
+			case "23505"://unique key violation
 				return getResult(fmt.Errorf("name %s is already taken", player.PlayerName), http.StatusConflict, models.Player{})
 			}
         }

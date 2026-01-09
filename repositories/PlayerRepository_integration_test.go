@@ -1,8 +1,4 @@
 package repositories
-
-func lol(){
-	
-}
 // import (
 // 	"JeopardyScoreBoardV2/models"
 // 	"net/http"
