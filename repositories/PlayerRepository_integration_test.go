@@ -1,25 +1,26 @@
 package repositories
-// import (
-// 	"JeopardyScoreBoardV2/models"
-// 	"net/http"
-// 	"testing"
 
-// 	"github.com/stretchr/testify/assert"
-// )
+import (
+	"JeopardyScoreBoardV2/models"
+	"net/http"
+	"testing"
 
-// func TestAddValidPlayer_Ok(t *testing.T) {
-// 	playerRepository := GetSqlPlayerRepository(db)
-// 	player := models.Player{PlayerName: "Darien Miller"}
+	"github.com/stretchr/testify/assert"
+)
 
-// 	result := playerRepository.AddPlayerToLocation("Elmwood", player)
+func TestAddValidPlayer_Ok(t *testing.T) {
+	playerRepository := GetSqlPlayerRepository(db)
+	player := models.Player{PlayerName: "Darien Miller"}
 
-// 	assert.Equal(t, nil, result.Err)
-// 	assert.Equal(t, http.StatusOK, result.StatusCode)
-// 	assert.Equal(t, player.PlayerName, result.ResultData.PlayerName)
+	result := playerRepository.AddPlayerToLocation("Elmwood", player)
 
-// 	//Verify that the player was inserted into the database
-// 	allPlayers := playerRepository.GetAllPlayersFromAllLocations()
-// 	playerInserted := allPlayers.ResultData[0]
+	assert.Equal(t, nil, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, player.PlayerName, result.ResultData.PlayerName)
 
-// 	assert.Equal(t, player.PlayerName, playerInserted.PlayerName)
-// }
+	//Verify that the player was inserted into the database
+	allPlayers := playerRepository.GetAllPlayersFromAllLocations()
+	playerInserted := allPlayers.ResultData[0]
+
+	assert.Equal(t, player.PlayerName, playerInserted.PlayerName)
+}

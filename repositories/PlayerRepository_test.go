@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/models"
+	"database/sql/driver"
 	"fmt"
 	"net/http"
 	"testing"
@@ -86,4 +87,27 @@ func TestAddPlayerToLocation_PlayerNameTaken(t *testing.T) {
     require.Error(t, result.Err)
     assert.Contains(t, result.Err.Error(), fmt.Sprintf("name %s is already taken", player.PlayerName))
     assert.Equal(t, http.StatusConflict, result.StatusCode)
+}
+
+func TestGetPlayersFromLocation_Ok(t *testing.T){
+	_, mock, repo := setupRepo(t)
+
+    location := "Elmwood"  
+	rows := sqlmock.NewRows([]string{"player_name"}).AddRows([]driver.Value{
+		"Valid name#1",
+		"Valid name#2",
+	})
+
+    mock.ExpectQuery(`SELECT * FROM players`).
+        WithArgs(location).
+        WillReturnRows(rows)
+
+	result := repo.GetPlayersFromLocation(location)
+
+    require.NoError(t, result.Err)
+    assert.Equal(t, 2,  len(result.ResultData))
+}
+
+func TestGetPlayersFromLocation_InvalidLocation(t *testing.T){
+	
 }
