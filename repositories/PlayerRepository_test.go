@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/models"
-	"database/sql/driver"
 	"fmt"
 	"net/http"
 	"testing"
@@ -93,12 +92,12 @@ func TestGetPlayersFromLocation_Ok(t *testing.T){
 	_, mock, repo := setupRepo(t)
 
     location := "Elmwood"  
-	rows := sqlmock.NewRows([]string{"player_name"}).AddRows([]driver.Value{
-		"Valid name#1",
-		"Valid name#2",
-	})
+	rows := sqlmock.NewRows([]string{
+        "id",
+        "player_name", 
+    }).AddRow(1, "brent cooper").AddRow(2, "marky mark")
 
-    mock.ExpectQuery(`SELECT * FROM players`).
+    mock.ExpectQuery(`SELECT \* FROM players`).
         WithArgs(location).
         WillReturnRows(rows)
 
