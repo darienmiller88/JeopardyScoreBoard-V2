@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/models"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"testing"
@@ -108,5 +109,16 @@ func TestGetPlayersFromLocation_Ok(t *testing.T){
 }
 
 func TestGetPlayersFromLocation_InvalidLocation(t *testing.T){
-	
+	_, mock, repo := setupRepo(t)
+
+    location := "FakeLocation"  
+
+    mock.ExpectQuery(`SELECT \* FROM players`).
+        WithArgs(location).
+        WillReturnError(sql.ErrNoRows)
+
+	result := repo.GetPlayersFromLocation(location)
+
+    require.Error(t, result.Err)
+    assert.Equal(t, http.StatusNotFound, result.StatusCode)
 }

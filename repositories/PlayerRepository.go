@@ -3,6 +3,7 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -78,6 +79,10 @@ func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models
 	players := []models.Player{}
 
 	if err := s.db.Select(&players, constants.GetAllPlayersFromLocation, locationName); err != nil {
+		if err == sql.ErrNoRows{
+			return getResult(err, http.StatusNotFound, players)
+		}
+		
 		return getResult(err, http.StatusInternalServerError, players)
 	} 
 
