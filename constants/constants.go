@@ -9,7 +9,8 @@ const(
 
 	InsertNewPlayerWithoutTeam string = `
 		INSERT INTO players (player_name, location_id)
-		VALUES($1,
+		VALUES(
+			$1,
 			(SELECT id FROM locations WHERE location_name=$2)
 		) RETURNING id
 	`
@@ -54,4 +55,8 @@ const(
 	`
 
 	//DELETE
+
+	DeletePlayer string = `
+		DELETE FROM players WHERE player_name=$1
+	`
 )
