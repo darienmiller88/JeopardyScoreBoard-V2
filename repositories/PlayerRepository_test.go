@@ -122,3 +122,20 @@ func TestGetPlayersFromLocation_InvalidLocation(t *testing.T){
     require.Error(t, result.Err)
     assert.Equal(t, http.StatusNotFound, result.StatusCode)
 }
+
+func TestGetAllPlayersFromAllLocations_Ok(t *testing.T){
+	_, mock, repo := setupRepo(t)
+
+	rows := sqlmock.NewRows([]string{
+        "id",
+        "player_name", 
+    }).AddRow(1, "brent cooper").AddRow(2, "marky mark").AddRow(3, "dar miller")
+
+    mock.ExpectQuery(`SELECT \* FROM players`).WillReturnRows(rows)
+
+	result := repo.GetAllPlayersFromAllLocations()
+
+    require.NoError(t, result.Err)
+    assert.Equal(t, 3, len(result.ResultData))
+    assert.Equal(t, http.StatusOK, result.StatusCode)
+}
