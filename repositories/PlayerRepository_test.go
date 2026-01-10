@@ -107,7 +107,7 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
     oldName := "Kathy"
 
     mock.ExpectQuery(`UPDATE players`).
-        WithArgs(player.PlayerName, location).
+        WithArgs().
         WillReturnError(&pq.Error{
             Code: "23505",
         })

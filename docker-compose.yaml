@@ -5,6 +5,7 @@ services:
       - "8000:8080"
     environment:
       - DATABASE_URL=postgres://appuser:secret@db:5432/appdb?sslmode=disable
+      - PORT=8080
     depends_on:
       - db
   db:
