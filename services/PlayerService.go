@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 
 	"JeopardyScoreBoardV2/models"
@@ -24,6 +25,13 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName
 
 	if err := player.Validate(); err != nil {
 		return models.Result[models.Player]{ Err: err, StatusCode: http.StatusUnprocessableEntity }
+	}
+
+	if oldPlayerName == newPlayerName {
+		return models.Result[models.Player]{ 
+			Err: fmt.Errorf("old and new names must be different"), 
+			StatusCode: http.StatusUnprocessableEntity,
+		}		
 	}
 	
 	return p.Repository.UpdatePlayerName(oldPlayerName, newPlayerName)

@@ -28,6 +28,10 @@ func setupRepo(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock, *sqlPlayerRepository) {
 	return sqlxDB, mock, repo
 }
 
+//////////////////////////////
+//POST tests
+////////////////////////////
+
 func TestAddPlayerToLocation_Success(t *testing.T) {
     _, mock, repo := setupRepo(t)
 
@@ -38,10 +42,10 @@ func TestAddPlayerToLocation_Success(t *testing.T) {
     rows := sqlmock.NewRows([]string{"id"}).AddRow(42)
 
     mock.ExpectQuery(`INSERT INTO players`).
-        WithArgs("Jane Doe", "New York").
+        WithArgs("Jane Doe", "Elmwood").
         WillReturnRows(rows)
 
-    result := repo.AddPlayerToLocation("New York", player)
+    result := repo.AddPlayerToLocation("Elmwood", player)
 
     require.NoError(t, result.Err)
     assert.Equal(t, http.StatusOK, result.StatusCode)
@@ -88,6 +92,48 @@ func TestAddPlayerToLocation_PlayerNameTaken(t *testing.T) {
     assert.Contains(t, result.Err.Error(), fmt.Sprintf("name %s is already taken", player.PlayerName))
     assert.Equal(t, http.StatusConflict, result.StatusCode)
 }
+
+
+
+
+/////////////////////////
+// UPDATE tests
+////////////////////////
+
+func TestUpdatePlayerName_Ok(t *testing.T) {
+    _, mock, repo := setupRepo(t)
+
+    newName := "Kathya"
+    oldName := "Kathy"
+
+    mock.ExpectQuery(`UPDATE players`).
+        WithArgs(player.PlayerName, location).
+        WillReturnError(&pq.Error{
+            Code: "23505",
+        })
+
+    result := repo.AddPlayerToLocation(location, player)
+}
+
+func TestUpdatePlayerName_InvalidNewName(t *testing.T) {
+
+}
+
+func TestUpdatePlayerName_NewNameTaken(t *testing.T) {
+
+}
+
+func TestUpdatePlayerName_OldNameNotFound(t *testing.T) {
+
+}
+
+
+
+
+
+//////////////////
+//GET tests
+/////////////////
 
 func TestGetPlayersFromLocation_Ok(t *testing.T){
 	_, mock, repo := setupRepo(t)
