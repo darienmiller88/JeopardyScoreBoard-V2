@@ -135,7 +135,19 @@ func TestUpdatePlayerName_NewNameTaken(t *testing.T) {
 }
 
 func TestUpdatePlayerName_OldNameNotFound(t *testing.T) {
+   _, mock, repo := setupRepo(t)
 
+    newName := "Kathya"
+    oldName := "Kathy"
+
+    mock.ExpectExec(`UPDATE players`).
+        WithArgs(newName, oldName).
+        WillReturnResult(sqlmock.NewResult(0, 0))
+
+    result := repo.UpdatePlayerName(oldName, newName)
+
+    require.Error(t, result.Err)
+    assert.Equal(t, http.StatusNotFound, result.StatusCode)
 }
 
 
