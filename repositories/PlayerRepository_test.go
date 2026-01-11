@@ -186,7 +186,7 @@ func TestGetPlayersFromLocation_Ok(t *testing.T){
         "player_name", 
     }).AddRow(1, "brent cooper").AddRow(2, "marky mark")
 
-    mock.ExpectQuery(`SELECT \* FROM players`).
+    mock.ExpectQuery(`SELECT players.* FROM players`).
         WithArgs(location).
         WillReturnRows(rows)
 
@@ -201,7 +201,7 @@ func TestGetPlayersFromLocation_InvalidLocation(t *testing.T){
 
     location := "FakeLocation"  
 
-    mock.ExpectQuery(`SELECT \* FROM players`).
+    mock.ExpectQuery(`SELECT players.* FROM players`).
         WithArgs(location).
         WillReturnError(sql.ErrNoRows)
 

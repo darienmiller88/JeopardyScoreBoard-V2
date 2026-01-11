@@ -42,7 +42,7 @@ const(
 	`
 
 	GetAllPlayersFromLocation string = `
-		SELECT *
+		SELECT players.*
 		FROM players 
 		JOIN locations 
 		ON locations.id=players.location_id

@@ -52,13 +52,12 @@ func TestMain(m *testing.M) {
 
 	defer func() {
         // If DB is dirty, fix it so Down() can run
-        if version, dirty, _ := migrations.Version(); dirty {
-			migrations.Force(int(version))
+        if v, dirty, _ := migrations.Version(); dirty {
+            _ = migrations.Force(int(v))
         }
-        
-		migrations.Down()
-        db.Close()
-	}()
-	
-	os.Exit(m.Run())
+        _ = migrations.Down()
+        _ = db.Close()
+    }()
+
+    os.Exit(m.Run())
 }

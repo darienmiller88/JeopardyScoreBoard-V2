@@ -55,7 +55,13 @@ func TestAddPlayerToLocation_IntegrationTest_PlayerNameTaken(t *testing.T) {
 //READ/GET tests
 ////////////////////////
 
+func TestGetPlayersFromLocation_IntegrationTest_Ok(t *testing.T) {
+ 	playerRepository := GetSqlPlayerRepository(db)
+	result := playerRepository.GetPlayersFromLocation("Elmwood")
 
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+}
 
 
 
