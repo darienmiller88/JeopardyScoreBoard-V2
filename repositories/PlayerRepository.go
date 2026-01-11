@@ -15,6 +15,8 @@ import (
 const(
 	push string = "$push"
 	pull string = "$pull"
+	uniqueKeyViolation string = "23505"
+	notNullViolation string = "23502"
 )
 
 type PlayerRepository interface {
@@ -59,15 +61,23 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
 	numRowsAffected, _ := result.RowsAffected()
 
-	if err != nil {	
-		return getResult(err, http.StatusInternalServerError, models.Player{})
-	}
+	if err != nil {
+        var pqErr *pq.Error
+		
+        if errors.As(err, &pqErr) {
+            switch pqErr.Code {
+            case "23505": // unique_violation
+                return getResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
+            }
+        }
+
+        return getResult(err, http.StatusInternalServerError, models.Player{})
+    }
 	
 	if numRowsAffected == 0 {
 		return getResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
 	}
 	
-
 	return getResult(nil, http.StatusOK, models.Player{ PlayerName: newPlayerName })
 }
 

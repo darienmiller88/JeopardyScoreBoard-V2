@@ -116,13 +116,21 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
     assert.Equal(t, nil, result.Err)
     assert.Equal(t, newName, result.ResultData.PlayerName)
 }
-
-func TestUpdatePlayerName_InvalidNewName(t *testing.T) {
-
-}
-
 func TestUpdatePlayerName_NewNameTaken(t *testing.T) {
+    _, mock, repo := setupRepo(t)
 
+    newName := "Kathya"
+    oldName := "Kathy"
+
+    mock.ExpectExec(`UPDATE players`).
+        WithArgs(newName, oldName).
+        WillReturnError()
+
+    result := repo.UpdatePlayerName(oldName, newName)
+
+    assert.Equal(t, http.StatusOK, result.StatusCode)
+    assert.Equal(t, nil, result.Err)
+    assert.Equal(t, newName, result.ResultData.PlayerName)
 }
 
 func TestUpdatePlayerName_OldNameNotFound(t *testing.T) {
