@@ -35,9 +35,6 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	cwd, _ := os.Getwd()
-	log.Println("CWD:", cwd)
-
 	migrations, err := migrate.NewWithDatabaseInstance(
         "file://../migrations",
         "postgres", 
@@ -48,15 +45,20 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-
 	//Run all of the migrations to recreate the production database
-    // migrations.Up()
+	if err := migrations.Up(); err != nil && err != migrate.ErrNoChange {
+        log.Fatal(err)
+    }
 
-    code := m.Run()
-
-	//Clean up by removing the tables in the test database.
-	migrations.Down()
-
-    _ = db.Close()
-    os.Exit(code)
+	defer func() {
+        // If DB is dirty, fix it so Down() can run
+        if version, dirty, _ := migrations.Version(); dirty {
+			migrations.Force(int(version))
+        }
+        
+		migrations.Down()
+        db.Close()
+	}()
+	
+	os.Exit(m.Run())
 }

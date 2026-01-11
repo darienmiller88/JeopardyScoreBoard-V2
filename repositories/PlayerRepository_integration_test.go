@@ -43,7 +43,6 @@ func TestAddPlayerToLocation_IntegrationTest_PlayerNameTaken(t *testing.T) {
     playerRepository := GetSqlPlayerRepository(db)
 	player := models.Player{PlayerName: "Darien Miller"}
 
-	//Add a player, and confirm they were added.
 	result := playerRepository.AddPlayerToLocation("Elmwood", player)
 
 	require.Error(t, result.Err)
