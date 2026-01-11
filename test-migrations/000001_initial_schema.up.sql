@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- ============================
 -- Locations
 -- ============================
@@ -30,6 +28,7 @@ CREATE TABLE players (
     player_name VARCHAR(60) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     team_id INT REFERENCES teams(id) ON DELETE SET NULL
 );
@@ -57,11 +56,10 @@ CREATE TABLE saved_game_teams (
     id INT PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
-    team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-    saved_game_id UUID NOT NULL REFERENCES saved_games(id) ON DELETE CASCADE,
-
     team_score INT NOT NULL,
+
+    team_id INT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+    saved_game_id INT NOT NULL REFERENCES saved_games(id) ON DELETE CASCADE,
 
     UNIQUE (saved_game_id, team_id)
 );
@@ -70,12 +68,12 @@ CREATE TABLE saved_game_teams (
 -- Saved Game Players
 -- ============================
 CREATE TABLE saved_game_players (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    saved_game_id UUID NOT NULL REFERENCES saved_games(id) ON DELETE CASCADE,
-    player_id UUID REFERENCES players(id) ON DELETE SET NULL,
-
-    winning_player_name VARCHAR(60),
+    id INT PRIMARY KEY,
+    player_name VARCHAR(60) NOT NULL,
     player_score INT NOT NULL,
+
+    saved_game_id INT NOT NULL REFERENCES saved_games(id) ON DELETE CASCADE,
+    player_id INT REFERENCES players(id) ON DELETE SET NULL,
 
     UNIQUE (saved_game_id, player_id)
 );
