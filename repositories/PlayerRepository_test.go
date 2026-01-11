@@ -151,6 +151,25 @@ func TestUpdatePlayerName_OldNameNotFound(t *testing.T) {
 }
 
 
+//////////////////////
+//DELETE tests
+/////////////////////
+
+func TestDeletePlayerName_OldNameNotFound(t *testing.T) {
+   _, mock, repo := setupRepo(t)
+
+    name := "Kathya"
+
+    mock.ExpectExec(`DELETE FROM players`).
+        WithArgs(name).
+        WillReturnResult(sqlmock.NewResult(0, 0))
+
+    result := repo.RemovePlayer(name)
+
+    require.Error(t, result.Err)
+    assert.Equal(t, http.StatusNotFound, result.StatusCode)
+}
+
 
 
 

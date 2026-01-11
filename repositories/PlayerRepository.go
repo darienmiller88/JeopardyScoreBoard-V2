@@ -81,7 +81,19 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 
 //Remove a single player from a given location.
 func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[models.Player]{
-	return getResult(nil, http.StatusOK, models.Player{})
+	result, err := s.db.Exec(constants.DeletePlayer, playerName)
+
+	if err != nil {
+		return getResult(err, http.StatusInternalServerError, models.Player{})
+	}
+
+	numRowsAffected, _ := result.RowsAffected()
+
+	if numRowsAffected == 0 {
+		return getResult(fmt.Errorf("could not find player %s", playerName), http.StatusNotFound, models.Player{})
+	}
+	
+	return getResult(nil, http.StatusOK, models.Player{ PlayerName: playerName })
 }
 
 func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player]{
