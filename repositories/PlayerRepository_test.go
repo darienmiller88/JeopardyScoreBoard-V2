@@ -124,13 +124,14 @@ func TestUpdatePlayerName_NewNameTaken(t *testing.T) {
 
     mock.ExpectExec(`UPDATE players`).
         WithArgs(newName, oldName).
-        WillReturnError()
+        WillReturnError(&pq.Error{
+            Code: "23505",
+        })
 
     result := repo.UpdatePlayerName(oldName, newName)
 
-    assert.Equal(t, http.StatusOK, result.StatusCode)
-    assert.Equal(t, nil, result.Err)
-    assert.Equal(t, newName, result.ResultData.PlayerName)
+    require.Error(t, result.Err)
+    assert.Equal(t, http.StatusConflict, result.StatusCode)
 }
 
 func TestUpdatePlayerName_OldNameNotFound(t *testing.T) {

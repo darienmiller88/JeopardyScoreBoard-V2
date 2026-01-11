@@ -59,11 +59,10 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 //Function to update a players name for a given location.
 func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
 	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
-	numRowsAffected, _ := result.RowsAffected()
 
 	if err != nil {
         var pqErr *pq.Error
-		
+
         if errors.As(err, &pqErr) {
             switch pqErr.Code {
             case "23505": // unique_violation
@@ -74,6 +73,8 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
         return getResult(err, http.StatusInternalServerError, models.Player{})
     }
 	
+	numRowsAffected, _ := result.RowsAffected()
+
 	if numRowsAffected == 0 {
 		return getResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
 	}
