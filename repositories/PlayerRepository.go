@@ -63,11 +63,8 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	if err != nil {
         var pqErr *pq.Error
 
-        if errors.As(err, &pqErr) {
-            switch pqErr.Code {
-            case "23505": // unique_violation
-                return getResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
-            }
+        if errors.As(err, &pqErr) && pqErr.Code == "23505"{
+            return getResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
         }
 
         return getResult(err, http.StatusInternalServerError, models.Player{})
