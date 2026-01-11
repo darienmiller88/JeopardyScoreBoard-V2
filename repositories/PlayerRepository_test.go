@@ -106,13 +106,15 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
     newName := "Kathya"
     oldName := "Kathy"
 
-    mock.ExpectQuery(`UPDATE players`).
-        WithArgs().
-        WillReturnError(&pq.Error{
-            Code: "23505",
-        })
+    mock.ExpectExec(`UPDATE players`).
+        WithArgs(newName, oldName).
+        WillReturnResult(sqlmock.NewResult(0, 1))
 
-    result := repo.AddPlayerToLocation(location, player)
+    result := repo.UpdatePlayerName(oldName, newName)
+
+    assert.Equal(t, http.StatusOK, result.StatusCode)
+    assert.Equal(t, nil, result.Err)
+    assert.Equal(t, newName, result.ResultData.PlayerName)
 }
 
 func TestUpdatePlayerName_InvalidNewName(t *testing.T) {

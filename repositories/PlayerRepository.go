@@ -58,14 +58,15 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
 	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
 	numRowsAffected, _ := result.RowsAffected()
+
+	if err != nil {	
+		return getResult(err, http.StatusInternalServerError, models.Player{})
+	}
 	
 	if numRowsAffected == 0 {
 		return getResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
 	}
 	
-	if err != nil {	
-		return getResult(err, http.StatusInternalServerError, models.Player{})
-	}
 
 	return getResult(nil, http.StatusOK, models.Player{ PlayerName: newPlayerName })
 }

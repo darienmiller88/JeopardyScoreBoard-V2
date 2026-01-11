@@ -55,7 +55,6 @@ const(
 	`
 
 	//DELETE
-
 	DeletePlayer string = `
 		DELETE FROM players WHERE player_name=$1
 	`
