@@ -6,9 +6,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestAddValidPlayer_Ok(t *testing.T) {
+/////////////////////////
+//CREATE/POST tests
+////////////////////////
+func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 	playerRepository := GetSqlPlayerRepository(db)
 	player := models.Player{PlayerName: "Darien Miller"}
 
@@ -24,3 +28,46 @@ func TestAddValidPlayer_Ok(t *testing.T) {
 
 	assert.Equal(t, player.PlayerName, playerInserted.PlayerName)
 }
+
+func TestAddPlayerToLocation_IntegrationTest_InvalidLocation(t *testing.T) {
+    playerRepository := GetSqlPlayerRepository(db)
+	player := models.Player{PlayerName: "Darien Miller"}
+
+	result := playerRepository.AddPlayerToLocation("FakeLocation", player)
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+}
+
+func TestAddPlayerToLocation_IntegrationTest_PlayerNameTaken(t *testing.T) {
+    playerRepository := GetSqlPlayerRepository(db)
+	player := models.Player{PlayerName: "Darien Miller"}
+
+	//Add a player, and confirm they were added.
+	result := playerRepository.AddPlayerToLocation("Elmwood", player)
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusConflict, result.StatusCode)
+	assert.Equal(t, models.Player{}, result.ResultData)
+}
+
+
+/////////////////////////
+//READ/GET tests
+////////////////////////
+
+
+
+
+
+/////////////////////////
+//UPDATE/PUT tests
+////////////////////////
+
+
+
+
+
+/////////////////////////
+//DESTROY/DELETE tests
+////////////////////////

@@ -29,15 +29,28 @@ func TestMain(m *testing.M) {
         log.Fatal(err)
     }
 
-	driver, _ := postgres.WithInstance(db.DB, &postgres.Config{})
-	migrations, _ := migrate.NewWithDatabaseInstance(
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cwd, _ := os.Getwd()
+	log.Println("CWD:", cwd)
+
+	migrations, err := migrate.NewWithDatabaseInstance(
         "file://../migrations",
         "postgres", 
 		driver,
 	)
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+
 	//Run all of the migrations to recreate the production database
-    migrations.Up()
+    // migrations.Up()
 
     code := m.Run()
 
