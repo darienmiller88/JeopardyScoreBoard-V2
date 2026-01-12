@@ -228,6 +228,17 @@ func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
 ////////////////////
 // DESTROY/DELETE tests
 ////////////////////

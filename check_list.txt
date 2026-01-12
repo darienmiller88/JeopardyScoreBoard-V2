@@ -9,8 +9,8 @@ Backend
 [x] - Complete Player Model Tests
 [x] - Complete Player Repository
 [x] - Complete Player Repository tests
-[] - Complete Player Service
-[] - Complete Player Service tests
+[x] - Complete Player Service
+[x] - Complete Player Service tests
 [] - Complete Saved Game Repository
 [] - Complete Saved Game Repository tests
 [] - Complete Saved Game Service
