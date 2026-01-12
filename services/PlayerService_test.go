@@ -197,6 +197,16 @@ func TestUpdatePlayerName_Service_NameMustHaveTwoParts(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
 }
 
+func TestUpdatePlayerName_Service_SameName(t *testing.T) {
+	mockRepo := &mockPlayerRepository{}
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+
+	result := service.UpdatePlayerName("Jane Doe", "Jane Doe")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+	assert.Contains(t, result.Err.Error(), "must be different")
+}
 
 
 
