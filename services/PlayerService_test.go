@@ -67,7 +67,26 @@ func TestAddPlayer_NameTooShort(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
 }
 
+func TestAddPlayer_NameTooLong(t *testing.T) {
+	mockRepo := &mockPlayerRepository{}
+	service := &PlayerServiceImpl{ Repository: mockRepo }
 
+	result := service.AddPlayerToLocation("Elmwood", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdw")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
+
+func TestAddPlayer_NameMustHaveTwoParts(t *testing.T) {
+	mockRepo := &mockPlayerRepository{}
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+
+	result := service.AddPlayerToLocation("Elmwood", "Cheryl")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+	assert.Contains(t, result.Err.Error(), "two parts")
+}
 
 
 
