@@ -161,8 +161,21 @@ func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
     var count int
 
     err = db.Get(&count, `SELECT COUNT(*) FROM players WHERE player_name='DeleteMe'`)
-	
+
     require.NoError(t, err)
     assert.Equal(t, 0, count)
 }
 
+func TestRemovePlayer_IntegrationTest_PlayerNotFound(t *testing.T) {
+    repo := GetSqlPlayerRepository(db)
+
+    // Make sure the table is empty
+    _, err := db.Exec(`DELETE FROM players`)
+    require.NoError(t, err)
+
+    result := repo.RemovePlayer("NoName")
+
+    require.Error(t, result.Err)
+    assert.Equal(t, http.StatusNotFound, result.StatusCode)
+    assert.Contains(t, result.Err.Error(), "could not find player")
+}
