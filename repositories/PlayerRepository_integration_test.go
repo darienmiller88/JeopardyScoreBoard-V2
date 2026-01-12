@@ -84,8 +84,30 @@ func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
 //UPDATE/PUT tests
 ////////////////////////
 
+func TestUpdatePlayerName_IntegrationTest_Ok(t *testing.T){
+ 	playerRepository := GetSqlPlayerRepository(db)
+	playerName := "player name"
+	result := playerRepository.AddPlayerToLocation("Elmwood", models.Player{ PlayerName: playerName })
 
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
 
+	newName := "new name"
+	updateResult := playerRepository.UpdatePlayerName(playerName, newName)
+
+	//Check ti see if the player's name was updated correctly
+	require.NoError(t, updateResult.Err)
+	assert.Equal(t, http.StatusOK, updateResult.StatusCode)
+	assert.Equal(t, newName, updateResult.ResultData.PlayerName)
+}
+
+func TestUpdatePlayerName_IntegrationTest_NewNameTaken(t *testing.T) {
+
+}
+
+func TestUpdatePlayerName_IntegrationTest_OldNameNotFound(t *testing.T) {
+
+}
 
 
 /////////////////////////
