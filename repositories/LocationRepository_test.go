@@ -45,3 +45,19 @@ func TestGetAllLocations_Ok(t *testing.T) {
 
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestGetAllLocations_Empty(t *testing.T) {
+	_, mock, repo := setupLocationRepo(t)
+
+	rows := sqlmock.NewRows([]string{"location_name"})
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllLocations)).WillReturnRows(rows)
+
+	result := repo.GetAllLocations()
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+
+	require.NoError(t, mock.ExpectationsWereMet())
+}
