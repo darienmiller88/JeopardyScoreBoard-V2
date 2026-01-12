@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/constants"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -91,6 +92,28 @@ func TestGetLocation_Ok(t *testing.T) {
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 	assert.Equal(t, location, result.ResultData)
+
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetLocation_NotFound(t *testing.T) {
+	_, mock, repo := setupLocationRepo(t)
+
+	location := "FakeTown"
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetLocation)).
+		WithArgs(location).
+		WillReturnError(sql.ErrNoRows)
+
+	result := repo.GetLocation(location)
+
+	//Ensure an error is returned
+	require.Error(t, result.Err)
+	
+	//Assert teh following to ensure they are whats
+	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.Contains(t, result.Err.Error(), "No location found")
 
 	require.NoError(t, mock.ExpectationsWereMet())
 }
