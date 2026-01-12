@@ -177,6 +177,15 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 	assert.Equal(t, "Bob Melendez", result.ResultData.PlayerName)
 }
 
+func TestUpdatePlayerName_Service_InvalidNewName(t *testing.T) {
+	mockRepo := &mockPlayerRepository{}
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+
+	result := service.UpdatePlayerName("Alice Twilight", "Bob") // too short (3 chars)
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
 
 
 
