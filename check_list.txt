@@ -5,7 +5,7 @@ Backend
 [x] - Complete Location Repository
 [x] - Complete Location Repository tests
 [x] - Complete Location Service
-[x] - Complete Location Service tests
+[ ] - Complete Location Service tests
 [x] - Complete Player Model Tests
 [x] - Complete Player Repository
 [x] - Complete Player Repository tests
