@@ -67,10 +67,18 @@ func TestGetPlayersFromLocation_IntegrationTest_InvalidLocation(t *testing.T) {
  	playerRepository := GetSqlPlayerRepository(db)
 	result := playerRepository.GetPlayersFromLocation("FakeLocation")
 
-	require.Error(t, result.Err)
-	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, 0, len(result.ResultData))
 }
 
+func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
+ 	playerRepository := GetSqlPlayerRepository(db)
+	result := playerRepository.GetPlayersFromLocation("Elmwood")
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+}
 
 /////////////////////////
 //UPDATE/PUT tests

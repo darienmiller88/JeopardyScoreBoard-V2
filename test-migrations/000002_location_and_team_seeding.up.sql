@@ -24,3 +24,8 @@ INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_
 INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_name='5030 Broadway'));
 INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_name='W 154th St'));
 INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_name='Pelham Bay'));
+
+INSERT INTO players (player_name, location_id) VALUES('player one', (SELECT id FROM locations WHERE location_name='Pelham Bay'));
+INSERT INTO players (player_name, location_id) VALUES('player two', (SELECT id FROM locations WHERE location_name='Pelham Bay'));
+INSERT INTO players (player_name, location_id) VALUES('player three', (SELECT id FROM locations WHERE location_name='Elmwood'));
+INSERT INTO players (player_name, location_id) VALUES('player four', (SELECT id FROM locations WHERE location_name='Elmwood'));
