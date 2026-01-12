@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -140,12 +141,41 @@ func TestGetPlayersFromLocation_Ok(t *testing.T) {
 	assert.Len(t, result.ResultData, 1)
 }
 
+func TestGetPlayersFromLocation_RepoError(t *testing.T) {
+	mockRepo := &mockPlayerRepository{
+		playersResult: models.Result[[]models.Player]{
+			Err:        fmt.Errorf("db exploded"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	}
+
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+	result := service.GetPlayersFromLocation("Elmwood")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
 
 
 ////////////////////
 // UPDATE/PUT tests
 ////////////////////
 
+func TestUpdatePlayerName_Service_Ok(t *testing.T) {
+	mockRepo := &mockPlayerRepository{
+		playerResult: models.Result[models.Player]{
+			ResultData: models.Player{ PlayerName: "Bob Melendez" },
+			StatusCode: http.StatusOK,
+		},
+	}
+
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez")
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, "Bob Melendez", result.ResultData.PlayerName)
+}
 
 
 
