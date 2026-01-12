@@ -38,7 +38,17 @@ func (p *PlayersController) GetAllPlayers(res http.ResponseWriter, req *http.Req
 }
 
 func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter, req *http.Request){
+	location := chi.URLParam(req, "location_name")
+	result := p.playerService.GetPlayersFromLocation(location)
 
+	if result.Err != nil{
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(result)
 }
 
 func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *http.Request){

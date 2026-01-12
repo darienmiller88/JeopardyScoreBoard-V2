@@ -98,8 +98,6 @@ func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[mode
 func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
 	players := []models.Player{}
 
-	fmt.Println("location:", locationName)
-
 	if err := s.db.Select(&players, constants.GetAllPlayersFromLocation, locationName); err != nil {
 		return getResult(err, http.StatusInternalServerError, players)
 	}
