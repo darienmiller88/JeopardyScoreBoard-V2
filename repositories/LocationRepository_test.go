@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/constants"
+	"fmt"
 	"net/http"
 	"regexp"
 	"testing"
@@ -57,6 +58,21 @@ func TestGetAllLocations_Empty(t *testing.T) {
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetAllLocations_DbError(t *testing.T) {
+	_, mock, repo := setupLocationRepo(t)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllLocations)).
+		WillReturnError(fmt.Errorf("db blew up"))
+
+	result := repo.GetAllLocations()
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.Empty(t, result.ResultData)
 
 	require.NoError(t, mock.ExpectationsWereMet())
