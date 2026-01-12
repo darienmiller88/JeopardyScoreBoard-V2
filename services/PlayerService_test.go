@@ -187,6 +187,15 @@ func TestUpdatePlayerName_Service_InvalidNewName(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
 }
 
+func TestUpdatePlayerName_Service_NameMustHaveTwoParts(t *testing.T) {
+	mockRepo := &mockPlayerRepository{}
+	service := &PlayerServiceImpl{Repository: mockRepo}
+
+	result := service.UpdatePlayerName("Alice Twilight", "Margaret")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
 
 
 
