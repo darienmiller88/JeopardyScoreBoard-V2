@@ -117,3 +117,20 @@ func TestGetLocation_NotFound(t *testing.T) {
 
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestGetLocation_DbError(t *testing.T) {
+	_, mock, repo := setupLocationRepo(t)
+	location := "Elmwood"
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetLocation)).
+		WithArgs(location).
+		WillReturnError(fmt.Errorf("connection lost"))
+
+	result := repo.GetLocation(location)
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+
+	require.NoError(t, mock.ExpectationsWereMet())
+}
