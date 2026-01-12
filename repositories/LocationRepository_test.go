@@ -77,3 +77,20 @@ func TestGetAllLocations_DbError(t *testing.T) {
 
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestGetLocation_Ok(t *testing.T) {
+	_, mock, repo := setupLocationRepo(t)
+
+	location := "Elmwood"
+	rows := sqlmock.NewRows([]string{"location_name"}).AddRow(location)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetLocation)).WithArgs(location).WillReturnRows(rows)
+
+	result := repo.GetLocation(location)
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, location, result.ResultData)
+
+	require.NoError(t, mock.ExpectationsWereMet())
+}
