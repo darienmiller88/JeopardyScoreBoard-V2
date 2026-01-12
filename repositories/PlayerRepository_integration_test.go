@@ -102,14 +102,41 @@ func TestUpdatePlayerName_IntegrationTest_Ok(t *testing.T){
 }
 
 func TestUpdatePlayerName_IntegrationTest_NewNameTaken(t *testing.T) {
+	repo := GetSqlPlayerRepository(db)
 
+    // Create two players in same location
+    _, err := db.Exec(`
+        INSERT INTO players (player_name, location_id)
+        VALUES
+          ('Alice', (SELECT id FROM locations WHERE location_name='Elmwood')),
+          ('Bob',   (SELECT id FROM locations WHERE location_name='Elmwood'))
+    `)
+    require.NoError(t, err)
+
+    // Try to rename Alice -> Bob (duplicate name)
+    result := repo.UpdatePlayerName("Alice", "Bob")
+
+    require.Error(t, result.Err)
+    assert.Equal(t, http.StatusConflict, result.StatusCode)
+    assert.Contains(t, result.Err.Error(), "already exists")
 }
 
 func TestUpdatePlayerName_IntegrationTest_OldNameNotFound(t *testing.T) {
+	repo := GetSqlPlayerRepository(db)
 
+    // Ensure table is empty (or at least doesn't contain this name)
+    _, err := db.Exec(`DELETE FROM players`)
+    require.NoError(t, err)
+
+    result := repo.UpdatePlayerName("Ghost", "NewName")
+
+    require.Error(t, result.Err)
+    assert.Equal(t, http.StatusNotFound, result.StatusCode)
+    assert.Contains(t, result.Err.Error(), "could not find player")
 }
 
 
 /////////////////////////
 //DESTROY/DELETE tests
 ////////////////////////
+
