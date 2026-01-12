@@ -63,6 +63,13 @@ func TestGetPlayersFromLocation_IntegrationTest_Ok(t *testing.T) {
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 }
 
+func TestGetPlayersFromLocation_IntegrationTest_InvalidLocation(t *testing.T) {
+ 	playerRepository := GetSqlPlayerRepository(db)
+	result := playerRepository.GetPlayersFromLocation("FakeLocation")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+}
 
 
 /////////////////////////

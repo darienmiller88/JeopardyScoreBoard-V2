@@ -1,7 +1,7 @@
 -- ============================
 -- Locations
 -- ============================
-CREATE TABLE locations (
+CREATE TABLE IF NOT EXISTS locations (
     id SERIAL PRIMARY KEY,
     location_name VARCHAR(30) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -11,19 +11,19 @@ CREATE TABLE locations (
 -- ============================
 -- Teams
 -- ============================
-CREATE TABLE teams (
+CREATE TABLE IF NOT EXISTS teams (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
 
-    UNIQUE (location_id, id)
+    UNIQUE (location_id)
 );
 
 -- ============================
 -- Players
 -- ============================
-CREATE TABLE players (
+CREATE TABLE IF NOT EXISTS players (
     id SERIAL PRIMARY KEY,
     player_name VARCHAR(60) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -36,24 +36,24 @@ CREATE TABLE players (
 -- ============================
 -- Saved Games
 -- ============================
-CREATE TABLE saved_games (
-    id INT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS saved_games (
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     winning_player_name VARCHAR(60),
     total_score INT NOT NULL,
-    average_score DOUBLE PRECISION NOT NULL
+    average_score DOUBLE PRECISION NOT NULL,
 
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     winning_team_id INT REFERENCES teams(id) ON DELETE SET NULL,
-    winning_player_id INT REFERENCES players(id) ON DELETE SET NULL,
+    winning_player_id INT REFERENCES players(id) ON DELETE SET NULL
 );
 
 -- ============================
 -- Saved Game Teams
 -- ============================
-CREATE TABLE saved_game_teams (
-    id INT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS saved_game_teams (
+    id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     team_score INT NOT NULL,
@@ -67,8 +67,8 @@ CREATE TABLE saved_game_teams (
 -- ============================
 -- Saved Game Players
 -- ============================
-CREATE TABLE saved_game_players (
-    id INT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS saved_game_players (
+    id SERIAL PRIMARY KEY,
     player_name VARCHAR(60) NOT NULL,
     player_score INT NOT NULL,
 

@@ -3,7 +3,6 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,75 +11,75 @@ import (
 	"github.com/lib/pq"
 )
 
-const(
-	push string = "$push"
-	pull string = "$pull"
+const (
+	push               string = "$push"
+	pull               string = "$pull"
 	uniqueKeyViolation string = "23505"
-	notNullViolation string = "23502"
+	notNullViolation   string = "23502"
 )
 
 type PlayerRepository interface {
-	UpdatePlayerName(oldPlayerName string, newPlayerName string)   models.Result[models.Player]
+	UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]
 	AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]
-	GetPlayersFromLocation(locationName string)                    models.Result[[]models.Player]
-	RemovePlayer(playerName string)                                models.Result[models.Player]
-	GetAllPlayersFromAllLocations()                                models.Result[[]models.Player]
+	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
+	RemovePlayer(playerName string) models.Result[models.Player]
+	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 }
 
-type sqlPlayerRepository struct{
+type sqlPlayerRepository struct {
 	db *sqlx.DB
 }
 
-//Receive new Instance of MongoPlayerCardRepository.
-func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository{
-	return &sqlPlayerRepository{ db: newDB }
+// Receive new Instance of MongoPlayerCardRepository.
+func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository {
+	return &sqlPlayerRepository{db: newDB}
 }
 
-//Add a single player to a given location.
-func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]{
-	if err := s.db.Get(&player.ID, constants.InsertNewPlayerWithoutTeam, player.PlayerName, locationName); err != nil{
+// Add a single player to a given location.
+func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
+	if err := s.db.Get(&player.ID, constants.InsertNewPlayerWithoutTeam, player.PlayerName, locationName); err != nil {
 		var pqErr *pq.Error
-		
+
 		if errors.As(err, &pqErr) {
-            switch pqErr.Code {
-            case "23502", "23503": // NOT NULL or FK violation
-                return getResult(fmt.Errorf("no location '%s' found", locationName), http.StatusNotFound, models.Player{})
-			case "23505"://unique key violation
+			switch pqErr.Code {
+			case "23502", "23503": // NOT NULL or FK violation
+				return getResult(fmt.Errorf("no location '%s' found", locationName), http.StatusNotFound, models.Player{})
+			case "23505": //unique key violation
 				return getResult(fmt.Errorf("name %s is already taken", player.PlayerName), http.StatusConflict, models.Player{})
 			}
-        }
+		}
 
 		return getResult(err, http.StatusInternalServerError, models.Player{})
 	}
-	
+
 	return getResult(nil, http.StatusOK, player)
 }
 
-//Function to update a players name for a given location.
-func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
+// Function to update a players name for a given location.
+func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player] {
 	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
 
 	if err != nil {
-        var pqErr *pq.Error
+		var pqErr *pq.Error
 
-        if errors.As(err, &pqErr) && pqErr.Code == "23505"{
-            return getResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
-        }
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return getResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
+		}
 
-        return getResult(err, http.StatusInternalServerError, models.Player{})
-    }
-	
+		return getResult(err, http.StatusInternalServerError, models.Player{})
+	}
+
 	numRowsAffected, _ := result.RowsAffected()
 
 	if numRowsAffected == 0 {
 		return getResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
 	}
-	
-	return getResult(nil, http.StatusOK, models.Player{ PlayerName: newPlayerName })
+
+	return getResult(nil, http.StatusOK, models.Player{PlayerName: newPlayerName})
 }
 
-//Remove a single player from a given location.
-func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[models.Player]{
+// Remove a single player from a given location.
+func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[models.Player] {
 	result, err := s.db.Exec(constants.DeletePlayer, playerName)
 
 	if err != nil {
@@ -92,30 +91,28 @@ func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[mode
 	if numRowsAffected == 0 {
 		return getResult(fmt.Errorf("could not find player %s", playerName), http.StatusNotFound, models.Player{})
 	}
-	
-	return getResult(nil, http.StatusOK, models.Player{ PlayerName: playerName })
+
+	return getResult(nil, http.StatusOK, models.Player{PlayerName: playerName})
 }
 
-func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player]{
+func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
 	players := []models.Player{}
 
+	fmt.Println("location:", locationName)
+
 	if err := s.db.Select(&players, constants.GetAllPlayersFromLocation, locationName); err != nil {
-		if err == sql.ErrNoRows{
-			return getResult(err, http.StatusNotFound, players)
-		}
-		
 		return getResult(err, http.StatusInternalServerError, players)
-	} 
+	}
 
 	return getResult(nil, http.StatusOK, players)
 }
 
-func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player]{
+func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
 	players := []models.Player{}
 
 	if err := s.db.Select(&players, constants.GetAllPlayers); err != nil {
 		return getResult(err, http.StatusInternalServerError, players)
-	} 
+	}
 
 	return getResult(nil, http.StatusOK, players)
 }

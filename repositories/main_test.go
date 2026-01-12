@@ -36,7 +36,7 @@ func TestMain(m *testing.M) {
 	}
 
 	migrations, err := migrate.NewWithDatabaseInstance(
-        "file://../migrations",
+        "file://../test-migrations",
         "postgres", 
 		driver,
 	)
@@ -49,15 +49,11 @@ func TestMain(m *testing.M) {
 	if err := migrations.Up(); err != nil && err != migrate.ErrNoChange {
         log.Fatal(err)
     }
-
-	defer func() {
-        // If DB is dirty, fix it so Down() can run
-        if v, dirty, _ := migrations.Version(); dirty {
-            _ = migrations.Force(int(v))
-        }
-        _ = migrations.Down()
-        _ = db.Close()
-    }()
-
-    os.Exit(m.Run())
+		
+	code := m.Run()
+	
+	migrations.Down()
+	_ = db.Close()
+	
+	os.Exit(code)
 }
