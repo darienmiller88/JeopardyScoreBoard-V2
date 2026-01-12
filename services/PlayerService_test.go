@@ -157,6 +157,10 @@ func TestGetPlayersFromLocation_RepoError(t *testing.T) {
 }
 
 
+
+
+
+
 ////////////////////
 // UPDATE/PUT tests
 ////////////////////
@@ -227,3 +231,20 @@ func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
 ////////////////////
 // DESTROY/DELETE tests
 ////////////////////
+
+func TestRemovePlayer_Service_Ok(t *testing.T) {
+	playerDeleted := "Jane Doe"
+	mockRepo := &mockPlayerRepository{
+		playerResult: models.Result[models.Player]{
+			ResultData: models.Player{ PlayerName: playerDeleted },
+			StatusCode: http.StatusOK,
+		},
+	}
+
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+	result := service.RemovePlayer(playerDeleted)
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, playerDeleted, result.ResultData.PlayerName)
+}
