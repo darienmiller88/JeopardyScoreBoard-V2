@@ -248,3 +248,18 @@ func TestRemovePlayer_Service_Ok(t *testing.T) {
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 	assert.Equal(t, playerDeleted, result.ResultData.PlayerName)
 }
+
+func TestRemovePlayer_Service_RepoError(t *testing.T) {
+	mockRepo := &mockPlayerRepository{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("player not found"),
+			StatusCode: http.StatusNotFound,
+		},
+	}
+
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+	result := service.RemovePlayer("Ghost Casper") 
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+}
