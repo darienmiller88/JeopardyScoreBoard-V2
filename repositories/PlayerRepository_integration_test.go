@@ -24,7 +24,7 @@ func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 
 	//Verify that the player was inserted into the database
 	allPlayers := playerRepository.GetAllPlayersFromAllLocations()
-	playerInserted := allPlayers.ResultData[0]
+	playerInserted := allPlayers.ResultData[len(allPlayers.ResultData) - 1]
 
 	assert.Equal(t, player.PlayerName, playerInserted.PlayerName)
 }
@@ -74,7 +74,7 @@ func TestGetPlayersFromLocation_IntegrationTest_InvalidLocation(t *testing.T) {
 
 func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
  	playerRepository := GetSqlPlayerRepository(db)
-	result := playerRepository.GetPlayersFromLocation("Elmwood")
+	result := playerRepository.GetAllPlayersFromAllLocations()
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
