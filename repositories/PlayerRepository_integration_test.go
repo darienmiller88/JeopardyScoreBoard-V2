@@ -51,6 +51,10 @@ func TestAddPlayerToLocation_IntegrationTest_PlayerNameTaken(t *testing.T) {
 }
 
 
+
+
+
+
 /////////////////////////
 //READ/GET tests
 ////////////////////////
@@ -79,6 +83,10 @@ func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 }
+
+
+
+
 
 /////////////////////////
 //UPDATE/PUT tests
@@ -134,6 +142,11 @@ func TestUpdatePlayerName_IntegrationTest_OldNameNotFound(t *testing.T) {
     assert.Equal(t, http.StatusNotFound, result.StatusCode)
     assert.Contains(t, result.Err.Error(), "could not find player")
 }
+
+
+
+
+
 
 
 /////////////////////////
