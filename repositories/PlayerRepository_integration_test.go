@@ -124,7 +124,7 @@ func TestUpdatePlayerName_IntegrationTest_NewNameTaken(t *testing.T) {
 func TestUpdatePlayerName_IntegrationTest_OldNameNotFound(t *testing.T) {
 	repo := GetSqlPlayerRepository(db)
 
-    // Ensure table is empty (or at least doesn't contain this name)
+    // Ensure table is empty 
     _, err := db.Exec(`DELETE FROM players`)
     require.NoError(t, err)
 
@@ -139,4 +139,30 @@ func TestUpdatePlayerName_IntegrationTest_OldNameNotFound(t *testing.T) {
 /////////////////////////
 //DESTROY/DELETE tests
 ////////////////////////
+
+func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
+    repo := GetSqlPlayerRepository(db)
+
+    // Insert a player
+    _, err := db.Exec(`
+        INSERT INTO players (player_name, location_id)
+        VALUES ('DeleteMe', (SELECT id FROM locations WHERE location_name='Elmwood'))
+    `)
+    require.NoError(t, err)
+
+    // Delete it
+    result := repo.RemovePlayer("DeleteMe")
+
+    require.NoError(t, result.Err)
+    assert.Equal(t, http.StatusOK, result.StatusCode)
+    assert.Equal(t, "DeleteMe", result.ResultData.PlayerName)
+
+    // Check to see if the player was removed
+    var count int
+
+    err = db.Get(&count, `SELECT COUNT(*) FROM players WHERE player_name='DeleteMe'`)
+	
+    require.NoError(t, err)
+    assert.Equal(t, 0, count)
+}
 
