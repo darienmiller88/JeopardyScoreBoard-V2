@@ -86,6 +86,12 @@ func TestAddPlayer_NameMustHaveTwoParts(t *testing.T) {
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
 	assert.Contains(t, result.Err.Error(), "two parts")
+
+	result = service.AddPlayerToLocation("Elmwood", "   This name has more than two parts   ")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+	assert.Contains(t, result.Err.Error(), "two parts")
 }
 
 
@@ -96,8 +102,43 @@ func TestAddPlayer_NameMustHaveTwoParts(t *testing.T) {
 ////////////////////
 
 
+func TestGetAllPlayersFromAllLocations_Ok(t *testing.T) {
+	mockRepo := &mockPlayerRepository{
+		playersResult: models.Result[[]models.Player]{
+			ResultData: []models.Player{
+				{ PlayerName: "Jane Doe" },
+				{ PlayerName: "John Smith" },
+			},
+			StatusCode: http.StatusOK,
+		},
+	}
+
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+	result := service.GetAllPlayersFromAllLocations()
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Len(t, result.ResultData, 2)
+}
 
 
+func TestGetPlayersFromLocation_Ok(t *testing.T) {
+	mockRepo := &mockPlayerRepository{
+		playersResult: models.Result[[]models.Player]{
+			ResultData: []models.Player{
+				{ PlayerName: "Jane Doe" },
+			},
+			StatusCode: http.StatusOK,
+		},
+	}
+
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+	result := service.GetPlayersFromLocation("Elmwood")
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Len(t, result.ResultData, 1)
+}
 
 
 
