@@ -208,6 +208,20 @@ func TestUpdatePlayerName_Service_SameName(t *testing.T) {
 	assert.Contains(t, result.Err.Error(), "must be different")
 }
 
+func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
+	mockRepo := &mockPlayerRepository{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("db down"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	}
+
+	service := &PlayerServiceImpl{ Repository: mockRepo }
+	result := service.UpdatePlayerName("Alice", "Bob Melendez")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
 
 
 ////////////////////
