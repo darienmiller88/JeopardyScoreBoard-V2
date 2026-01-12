@@ -19,7 +19,7 @@ func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 	result := playerRepository.AddPlayerToLocation("Elmwood", player)
 
 	assert.Equal(t, nil, result.Err)
-	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, http.StatusCreated, result.StatusCode)
 	assert.Equal(t, player.PlayerName, result.ResultData.PlayerName)
 
 	//Verify that the player was inserted into the database
@@ -98,7 +98,7 @@ func TestUpdatePlayerName_IntegrationTest_Ok(t *testing.T){
 	result := playerRepository.AddPlayerToLocation("Elmwood", models.Player{ PlayerName: playerName })
 
 	require.NoError(t, result.Err)
-	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, http.StatusCreated, result.StatusCode)
 
 	newName := "new name"
 	updateResult := playerRepository.UpdatePlayerName(playerName, newName)

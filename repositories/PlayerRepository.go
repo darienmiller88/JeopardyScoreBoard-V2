@@ -52,7 +52,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 		return getResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	return getResult(nil, http.StatusOK, player)
+	return getResult(nil, http.StatusCreated, player)
 }
 
 // Function to update a players name for a given location.

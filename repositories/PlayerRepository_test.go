@@ -47,7 +47,7 @@ func TestAddPlayerToLocation_Success(t *testing.T) {
 	result := repo.AddPlayerToLocation("Elmwood", player)
 
 	require.NoError(t, result.Err)
-	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, http.StatusCreated, result.StatusCode)
 	assert.Equal(t, 42, result.ResultData.ID)
 }
 

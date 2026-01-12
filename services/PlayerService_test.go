@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net/http"
 	"testing"
 
 	"JeopardyScoreBoardV2/models"
@@ -37,7 +38,20 @@ func (m *mockPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]m
 ////////////////////
 
 func TestAddPlayer_Ok(t *testing.T){
+	mockRepo := &mockPlayerRepository{
+		playerResult: models.Result[models.Player]{
+			ResultData: models.Player{PlayerName: "Jane Doe"},
+			StatusCode: http.StatusCreated,
+		},
+	}
 
+	service := &PlayerServiceImpl{Repository: mockRepo}
+
+	result := service.AddPlayerToLocation("Elmwood", "Jane Doe")
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusCreated, result.StatusCode)
+	assert.Equal(t, "Jane Doe", result.Data.PlayerName)
 }
 
 func TestAddPlayer_PlayerNameTaken(t *testing.T){
