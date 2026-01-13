@@ -12,9 +12,11 @@ import (
 
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/services"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -75,7 +77,7 @@ func TestGetAllPlayers_Ok(t *testing.T) {
 		},
 	})
 
-	resp, rec := getResponseFromController(router, "/")
+	resp, rec := getResponseFromController(router, "/", http.MethodGet, nil)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
@@ -96,7 +98,7 @@ func TestGetAllPlayers_ServiceError(t *testing.T) {
 		},
 	})
 
-	resp, rec := getResponseFromController(router, "/")
+	resp, rec := getResponseFromController(router, "/", http.MethodGet, nil)
 
 	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	assert.Contains(t, rec.Body.String(), "database exploded")
@@ -110,7 +112,7 @@ func TestGetAllPlayers_EmptyList(t *testing.T) {
 		},
 	})
 
-	resp, rec := getResponseFromController(router, "/")
+	resp, rec := getResponseFromController(router, "/", http.MethodGet, nil)
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -133,7 +135,7 @@ func TestGetPlayersFromLocation_Ok(t *testing.T) {
 		},
 	})
 
-	_, rec := getResponseFromController(router, "/Elmwood")
+	_, rec := getResponseFromController(router, "/Elmwood", http.MethodGet, nil)
 
 	require.Equal(t, http.StatusOK, rec.Code)
 	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
@@ -153,7 +155,7 @@ func TestGetPlayersFromLocation_Empty(t *testing.T) {
 		},
 	})
 
-	_, rec := getResponseFromController(router, "/Elmwood")
+	_, rec := getResponseFromController(router, "/Elmwood", http.MethodGet, nil)
 
 	require.Equal(t, http.StatusOK, rec.Code)
 
@@ -173,7 +175,7 @@ func TestGetPlayersFromLocation_DBError(t *testing.T) {
 		},
 	})
 
-	resp, rec := getResponseFromController(router, "/Elmwood")
+	resp, rec := getResponseFromController(router, "/Elmwood", http.MethodGet, nil)
 
 	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	assert.Contains(t, rec.Body.String(), "db error")
@@ -204,7 +206,7 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
 	err := json.Unmarshal(rec.Body.Bytes(), &result)
 	require.NoError(t, err)
 
-	assert.Equal(t, "Jane Doe", result.Data.PlayerName)
+	assert.Equal(t, "Jane Doe", result.ResultData.PlayerName)
 }
 
 

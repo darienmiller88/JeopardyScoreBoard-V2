@@ -3,6 +3,7 @@ package controllers
 import (
 	// "fmt"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,8 +36,8 @@ func getLocationsController(service services.LocationService) *chi.Mux{
 	return jeopardyController.Router
 }
 
-func getResponseFromController(router *chi.Mux, route string, method string) (*http.Response, *httptest.ResponseRecorder){
-	req := httptest.NewRequest(method, route, nil)
+func getResponseFromController(router *chi.Mux, route string, method string, body io.Reader) (*http.Response, *httptest.ResponseRecorder){
+	req := httptest.NewRequest(method, route, body)
 	res := httptest.NewRecorder()
 
 	router.ServeHTTP(res, req)
