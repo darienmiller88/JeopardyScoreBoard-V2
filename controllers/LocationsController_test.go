@@ -92,7 +92,7 @@ func TestGetLocation_Ok(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/")
+	result, res := getResponseFromController(router, "/Elmwood")
 	
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Elmwood")
@@ -107,7 +107,7 @@ func TestGetLocation_NotFound(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/")
+	result, res := getResponseFromController(router, "/fakelocation")
 
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Location not found")
@@ -123,7 +123,7 @@ func TestGetLocation_InternalServerError(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/")
+	result, res := getResponseFromController(router, "/Elmwood")
 
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Internal Server Error")
