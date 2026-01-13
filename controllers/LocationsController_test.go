@@ -57,7 +57,7 @@ func TestGetAllLocations_Ok(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/", http.MethodGet)
+	result, res := getResponseFromController(router, "/", http.MethodGet, nil)
 
 	//check status code and return value from the response, and see if the status code is 200
 	assert.Equal(t, http.StatusOK, result.StatusCode)
@@ -77,7 +77,7 @@ func TestGetAllLocations_InternalServerError(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/", http.MethodGet)
+	result, res := getResponseFromController(router, "/", http.MethodGet, nil)
 
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Database error")
@@ -93,7 +93,7 @@ func TestGetLocation_Ok(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/Elmwood", http.MethodGet)
+	result, res := getResponseFromController(router, "/Elmwood", http.MethodGet, nil)
 	
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Elmwood")
@@ -108,7 +108,7 @@ func TestGetLocation_NotFound(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/fakelocation", http.MethodGet)
+	result, res := getResponseFromController(router, "/fakelocation", http.MethodGet, nil)
 
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Location not found")
@@ -124,7 +124,7 @@ func TestGetLocation_InternalServerError(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/Elmwood", http.MethodGet)
+	result, res := getResponseFromController(router, "/Elmwood", http.MethodGet, nil)
 
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Internal Server Error")
