@@ -165,6 +165,19 @@ func TestGetPlayersFromLocation_Empty(t *testing.T) {
 	assert.Empty(t, result.ResultData)
 }
 
+func TestGetPlayersFromLocation_DBError(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playersResult: models.Result[[]models.Player]{
+			StatusCode: http.StatusInternalServerError,
+			Err: fmt.Errorf("db error"),
+		},
+	})
+
+	resp, rec := getResponseFromController(router, "/Elmwood")
+
+	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	assert.Contains(t, rec.Body.String(), "db error")
+}
 
 
 ////////////////////////////////
