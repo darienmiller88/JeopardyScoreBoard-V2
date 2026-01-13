@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -24,32 +23,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type mockPlayerService struct{
+type mockPlayerService struct {
 	playersResult models.Result[[]models.Player]
 	playerResult  models.Result[models.Player]
 }
 
-func(m *mockPlayerService) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
+func (m *mockPlayerService) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player] {
 	return m.playerResult
 }
 
-func (m *mockPlayerService) AddPlayerToLocation(locationName string, playerName string)  models.Result[models.Player] {
+func (m *mockPlayerService) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {
 	return m.playerResult
-}	
-	
+}
+
 func (m *mockPlayerService) RemovePlayer(playerName string) models.Result[models.Player] {
 	return m.playerResult
 }
-	
+
 func (m *mockPlayerService) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
 	return m.playersResult
 }
-	 
-func (m *mockPlayerService) GetAllPlayersFromAllLocations() models.Result[[]models.Player]{
-	return m.playersResult
-}	
 
-func getPlayersController(service services.PlayerService) *chi.Mux{
+func (m *mockPlayerService) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
+	return m.playersResult
+}
+
+func getPlayersController(service services.PlayerService) *chi.Mux {
 	playersController := PlayersController{}
 
 	playersController.Init(service)
@@ -60,7 +59,6 @@ func getPlayersController(service services.PlayerService) *chi.Mux{
 ////////////////////////////////
 //CREATE/POST tests
 ///////////////////////////////
-
 
 ////////////////////////////////
 //READ/GET tests
@@ -123,7 +121,6 @@ func TestGetAllPlayers_EmptyList(t *testing.T) {
 	assert.Empty(t, result.ResultData)
 }
 
-
 func TestGetPlayersFromLocation_Ok(t *testing.T) {
 	router := getPlayersController(&mockPlayerService{
 		playersResult: models.Result[[]models.Player]{
@@ -171,7 +168,7 @@ func TestGetPlayersFromLocation_DBError(t *testing.T) {
 	router := getPlayersController(&mockPlayerService{
 		playersResult: models.Result[[]models.Player]{
 			StatusCode: http.StatusInternalServerError,
-			Err: fmt.Errorf("db error"),
+			Err:        fmt.Errorf("db error"),
 		},
 	})
 
@@ -194,11 +191,7 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
 	})
 
 	body := `{"old_player_name":"John Doe","new_player_name":"Jane Doe"}`
-	req := httptest.NewRequest(http.MethodPut, "/players", bytes.NewBufferString(body))
-	req.Header.Set("Content-Type", "application/json")
-	rec := httptest.NewRecorder()
-
-	router.ServeHTTP(rec, req)
+	_, rec := getResponseFromController(router, "/", http.MethodPut, bytes.NewBufferString(body))
 
 	require.Equal(t, http.StatusOK, rec.Code)
 
@@ -209,10 +202,6 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
 	assert.Equal(t, "Jane Doe", result.ResultData.PlayerName)
 }
 
-
-
 ////////////////////////////////
 //DESTROY/DELETE tests
 ///////////////////////////////
-
-
