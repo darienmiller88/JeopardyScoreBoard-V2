@@ -13,6 +13,7 @@ import (
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/services"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -59,6 +60,9 @@ func getPlayersController(service services.PlayerService) *chi.Mux{
 ///////////////////////////////
 
 
+////////////////////////////////
+//READ/GET tests
+///////////////////////////////
 
 func TestGetAllPlayers_Ok(t *testing.T) {
 	router := getPlayersController(&mockPlayerService{
@@ -83,3 +87,31 @@ func TestGetAllPlayers_Ok(t *testing.T) {
 	assert.Len(t, result.ResultData, 2)
 	assert.Equal(t, "Jane Doe", result.ResultData[0].PlayerName)
 }
+
+func TestGetAllPlayers_ServiceError(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playersResult: models.Result[[]models.Player]{
+			Err:        fmt.Errorf("database exploded"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	})
+
+	resp, rec := getResponseFromController(router, "/players")
+
+	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	assert.Contains(t, rec.Body.String(), "database exploded")
+}
+
+
+////////////////////////////////
+//UPDATE/PUT tests
+///////////////////////////////
+
+
+
+
+////////////////////////////////
+//DESTROY/DELETE tests
+///////////////////////////////
+
+
