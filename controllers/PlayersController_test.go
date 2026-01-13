@@ -145,6 +145,26 @@ func TestGetPlayersFromLocation_Ok(t *testing.T) {
 	assert.Len(t, result.ResultData, 2)
 }
 
+func TestGetPlayersFromLocation_Empty(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playersResult: models.Result[[]models.Player]{
+			StatusCode: http.StatusOK,
+			ResultData: []models.Player{},
+		},
+	})
+
+	_, rec := getResponseFromController(router, "/Elmwood")
+
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	var result models.Result[[]models.Player]
+	err := json.Unmarshal(rec.Body.Bytes(), &result)
+
+	//Ensure the controller returned no error, and the empty list of players
+	require.NoError(t, err)
+	assert.Empty(t, result.ResultData)
+}
+
 
 
 ////////////////////////////////
