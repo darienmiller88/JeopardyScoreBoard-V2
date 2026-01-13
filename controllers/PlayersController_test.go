@@ -11,6 +11,14 @@ import (
 	// "github.com/stretchr/testify/assert"
 
 	"JeopardyScoreBoardV2/models"
+	"JeopardyScoreBoardV2/services"
+	"encoding/json"
+	"net/http"
+	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type mockPlayerService struct{
@@ -37,3 +45,41 @@ func (m *mockPlayerService) GetPlayersFromLocation(locationName string) models.R
 func (m *mockPlayerService) GetAllPlayersFromAllLocations() models.Result[[]models.Player]{
 	return m.playersResult
 }	
+
+func getPlayersController(service services.PlayerService) *chi.Mux{
+	playersController := PlayersController{}
+
+	playersController.Init(service)
+
+	return playersController.Router
+}
+
+////////////////////////////////
+//CREATE/POST tests
+///////////////////////////////
+
+
+
+func TestGetAllPlayers_Ok(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playersResult: models.Result[[]models.Player]{
+			StatusCode: http.StatusOK,
+			ResultData: []models.Player{
+				{PlayerName: "Jane Doe"},
+				{PlayerName: "John Smith"},
+			},
+		},
+	})
+
+	resp, rec := getResponseFromController(router, "/players")
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
+
+	var result models.Result[[]models.Player]
+	err := json.Unmarshal(rec.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Len(t, result.ResultData, 2)
+	assert.Equal(t, "Jane Doe", result.ResultData[0].PlayerName)
+}
