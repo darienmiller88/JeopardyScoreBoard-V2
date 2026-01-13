@@ -102,6 +102,24 @@ func TestGetAllPlayers_ServiceError(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "database exploded")
 }
 
+func TestGetAllPlayers_EmptyList(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playersResult: models.Result[[]models.Player]{
+			StatusCode: http.StatusOK,
+			ResultData: []models.Player{},
+		},
+	})
+
+	resp, rec := getResponseFromController(router, "/players")
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var result models.Result[[]models.Player]
+	err := json.Unmarshal(rec.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Empty(t, result.ResultData)
+}
 
 ////////////////////////////////
 //UPDATE/PUT tests
