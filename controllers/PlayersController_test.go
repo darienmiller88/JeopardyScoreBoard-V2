@@ -179,11 +179,33 @@ func TestGetPlayersFromLocation_DBError(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "db error")
 }
 
-
 ////////////////////////////////
 //UPDATE/PUT tests
 ///////////////////////////////
 
+func TestUpdatePlayerName_Ok(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			StatusCode: http.StatusOK,
+			ResultData: models.Player{PlayerName: "Jane Doe"},
+		},
+	})
+
+	body := `{"old_player_name":"John Doe","new_player_name":"Jane Doe"}`
+	req := httptest.NewRequest(http.MethodPut, "/players", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	var result models.Result[models.Player]
+	err := json.Unmarshal(rec.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, "Jane Doe", result.Data.PlayerName)
+}
 
 
 

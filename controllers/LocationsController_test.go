@@ -35,8 +35,8 @@ func getLocationsController(service services.LocationService) *chi.Mux{
 	return jeopardyController.Router
 }
 
-func getResponseFromController(router *chi.Mux, route string) (*http.Response, *httptest.ResponseRecorder){
-	req := httptest.NewRequest(http.MethodGet, route, nil)
+func getResponseFromController(router *chi.Mux, route string, method string) (*http.Response, *httptest.ResponseRecorder){
+	req := httptest.NewRequest(method, route, nil)
 	res := httptest.NewRecorder()
 
 	router.ServeHTTP(res, req)
@@ -56,7 +56,7 @@ func TestGetAllLocations_Ok(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/")
+	result, res := getResponseFromController(router, "/", http.MethodGet)
 
 	//check status code and return value from the response, and see if the status code is 200
 	assert.Equal(t, http.StatusOK, result.StatusCode)
@@ -76,7 +76,7 @@ func TestGetAllLocations_InternalServerError(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/")
+	result, res := getResponseFromController(router, "/", http.MethodGet)
 
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Database error")
@@ -92,7 +92,7 @@ func TestGetLocation_Ok(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/Elmwood")
+	result, res := getResponseFromController(router, "/Elmwood", http.MethodGet)
 	
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Elmwood")
@@ -107,7 +107,7 @@ func TestGetLocation_NotFound(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/fakelocation")
+	result, res := getResponseFromController(router, "/fakelocation", http.MethodGet)
 
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Location not found")
@@ -123,7 +123,7 @@ func TestGetLocation_InternalServerError(t *testing.T) {
 		},
 	})
 
-	result, res := getResponseFromController(router, "/Elmwood")
+	result, res := getResponseFromController(router, "/Elmwood", http.MethodGet)
 
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.Contains(t, res.Body.String(), "Internal Server Error")
