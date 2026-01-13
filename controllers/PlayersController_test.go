@@ -75,7 +75,7 @@ func TestGetAllPlayers_Ok(t *testing.T) {
 		},
 	})
 
-	resp, rec := getResponseFromController(router, "/players")
+	resp, rec := getResponseFromController(router, "/")
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
@@ -96,7 +96,7 @@ func TestGetAllPlayers_ServiceError(t *testing.T) {
 		},
 	})
 
-	resp, rec := getResponseFromController(router, "/players")
+	resp, rec := getResponseFromController(router, "/")
 
 	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 	assert.Contains(t, rec.Body.String(), "database exploded")
@@ -110,7 +110,7 @@ func TestGetAllPlayers_EmptyList(t *testing.T) {
 		},
 	})
 
-	resp, rec := getResponseFromController(router, "/players")
+	resp, rec := getResponseFromController(router, "/")
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -120,6 +120,32 @@ func TestGetAllPlayers_EmptyList(t *testing.T) {
 
 	assert.Empty(t, result.ResultData)
 }
+
+
+func TestGetPlayersFromLocation_Ok(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playersResult: models.Result[[]models.Player]{
+			StatusCode: http.StatusOK,
+			ResultData: []models.Player{
+				{PlayerName: "Jane Doe"},
+				{PlayerName: "John Smith"},
+			},
+		},
+	})
+
+	_, rec := getResponseFromController(router, "/Elmwood")
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+
+	var result models.Result[[]models.Player]
+	err := json.Unmarshal(rec.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Len(t, result.ResultData, 2)
+}
+
+
 
 ////////////////////////////////
 //UPDATE/PUT tests
