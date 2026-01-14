@@ -91,6 +91,21 @@ func TestAddPlayer_InvalidJSON(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "invalid")
 }
 
+func TestAddPlayer_ValidationError(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("Player name must have exactly two parts"),
+			StatusCode: http.StatusUnprocessableEntity,
+		},
+	})
+
+	body, _ := json.Marshal("Jane")
+
+	_, rec := getResponseFromController(router, "/Elmwood", http.MethodPost, bytes.NewBuffer(body))
+
+	require.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+	assert.Contains(t, rec.Body.String(), "two parts")
+}
 
 
 
