@@ -202,6 +202,16 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
 	assert.Equal(t, "Jane Doe", result.ResultData.PlayerName)
 }
 
+func TestUpdatePlayerName_InvalidJSON(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{})
+	_, rec := getResponseFromController(router, "/", http.MethodPut, bytes.NewBufferString("{bad json"))
+
+	require.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "invalid")
+}
+
+
+
 ////////////////////////////////
 //DESTROY/DELETE tests
 ///////////////////////////////
