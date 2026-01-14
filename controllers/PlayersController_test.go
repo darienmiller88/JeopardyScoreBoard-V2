@@ -301,3 +301,31 @@ func TestRemovePlayer_Ok(t *testing.T) {
 
 	assert.Equal(t, "Jane Doe", result.ResultData.PlayerName)
 }
+
+func TestRemovePlayer_NotFound(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("player not found"),
+			StatusCode: http.StatusNotFound,
+		},
+	})
+
+	_, rec := getResponseFromController(router, "/FakePlayer", http.MethodDelete, nil)
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
+	assert.Contains(t, rec.Body.String(), "player not found")
+}
+
+func TestRemovePlayer_DbError(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("db down"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	})
+
+	_, rec := getResponseFromController(router, "/Jane%20Doe", http.MethodDelete, nil)
+
+	require.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.Contains(t, rec.Body.String(), "db down")
+}
