@@ -60,6 +60,35 @@ func getPlayersController(service services.PlayerService) *chi.Mux {
 //CREATE/POST tests
 ///////////////////////////////
 
+func TestAddPlayer_Ok(t *testing.T) {
+	name := "Jane Doe"
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			StatusCode: http.StatusOK,
+			ResultData: models.Player{PlayerName: name },
+		},
+	})
+
+	body, _ := json.Marshal(name)
+
+	_, rec := getResponseFromController(router, "/Elmwood", http.MethodPost, bytes.NewBuffer(body))
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+
+	var result models.Result[models.Player]
+	err := json.Unmarshal(rec.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, name, result.ResultData.PlayerName)
+}
+
+
+
+
+
+
+
 ////////////////////////////////
 //READ/GET tests
 ///////////////////////////////
