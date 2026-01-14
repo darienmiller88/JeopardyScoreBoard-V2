@@ -107,6 +107,20 @@ func TestAddPlayer_ValidationError(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "two parts")
 }
 
+func TestAddPlayer_LocationNotFound(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("no location 'Nowhere' found"),
+			StatusCode: http.StatusNotFound,
+		},
+	})
+
+	body, _ := json.Marshal("Jane Doe")
+	_, rec := getResponseFromController(router, "/Nowhere", http.MethodPost, bytes.NewBuffer(body))
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
+	assert.Contains(t, rec.Body.String(), "no location")
+}
 
 
 
