@@ -225,6 +225,22 @@ func TestUpdatePlayerName_ValidationError(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "validation")
 }
 
+func TestUpdatePlayerName_NameTaken(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("name already exists"),
+			StatusCode: http.StatusConflict,
+		},
+	})
+
+	body := `{"old_player_name":"John","new_player_name":"Jane"}`
+	_, rec := getResponseFromController(router, "/", http.MethodPut, bytes.NewBufferString(body))
+
+	require.Equal(t, http.StatusConflict, rec.Code)
+	assert.Contains(t, rec.Body.String(), "name")
+}
+
+
 
 ////////////////////////////////
 //DESTROY/DELETE tests
