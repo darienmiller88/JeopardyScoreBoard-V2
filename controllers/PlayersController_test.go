@@ -70,7 +70,6 @@ func TestAddPlayer_Ok(t *testing.T) {
 	})
 
 	body, _ := json.Marshal(name)
-
 	_, rec := getResponseFromController(router, "/Elmwood", http.MethodPost, bytes.NewBuffer(body))
 
 	require.Equal(t, http.StatusOK, rec.Code)
@@ -83,6 +82,14 @@ func TestAddPlayer_Ok(t *testing.T) {
 	assert.Equal(t, name, result.ResultData.PlayerName)
 }
 
+func TestAddPlayer_InvalidJSON(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{})
+
+	_, rec := getResponseFromController(router, "/Elmwood", http.MethodPost, bytes.NewBufferString("{bad json"))
+
+	require.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "invalid")
+}
 
 
 
