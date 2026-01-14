@@ -1,1 +1,40 @@
 package services
+
+import (
+	"JeopardyScoreBoardV2/models"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+type mockLocationRepository struct{
+	locationResult  models.Result[string]
+	locationsResult models.Result[[]string]
+}
+
+func (m *mockLocationRepository) GetAllLocations() models.Result[[]string]{
+	return m.locationsResult
+}
+
+func (m *mockLocationRepository) GetLocation(locationName string) models.Result[string]{
+	return m.locationResult
+}
+
+func TestGetAllLocations_Service_Ok(t *testing.T) {
+	mockRepo := &mockLocationRepository{
+		locationsResult: models.Result[[]string]{
+			StatusCode: http.StatusOK,
+			ResultData: []string{"Elmwood", "Flushing", "Pelham Bay"},
+		},
+	}
+
+	service := &LocationServiceImpl{ Repository: mockRepo }
+	result := service.GetAllLocations()
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Len(t, result.ResultData, 3)
+	assert.Equal(t, "Elmwood", result.ResultData[0])
+}
