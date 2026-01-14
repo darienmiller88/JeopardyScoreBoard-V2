@@ -1,22 +1,38 @@
 Jeopardy ScoreKeeper checklist
 
 Backend
+[x] - Complete Location Model
 [x] - Complete Location Model Tests
 [x] - Complete Location Repository
 [x] - Complete Location Repository tests
 [x] - Complete Location Service
 [ ] - Complete Location Service tests
+[x] - Complete Location Controller
+[x] - Complete Location Controller tests
+[x] - Complete Player Model
 [x] - Complete Player Model Tests
 [x] - Complete Player Repository
 [x] - Complete Player Repository tests
 [x] - Complete Player Service
 [x] - Complete Player Service tests
+[x] - Complete Player Controller
+[x] - Complete Player Controller tests
 [] - Complete Saved Game Repository
 [] - Complete Saved Game Repository tests
 [] - Complete Saved Game Service
 [] - Complete Saved Game Service tests
 [] - Complete Saved Game Model 
 [] - Complete Saved Game Model tests
+[] - Complete Saved Game Controller 
+[] - Complete Saved Game Controller Tests
 
+[] - Complete Team Repository
+[] - Complete Team Repository tests
+[] - Complete Team Service
+[] - Complete Team Service tests
+[] - Complete Team Model 
+[] - Complete Team Model tests
+[] - Complete Team Controller 
+[] - Complete Team Controller Tests
 
 Frontend
