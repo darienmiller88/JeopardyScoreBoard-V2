@@ -178,6 +178,13 @@ func TestGetPlayersFromLocation_DBError(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "db error")
 }
 
+
+
+
+
+
+
+
 ////////////////////////////////
 //UPDATE/PUT tests
 ///////////////////////////////
@@ -240,6 +247,35 @@ func TestUpdatePlayerName_NameTaken(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "name")
 }
 
+func TestUpdatePlayerName_OldNameNotFound(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("player not found"),
+			StatusCode: http.StatusNotFound,
+		},
+	})
+
+	body := `{"old_player_name":"Ghost","new_player_name":"Jane"}`
+	_, rec := getResponseFromController(router, "/", http.MethodPut, bytes.NewBufferString(body))
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
+	assert.Contains(t, rec.Body.String(), "player")
+}
+
+func TestUpdatePlayerName_DbError(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("db down"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	})
+
+	body := `{"old_player_name":"John","new_player_name":"Jane"}`
+	_, rec := getResponseFromController(router, "/", http.MethodPut, bytes.NewBufferString(body))
+
+	require.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.Contains(t, rec.Body.String(), "db down")
+}
 
 
 ////////////////////////////////
