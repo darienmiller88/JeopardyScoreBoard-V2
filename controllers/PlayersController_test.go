@@ -138,6 +138,22 @@ func TestAddPlayer_NameTaken(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "already taken")
 }
 
+func TestAddPlayer_DbError(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("db down"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	})
+
+	body, _ := json.Marshal("Jane Doe")
+	_, rec := getResponseFromController(router, "/Elmwood", http.MethodPost, bytes.NewBuffer(body))
+
+	require.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.Contains(t, rec.Body.String(), "db down")
+}
+
+
 
 
 
