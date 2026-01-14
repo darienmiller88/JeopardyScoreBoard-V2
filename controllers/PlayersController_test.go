@@ -122,6 +122,23 @@ func TestAddPlayer_LocationNotFound(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "no location")
 }
 
+func TestAddPlayer_NameTaken(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("name Jane Doe is already taken"),
+			StatusCode: http.StatusConflict,
+		},
+	})
+
+	body, _ := json.Marshal("Jane Doe")
+
+	_, rec := getResponseFromController(router, "/Elmwood", http.MethodPost, bytes.NewBuffer(body))
+
+	require.Equal(t, http.StatusConflict, rec.Code)
+	assert.Contains(t, rec.Body.String(), "already taken")
+}
+
+
 
 
 
