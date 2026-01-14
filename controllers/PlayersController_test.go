@@ -210,6 +210,20 @@ func TestUpdatePlayerName_InvalidJSON(t *testing.T) {
 	assert.Contains(t, rec.Body.String(), "invalid")
 }
 
+func TestUpdatePlayerName_ValidationError(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			Err:        fmt.Errorf("validation failed"),
+			StatusCode: http.StatusUnprocessableEntity,
+		},
+	})
+
+	body := `{"old_player_name":"","new_player_name":""}`
+	_, rec := getResponseFromController(router, "/", http.MethodPut, bytes.NewBufferString(body))
+
+	require.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+	assert.Contains(t, rec.Body.String(), "validation")
+}
 
 
 ////////////////////////////////
