@@ -281,3 +281,23 @@ func TestUpdatePlayerName_DbError(t *testing.T) {
 ////////////////////////////////
 //DESTROY/DELETE tests
 ///////////////////////////////
+
+func TestRemovePlayer_Ok(t *testing.T) {
+	router := getPlayersController(&mockPlayerService{
+		playerResult: models.Result[models.Player]{
+			StatusCode: http.StatusOK,
+			ResultData: models.Player{PlayerName: "Jane Doe"},
+		},
+	})
+
+	_, rec := getResponseFromController(router, "/Jane%20Doe", http.MethodDelete, nil)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+
+	var result models.Result[models.Player]
+	err := json.Unmarshal(rec.Body.Bytes(), &result)
+	require.NoError(t, err)
+
+	assert.Equal(t, "Jane Doe", result.ResultData.PlayerName)
+}
