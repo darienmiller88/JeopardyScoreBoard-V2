@@ -15,29 +15,18 @@ type SaveGameService struct{
 	LocationRepository  repositories.LocationRepository
 }
 
-func (s *SaveGameService) GetAllSavedGamesFromLocation(ctx context.Context, locationName string) models.Result[[]models.SavedGame]{
-	return s.SavedGameRepository.GetAllSavedGamesFromLocation(ctx, locationName)
+func (s *SaveGameService) GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]{
+	return s.SavedGameRepository.GetAllSavedGamesFromLocation(locationName)
 }
 
-func (s *SaveGameService) GetAllSavedGames(ctx context.Context) models.Result[[]models.SavedGame]{
-	return s.SavedGameRepository.GetAllSavedGames(ctx)
+func (s *SaveGameService) GetAllSavedGames() models.Result[[]models.SavedGame]{
+	return s.SavedGameRepository.GetAllSavedGames()
 }
 
-func (s *SaveGameService) AddSavedGame(ctx context.Context, savedGame models.SavedGame) models.Result[models.SavedGame]{
-	return s.SavedGameRepository.AddSavedGame(ctx, savedGame)
+func (s *SaveGameService) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
+	return s.SavedGameRepository.AddSavedGame(savedGame)
 }
 
-func (s *SaveGameService) DeleteSavedGame(ctx context.Context, savedGameId bson.ObjectID) models.Result[*mongo.DeleteResult]{
-	return s.SavedGameRepository.DeleteSavedGame(ctx, savedGameId)
-}
-
-//Validate each player in the array of players to gurauntee they all exist as real players in the database.
-func (s *SaveGameService) validatePlayers(ctx context.Context, playersToValidate []models.Player) error{
-	locationsResult := s.LocationRepository.GetAllLocations()
-
-	if locationsResult.Err != nil {
-		return locationsResult.Err
-	}
-
-	return  nil
+func (s *SaveGameService) DeleteSavedGame(savedGameId bson.ObjectID) models.Result[*mongo.DeleteResult]{
+	return s.SavedGameRepository.DeleteSavedGame(savedGameId)
 }
