@@ -1,16 +1,17 @@
 package services
 
 import (
-	"context"
-
-	"go.mongodb.org/mongo-driver/v2/bson"
-	"go.mongodb.org/mongo-driver/v2/mongo"
-
+	"net/http"
+	
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/repositories"
 )
 
-type SaveGameService struct{
+type SaveGameService interface{
+
+}
+
+type SaveGameServiceImpl struct{
 	SavedGameRepository repositories.SavedGameRepository
 	LocationRepository  repositories.LocationRepository
 }
@@ -27,6 +28,6 @@ func (s *SaveGameService) AddSavedGame(savedGame models.SavedGame) models.Result
 	return s.SavedGameRepository.AddSavedGame(savedGame)
 }
 
-func (s *SaveGameService) DeleteSavedGame(savedGameId bson.ObjectID) models.Result[*mongo.DeleteResult]{
+func (s *SaveGameService) DeleteSavedGame(savedGameId int) models.Result[string]{
 	return s.SavedGameRepository.DeleteSavedGame(savedGameId)
 }

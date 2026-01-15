@@ -8,10 +8,10 @@ import (
 )
 
 type SavedGameRepository interface {
-	GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]
-	AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]
-	DeleteSavedGame(savedGameId int) models.Result[string]
-	GetAllSavedGames() models.Result[[]models.SavedGame]
+	GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame]
+	AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame]
+	DeleteSavedGameDB(savedGameId int) models.Result[string]
+	GetAllSavedGamesDB() models.Result[[]models.SavedGame]
 }
 
 type sqlSavedGameRepository struct {
@@ -24,21 +24,21 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
 }
 
 // Get all Saved games from database.
-func (s *sqlSavedGameRepository) GetAllSavedGames() models.Result[[]models.SavedGame] {
+func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
 	return getResult(nil, http.StatusOK, []models.SavedGame{})
 }
 
 // Get all saved games played at a specific location.
-func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame] {
+func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame] {
 	return getResult(nil, http.StatusOK, []models.SavedGame{})
 }
 
 // Delete a saved game
-func (m *sqlSavedGameRepository) DeleteSavedGame(savedGameId int) models.Result[string] {
+func (m *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId int) models.Result[string] {
 	return getResult(nil, http.StatusOK, "")
 }
 
 // Add a new saved game
-func (m *sqlSavedGameRepository) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
+func (m *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	return getResult(nil, http.StatusOK, savedGame)
 }
