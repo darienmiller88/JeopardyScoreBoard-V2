@@ -2,6 +2,7 @@ package services
 
 import (
 	"JeopardyScoreBoardV2/models"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -38,3 +39,20 @@ func TestGetAllLocations_Service_Ok(t *testing.T) {
 	assert.Len(t, result.ResultData, 3)
 	assert.Equal(t, "Elmwood", result.ResultData[0])
 }
+
+func TestGetAllLocations_Service_Error(t *testing.T) {
+	mockRepo := &mockLocationRepository{
+		locationsResult: models.Result[[]string]{
+			Err:        fmt.Errorf("db down"),
+			StatusCode: http.StatusInternalServerError,
+		},
+	}
+
+	service := &LocationServiceImpl{ Repository: mockRepo }
+	result := service.GetAllLocations()
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+}
+
