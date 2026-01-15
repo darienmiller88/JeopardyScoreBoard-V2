@@ -56,3 +56,20 @@ func TestGetAllLocations_Service_Error(t *testing.T) {
 	assert.Empty(t, result.ResultData)
 }
 
+
+func TestGetLocation_Service_Ok(t *testing.T) {
+	location := "Elmwood"
+	mockRepo := &mockLocationRepository{
+		locationResult: models.Result[string]{
+			StatusCode: http.StatusOK,
+			ResultData: location,
+		},
+	}
+
+	service := &LocationServiceImpl{Repository: mockRepo}
+	result := service.GetLocation(location)
+
+	require.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Equal(t, location, result.ResultData)
+}
