@@ -17,13 +17,13 @@ Backend
 [x] - Complete Player Service tests
 [x] - Complete Player Controller
 [x] - Complete Player Controller tests
-[] - Complete Saved Game Repository
+[ ] - Complete Saved Game Repository
 [] - Complete Saved Game Repository tests
-[] - Complete Saved Game Service
+[ ] - Complete Saved Game Service
 [] - Complete Saved Game Service tests
-[] - Complete Saved Game Model 
+[x] - Complete Saved Game Model 
 [] - Complete Saved Game Model tests
-[] - Complete Saved Game Controller 
+[x] - Complete Saved Game Controller 
 [] - Complete Saved Game Controller Tests
 
 [] - Complete Team Repository
