@@ -5,8 +5,6 @@ import (
 	"errors"
 	"strings"
 	"time"
-
-	"github.com/go-ozzo/ozzo-validation/v4"
 )
 
 type SavedGame struct {
@@ -22,12 +20,11 @@ type SavedGame struct {
 }
 
 func (s *SavedGame) Validate() error{
-	return validation.ValidateStruct(
-		s,
+	if err := s.validateGameType(); err != nil {
+		return err
+	}
 
-		//Order matters here! Validate the location name first to ensure that the Location field is not nil
-
-	)
+	return nil
 }
 
 func (s *SavedGame) validateGameType() error{
@@ -51,10 +48,6 @@ func (s *SavedGame) validateGameType() error{
 		return errors.New("team game cannot have a winning player, only winning team id")
 	}
 
-	return nil
-}
-
-func (s *SavedGame) validatePoints() error{
 	return nil
 }
 
