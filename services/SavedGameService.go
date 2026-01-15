@@ -8,7 +8,7 @@ import (
 type SaveGameService interface{
 	GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]
 	AddSavedGame(savedGame models.SavedGame)          models.Result[models.SavedGame]
-	DeleteSavedGame(savedGameId int)                  models.Result[string]
+	DeleteSavedGame(savedGameId string)                  models.Result[string]
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
 }
 
@@ -29,6 +29,6 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 	return s.SavedGameRepository.AddSavedGameDB(savedGame)
 }
 
-func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId int) models.Result[string]{
+func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId string) models.Result[string]{
 	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
 }

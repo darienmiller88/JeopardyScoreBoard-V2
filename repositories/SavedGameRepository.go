@@ -10,7 +10,7 @@ import (
 type SavedGameRepository interface {
 	GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame]
 	AddSavedGameDB(savedGame models.SavedGame)          models.Result[models.SavedGame]
-	DeleteSavedGameDB(savedGameId int)                  models.Result[string]
+	DeleteSavedGameDB(savedGameId string)                  models.Result[string]
 	GetAllSavedGamesDB()                                models.Result[[]models.SavedGame]
 }
 
@@ -34,7 +34,7 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName str
 }
 
 // Delete a saved game
-func (m *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId int) models.Result[string] {
+func (m *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Result[string] {
 	return getResult(nil, http.StatusOK, "")
 }
 

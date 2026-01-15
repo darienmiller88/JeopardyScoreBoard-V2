@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/services"
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -19,21 +21,66 @@ func (s *SavedGamesController) Init(service services.SaveGameService) {
 	s.Router.Get("/", s.GetAllSavedGames)
 	s.Router.Post("/", s.AddSavedGame)
 	s.Router.Get("/{location_name}", s.GetAllSavedGamesFromLocation)
-	s.Router.Delete("/{location_name}", s.DeleteSavedGame)
+	s.Router.Delete("/{id}", s.DeleteSavedGame)
 }
 
 func (s *SavedGamesController) GetAllSavedGames(res http.ResponseWriter, req *http.Request){
+	result := s.savedGameService.GetAllSavedGames()
 
+	if result.Err != nil{
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(result)
 }
 
 func (s *SavedGamesController) GetAllSavedGamesFromLocation(res http.ResponseWriter, req *http.Request){
+	locationName := chi.URLParam(req, "location_name")
+	result := s.savedGameService.GetAllSavedGamesFromLocation(locationName)
 
+	if result.Err != nil{
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(result)
 }
 
 func (s *SavedGamesController) AddSavedGame(res http.ResponseWriter, req *http.Request){
+	savedGame := models.SavedGame{}
 
+	if err := json.NewDecoder(req.Body).Decode(&savedGame); err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := s.savedGameService.AddSavedGame(savedGame)
+
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(result)
 }
 
 func (s *SavedGamesController) DeleteSavedGame(res http.ResponseWriter, req *http.Request){
+	id := chi.URLParam(req, "id")
+	result := s.savedGameService.DeleteSavedGame(id)
 
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(result)
 }
