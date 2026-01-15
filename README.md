@@ -9,12 +9,13 @@ Here are the following changes I plan on making:
 - For the back end, I will stick with go, but instead of it serving JSON to seperate front end, it will instead serve HTML fragments and HTMX pages instead. The HTMX will make request to end points on the server, receive fragments, and place them onto the HTMX page directly. Game state will be saved in a redis cache rather than in local storage to ensure the names of players aren't exposed, and that point incrementing and decrementing are near instant.
 
 ### New Tech Stack:
-* [HTMX](https://vuejs.org/)
+* [HTMX](https://htmx.org/)
 * [Sass](https://sass-lang.com/)
 * [Alpine.js](https://alpinejs.dev/)
 * [Redis](https://redis.io/)
 * [Go](https://github.com/go-chi/chi)
-* [MongoDB-Atlas](https://www.mongodb.com/cloud/atlas)
+* [Postgres](https://www.postgresql.org/)
+* [Supabase](https://supabase.com/)
 * [Railway](https://railway.com)
 
 ## Features
