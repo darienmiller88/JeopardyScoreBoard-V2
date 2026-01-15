@@ -13,22 +13,21 @@ type SaveGameService interface{
 }
 
 type SaveGameServiceImpl struct{
-	SavedGameRepository repositories.SavedGameRepository
-	LocationRepository  repositories.LocationRepository
+	Repository repositories.SavedGameRepository
 }
 
 func (s *SaveGameServiceImpl) GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]{
-	return s.SavedGameRepository.GetAllSavedGamesFromLocationDB(locationName)
+	return s.Repository.GetAllSavedGamesFromLocationDB(locationName)
 }
 
 func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGame]{
-	return s.SavedGameRepository.GetAllSavedGamesDB()
+	return s.Repository.GetAllSavedGamesDB()
 }
 
 func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
-	return s.SavedGameRepository.AddSavedGameDB(savedGame)
+	return s.Repository.AddSavedGameDB(savedGame)
 }
 
 func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId string) models.Result[string]{
-	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
+	return s.Repository.DeleteSavedGameDB(savedGameId)
 }

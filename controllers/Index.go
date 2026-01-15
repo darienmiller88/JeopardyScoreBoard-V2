@@ -13,6 +13,7 @@ type Index struct{
 	viewsController ViewsController
 	locationsController LocationsController
 	playersController PlayersController
+	savedGamesController SavedGamesController
 }
 
 func (i *Index) InitControllers(db *sqlx.DB){
@@ -24,10 +25,12 @@ func (i *Index) InitControllers(db *sqlx.DB){
 	//Initialize the controllers, and choose the service and repo implementation
 	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db) })
 	i.playersController.Init(&services.PlayerServiceImpl{ Repository: repositories.GetSqlPlayerRepository(db) })
+	i.savedGamesController.Init(&services.SaveGameServiceImpl{ Repository: repositories.GetSqlSavedGameRepository(db) })
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router
 	//in main.go
 	i.Router.Mount("/", i.viewsController.Router)
 	i.Router.Mount("/locations", i.locationsController.Router)
 	i.Router.Mount("/players", i.playersController.Router)
+	i.Router.Mount("/savedgames", i.savedGamesController.Router)
 }
