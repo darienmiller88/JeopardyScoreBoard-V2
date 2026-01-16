@@ -10,7 +10,7 @@ import (
 type SavedGameRepository interface {
 	GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame]
 	AddSavedGameDB(savedGame models.SavedGame)          models.Result[models.SavedGame]
-	DeleteSavedGameDB(savedGameId string)                  models.Result[string]
+	DeleteSavedGameDB(savedGameId string)               models.Result[string]
 	GetAllSavedGamesDB()                                models.Result[[]models.SavedGame]
 }
 

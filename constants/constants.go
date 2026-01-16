@@ -15,10 +15,26 @@ const(
 		) RETURNING id
 	`
 
-	InsertNewSavedGame string = `
-		INSERT INTO SavedGames (winner, total_score, average_score, is_team_game)
+	InsertNewPlayerSavedGame string = `
+		INSERT INTO SavedGames (total_score, average_score, winning_player_name, winning_player_id, location_id)
+		VALUES(
+			$1, 
+			$2,
+			$3,
+			(SELECT id FROM players WHERE player_name=$4),
+			(SELECT id FROM locations WHERE location_name=$5)
+		) RETURNING id
 	`
 
+	InsertNewTeamSavedGame string = `
+		INSERT INTO SavedGames (total_score, average_score, winning_team_id, location_id)
+		VALUES(
+			$1,
+			$2,
+			$3,
+			(SELECT id FROM locations WHERE location_name=$4)
+		) RETURNING id
+	`
 	//////////////////////////
 	//READ
 	/////////////////////////
@@ -49,6 +65,14 @@ const(
 		WHERE locations.location_name=$1
 	`
 
+	GetAllSavedGames string = `
+	
+	`
+
+	GetAllSavedGamesFromLocation string = `
+	
+	`
+
 	//UPDATE
 	UpdatePlayerName string = `
 		UPDATE players SET player_name=$1 WHERE player_name=$2
@@ -58,4 +82,9 @@ const(
 	DeletePlayer string = `
 		DELETE FROM players WHERE player_name=$1
 	`
+
+	DeleteSavedGame string = `
+	
+	`
+
 )
