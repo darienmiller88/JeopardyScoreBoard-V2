@@ -64,9 +64,10 @@ const(
 		ON locations.id=players.location_id
 		WHERE locations.location_name=$1
 	`
-
-	GetAllSavedGames string = `
 	
+	//Get saved games
+	GetAllSavedGames string = `
+		SELECT * FROM saved
 	`
 
 	GetAllSavedGamesFromLocation string = `
