@@ -15,7 +15,7 @@ func TestSavedGameValidate_HappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 5, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinnerPlayerName: "Jane Doe",
+				WinningPlayerName: "Jane Doe",
 			},
 		},
 		{
@@ -23,7 +23,7 @@ func TestSavedGameValidate_HappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Valid: false},
 				WinningTeamId:    sql.NullInt32{Int32: 3, Valid: true},
-				WinnerPlayerName: "",
+				WinningPlayerName: "",
 			},
 		},
 	}
@@ -49,7 +49,7 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 1, Valid: true},
 				WinningTeamId:    sql.NullInt32{Int32: 2, Valid: true},
-				WinnerPlayerName: "Jane Doe",
+				WinningPlayerName: "Jane Doe",
 			},
 		},
 		{
@@ -64,7 +64,7 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 4, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinnerPlayerName: "",
+				WinningPlayerName: "",
 			},
 		},
 		{
@@ -72,7 +72,7 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 4, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinnerPlayerName: "Jane",
+				WinningPlayerName: "Jane",
 			},
 		},
 		{
@@ -80,7 +80,7 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 4, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinnerPlayerName: "Jane Marie Doe",
+				WinningPlayerName: "Jane Marie Doe",
 			},
 		},
 		{
@@ -88,7 +88,7 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Valid: false},
 				WinningTeamId:    sql.NullInt32{Int32: 8, Valid: true},
-				WinnerPlayerName: "Jane Doe",
+				WinningPlayerName: "Jane Doe",
 			},
 		},
 	}

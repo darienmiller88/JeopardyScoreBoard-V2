@@ -1,0 +1,84 @@
+/* game-session.css */
+.game-session-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.total-points-display {
+  text-align: center;
+}
+
+.total-points {
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.session-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.players-grid-session {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.player-session-card {
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.player-name-session {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.player-score-session {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  margin: 1rem 0;
+}
+
+.score-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.score-btn {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.remove-player-btn {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.session-footer {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--glass-border);
+}

@@ -14,7 +14,7 @@ type SavedGame struct {
 	TotalPoints      int 		   `db:"total_score"`
 	AveragePoints    float64       `db:"average_score"`
 	LocationId       int           `db:"location_id"`
-	WinnerPlayerName string        `db:"winner_player_name"`
+	WinningPlayerName string       `db:"winning_player_name"`
 	WinningTeamId    sql.NullInt32 `db:"winning_team_id"`
 	WinningPlayerId  sql.NullInt32 `db:"player_id"`
 }
@@ -44,7 +44,7 @@ func (s *SavedGame) validateGameType() error{
 	}
 
 	//If the saved game is a team game, there can be no winning player name 
-	if s.WinningTeamId.Valid && s.WinnerPlayerName != "" {
+	if s.WinningTeamId.Valid && s.WinningPlayerName != "" {
 		return errors.New("team game cannot have a winning player, only winning team id")
 	}
 
@@ -52,7 +52,7 @@ func (s *SavedGame) validateGameType() error{
 }
 
 func (s *SavedGame) validateWinningPlayerNameHasTwoParts() error{	
-	fields := strings.Fields(s.WinnerPlayerName)
+	fields := strings.Fields(s.WinningPlayerName)
 
 	if len(fields) != 2 {
 		return errors.New("Player name must have exactly two parts: ex -> 'jane doe'")
