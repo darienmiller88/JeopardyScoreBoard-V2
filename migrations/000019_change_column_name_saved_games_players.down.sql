@@ -1,0 +1,2 @@
+ALTER TABLE savedgamesplayers
+RENAME COLUMN player_name TO winning_player_name;
