@@ -16,6 +16,7 @@ type Player struct{
 	PlayerName string        `db:"player_name"`
 	LocationID int           `db:"location_id"`
 	TeamID     sql.NullInt32 `db:"team_id"`
+	Score      int           `db:"-"`
 }
 
 const(

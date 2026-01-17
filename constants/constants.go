@@ -22,7 +22,7 @@ const(
 			$2,
 			$3,
 			(SELECT id FROM players WHERE player_name=$4),
-			(SELECT id FROM locations WHERE location_name=$5)
+			$5
 		) RETURNING id
 	`
 
@@ -32,7 +32,7 @@ const(
 			$1,
 			$2,
 			$3,
-			(SELECT id FROM locations WHERE location_name=$4)
+			$4
 		) RETURNING id
 	`
 

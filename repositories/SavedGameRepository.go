@@ -3,10 +3,12 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type SavedGameRepository interface {
@@ -70,7 +72,46 @@ func (m *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Re
 
 // Add a new saved game
 func (m *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame] {
-	
+	if savedGame.WinningPlayerId.Valid {
+		err := m.db.Get(
+			&savedGame.ID, //Retrieve the id of the newly created saved game
+			constants.InsertNewPlayerSavedGame, 
+			savedGame.TotalPoints,
+			savedGame.AveragePoints,
+			savedGame.WinningPlayerName, 
+			savedGame.WinningPlayerName,//Used to lookup player id
+			savedGame.LocationId,
+		)
+
+		if err != nil {
+			var pqErr *pq.Error
+
+			//FK violation returns a 23503
+			if errors.As(err, &pqErr) && pqErr.Code == "23503" {
+				return getResult(fmt.Errorf("no location or "), http.StatusNotFound, models.SavedGame{})
+			}
+
+			return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+		} 
+
+		for _, player := range savedGame.Players {
+			var pqErr *pq.Error
+			_, err := m.db.Exec(
+				constants.InsertPlayersForSavedGame,
+				player.PlayerName,
+				savedGame.ID,
+				player.Score,
+				
+			)
+
+			//FK violation returns a 23503
+			if errors.As(err, &pqErr) && pqErr.Code == "23503" {
+				return getResult(fmt.Errorf("no player with id %s found", ), http.StatusNotFound, models.SavedGame{})
+			}
+		}
+	}else{
+
+	}
 	
 	return getResult(nil, http.StatusOK, savedGame)
 }
