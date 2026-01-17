@@ -87,11 +87,11 @@ const(
 	
 	//Get saved games
 	GetAllSavedGames string = `
-		SELECT * FROM saved
+		SELECT * FROM savedgames
 	`
 
 	GetAllSavedGamesFromLocation string = `
-	
+		SELECT * FROM savedgames WHERE id=(SELECT id FROM locations WHERE location_name=$1)
 	`
 
 	//UPDATE
@@ -105,7 +105,7 @@ const(
 	`
 
 	DeleteSavedGame string = `
-	
+		DELETE FROM savedgames WHERE id=$1
 	`
 
 )
