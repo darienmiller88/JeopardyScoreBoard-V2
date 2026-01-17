@@ -70,5 +70,7 @@ func (m *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Re
 
 // Add a new saved game
 func (m *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame] {
+	
+	
 	return getResult(nil, http.StatusOK, savedGame)
 }

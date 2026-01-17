@@ -17,11 +17,16 @@ type SavedGame struct {
 	WinningPlayerName string       `db:"winning_player_name"`
 	WinningTeamId    sql.NullInt32 `db:"winning_team_id"`
 	WinningPlayerId  sql.NullInt32 `db:"player_id"`
+	Players          []string      `json:"players" db:"-"`
 }
 
 func (s *SavedGame) Validate() error{
 	if err := s.validateGameType(); err != nil {
 		return err
+	}
+
+	if len(s.Players) == 0 && s.WinningPlayerId.Valid{
+		return errors.New("players cannot be empty when winning player id is supplied")
 	}
 
 	return nil
