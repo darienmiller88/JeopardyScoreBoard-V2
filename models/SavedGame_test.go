@@ -17,7 +17,8 @@ func TestSavedGameValidate_HappyPaths(t *testing.T) {
 				WinningTeamId:    sql.NullInt32{Valid: false},
 				WinningPlayerName: "Jane Doe",
 				Players: []Player{
-					
+					{ PlayerName: "Darien Miller" },
+					{ PlayerName: "vicky Miller" },
 				},
 			},
 		},
