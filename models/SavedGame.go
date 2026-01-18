@@ -16,8 +16,9 @@ type SavedGame struct {
 	LocationId       int           `db:"location_id"`
 	WinningPlayerName string       `db:"winning_player_name"`
 	WinningTeamId    sql.NullInt32 `db:"winning_team_id"`
-	WinningPlayerId  sql.NullInt32 `db:"player_id"`
+	WinningPlayerId  sql.NullInt32 `db:"winning_player_id"`
 	Players          []Player      `json:"players" db:"-"`
+	Teams            []Team        `json:"teams"   db:"-"`
 }
 
 func (s *SavedGame) Validate() error{

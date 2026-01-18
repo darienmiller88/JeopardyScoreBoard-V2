@@ -39,20 +39,19 @@ const(
 	InsertPlayersForSavedGame string = `
 		INSERT INTO SavedGamesPlayers (player_id, saved_game_id, player_score, player_name)
 		VALUES(
-			(SELECT id FROM players WHERE player_name=$1),
+			$1,
 			$2,
 			$3,
-			$4
+			(SELECT player_name FROM players WHERE id=$4)
 		)
 	`
 
 	InsertTeamsForSavedGame string = `
 		INSERT INTO SavedGamesTeams (team_id, saved_game_id, team_score)
 		VALUES(
-			(SELECT id FROM players WHERE player_name=$1),
+			$1,
 			$2,
-			$3,
-			$4
+			$3
 		)
 	`
 	//////////////////////////
