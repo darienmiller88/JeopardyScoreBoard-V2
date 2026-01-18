@@ -18,6 +18,7 @@ Here are the following changes I plan on making:
 * [Postgres](https://www.postgresql.org/)
 * [Supabase](https://supabase.com/)
 * [Railway](https://railway.com)
+* [Docker](https://www.docker.com/)
 
 ## Features
 This version will still retain the following features from v1:
