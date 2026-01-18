@@ -15,7 +15,7 @@ func TestSavedGameValidate_HappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 5, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinningPlayerName: "Jane Doe",
+				WinningPlayerName: sql.NullString{String: "vicky Miller", Valid: true},
 				Players: []Player{
 					{ PlayerName: "Darien Miller" },
 					{ PlayerName: "vicky Miller" },
@@ -27,7 +27,11 @@ func TestSavedGameValidate_HappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Valid: false},
 				WinningTeamId:    sql.NullInt32{Int32: 3, Valid: true},
-				WinningPlayerName: "",
+				WinningPlayerName: sql.NullString{Valid: false},
+				Teams: []Team{
+					{ LocationID: 1 },
+					{ LocationID: 2 },
+				},
 			},
 		},
 	}
@@ -53,7 +57,6 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 1, Valid: true},
 				WinningTeamId:    sql.NullInt32{Int32: 2, Valid: true},
-				WinningPlayerName: "Jane Doe",
 			},
 		},
 		{
@@ -64,35 +67,35 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 			},
 		},
 		{
-			name: "player game missing name",
+			name: "player game missing winning player name",
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 4, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinningPlayerName: "",
+				WinningPlayerName: sql.NullString{Valid: false},
 			},
 		},
 		{
-			name: "player name only one part",
+			name: "winning player name only one part",
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 4, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinningPlayerName: "Jane",
+				WinningPlayerName: sql.NullString{String:"Jane", Valid: true},
 			},
 		},
 		{
-			name: "player name too many parts",
+			name: "winning player name too many parts",
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Int32: 4, Valid: true},
 				WinningTeamId:    sql.NullInt32{Valid: false},
-				WinningPlayerName: "Jane Marie Doe",
+				WinningPlayerName: sql.NullString{String: "Jane Marie Doe", Valid: true},
 			},
 		},
 		{
-			name: "team game with winner name set",
+			name: "team game with winner player name",
 			game: SavedGame{
 				WinningPlayerId:  sql.NullInt32{Valid: false},
 				WinningTeamId:    sql.NullInt32{Int32: 8, Valid: true},
-				WinningPlayerName: "Jane Doe",
+				WinningPlayerName: sql.NullString{String: "Jane Doe", Valid: true},
 			},
 		},
 	}
