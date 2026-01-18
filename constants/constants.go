@@ -90,7 +90,7 @@ const(
 	`
 
 	GetAllSavedGamesFromLocation string = `
-		SELECT * FROM savedgames WHERE id=(SELECT id FROM locations WHERE location_name=$1)
+		SELECT * FROM savedgames WHERE location_id=(SELECT id FROM locations WHERE location_name=$1)
 	`
 
 	//UPDATE

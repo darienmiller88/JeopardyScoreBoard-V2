@@ -1,10 +1,12 @@
 package repositories
 
 import (
+	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
 	"database/sql"
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
 	"time"
 
@@ -27,6 +29,12 @@ func setupSavedGameRepo(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock, *sqlSavedGameR
 
 	return sqlxDB, mock, repo
 }
+
+
+
+////////////////////////////
+//GET
+///////////////////////////
 
 func TestGetAllSavedGamesDB_HappyPath_ReturnsMultipleGames(t *testing.T) {
 	// Arrange
@@ -225,3 +233,45 @@ func TestGetAllSavedGamesDB_UnhappyPath_ClosedDatabase(t *testing.T) {
 	assert.Empty(t, result.ResultData)
 	_ = mock
 }
+
+func TestGetAllSavedGamesFromLocationDB_OneResult(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"created_at",
+		"updated_at",
+		"total_score",
+		"average_score",
+		"location_id",
+		"winning_player_name",
+		"winning_team_id",
+		"winning_player_id",
+	}).AddRow(
+		1,
+		time.Now(),
+		time.Now(),
+		4200,
+		1400.0,
+		10,
+		sql.NullString{String: "Alice", Valid: true},
+		sql.NullInt32{Int32: 2, Valid: true},
+		sql.NullInt32{Int32: 5, Valid: true},
+	)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs("Elmwood").
+		WillReturnRows(rows)
+
+	result := repo.GetAllSavedGamesFromLocationDB("Elmwood")
+
+	require.NoError(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Len(t, result.ResultData, 1)
+	require.Equal(t, 4200, result.ResultData[0].TotalPoints)
+}
+
+
+////////////////////////////
+//
+/////////////////////////////
