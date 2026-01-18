@@ -234,7 +234,7 @@ func TestGetAllSavedGamesDB_UnhappyPath_ClosedDatabase(t *testing.T) {
 	_ = mock
 }
 
-func TestGetAllSavedGamesFromLocationDB_OneResult(t *testing.T) {
+func TestGetAllSavedGamesFromLocationDB_HappyPath_OneResult(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
 	rows := sqlmock.NewRows([]string{
@@ -271,7 +271,7 @@ func TestGetAllSavedGamesFromLocationDB_OneResult(t *testing.T) {
 	require.Equal(t, 4200, result.ResultData[0].TotalPoints)
 }
 
-func TestGetAllSavedGamesFromLocationDB_MultipleResults(t *testing.T) {
+func TestGetAllSavedGamesFromLocationDB_HappyPath_MultipleResults(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
 	rows := sqlmock.NewRows([]string{
@@ -298,6 +298,32 @@ func TestGetAllSavedGamesFromLocationDB_MultipleResults(t *testing.T) {
 	require.Len(t, result.ResultData, 2)
 }
 
+
+func TestGetAllSavedGamesFromLocationDB_HappyPath_NoResults(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"created_at",
+		"updated_at",
+		"total_score",
+		"average_score",
+		"location_id",
+		"winning_player_name",
+		"winning_team_id",
+		"winning_player_id",
+	})
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs("Empty Location").
+		WillReturnRows(rows)
+
+	result := repo.GetAllSavedGamesFromLocationDB("Empty Location")
+
+	require.NoError(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Len(t, result.ResultData, 0)
+}
 
 
 ////////////////////////////
