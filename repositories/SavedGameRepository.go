@@ -29,7 +29,7 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
 
 // Get all Saved games from database.
 func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
-	var savedGames []models.SavedGame
+	savedGames := []models.SavedGame{}
 	
 	if err := s.db.Select(&savedGames, constants.GetAllSavedGames); err != nil {
 		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
@@ -40,7 +40,7 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
 
 // Get all saved games played at a specific location.
 func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame] {
-	var savedGames []models.SavedGame
+	savedGames := []models.SavedGame{}
 	
 	if err := s.db.Select(&savedGames, constants.GetAllSavedGamesFromLocation, locationName); err != nil {
 		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
@@ -73,12 +73,10 @@ func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Re
 // Add a new saved game
 func (s *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	if savedGame.WinningPlayerId.Valid {
-		
+		return s.addStandardSavedGame(savedGame)
 	}else{
-
+		return s.addTeamSavedGame(savedGame)
 	}
-	
-	return getResult(nil, http.StatusOK, savedGame)
 }
 
 func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
