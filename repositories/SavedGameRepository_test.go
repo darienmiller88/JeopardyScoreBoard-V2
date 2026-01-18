@@ -271,6 +271,34 @@ func TestGetAllSavedGamesFromLocationDB_OneResult(t *testing.T) {
 	require.Equal(t, 4200, result.ResultData[0].TotalPoints)
 }
 
+func TestGetAllSavedGamesFromLocationDB_MultipleResults(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"created_at",
+		"updated_at",
+		"total_score",
+		"average_score",
+		"location_id",
+		"winning_player_name",
+		"winning_team_id",
+		"winning_player_id",
+	}).AddRow(1, time.Now(), time.Now(), 3000, 1000, 5, nil, nil, nil).
+		AddRow(2, time.Now(), time.Now(), 4500, 1500, 5, nil, nil, nil)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs("Lawrence").
+		WillReturnRows(rows)
+
+	result := repo.GetAllSavedGamesFromLocationDB("Lawrence")
+
+	require.NoError(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Len(t, result.ResultData, 2)
+}
+
+
 
 ////////////////////////////
 //
