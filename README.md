@@ -32,6 +32,12 @@ This version will still retain the following features from v1:
 
 * Clone repo using `git clone https://github.com/darienmiller88/JeopardyScoreBoard-V2`
 * Migrate the necessary information to your local `.env` as described in the `.env_sample` file
+* Install the Go migrate CLI tool:
+  * **Windows (using Scoop):** `scoop install migrate`
+  * **macOS (using Homebrew):** `brew install golang-migrate`
+  * **Linux:** Download from [releases](https://github.com/golang-migrate/migrate/releases) or use `curl -L https://packagecloud.io/golang-migrate/migrate/gpgkey | apt-key add - && apt-get update && apt-get install -y migrate`
+* Run database migrations: `migrate -path ./migrations -database "postgres://username:password@localhost:5432/dbname?sslmode=disable" up`
+  * Replace connection string values with those from your `.env` file
 * Run go build to create a root level `JeopardyScoreBoardV2.exe` file, and then run `.\JeopardyScoreBoard-V2` to run the executable. If an executable is not needed, simply input `go run main.go` instead, or `.\fresh` to enable a server restart on change.
 
 ## Contributing
