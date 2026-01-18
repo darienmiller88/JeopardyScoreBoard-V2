@@ -81,7 +81,7 @@ func (s *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) mode
 	return getResult(nil, http.StatusOK, savedGame)
 }
 
-func (s *sqlSavedGameRepository) AddStandardSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
+func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	// Start transaction
 	tx, err := s.db.Beginx()
 
@@ -145,7 +145,7 @@ func (s *sqlSavedGameRepository) AddStandardSavedGame(savedGame models.SavedGame
 	return getResult(nil, http.StatusCreated, savedGame)
 }
 
-func (s *sqlSavedGameRepository) AddTeamSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
+func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	// Start transaction
 	tx, err := s.db.Beginx()
 
@@ -171,7 +171,7 @@ func (s *sqlSavedGameRepository) AddTeamSavedGame(savedGame models.SavedGame) mo
 		if errors.As(err, &pqErr) && pqErr.Code == "23503" {
 			return getResult(fmt.Errorf("no location or winning team found"), http.StatusNotFound, models.SavedGame{})
 		}
-		
+
 		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
