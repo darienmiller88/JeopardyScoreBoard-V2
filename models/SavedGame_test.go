@@ -98,6 +98,27 @@ func TestSavedGameValidate_UnhappyPaths(t *testing.T) {
 				WinningPlayerName: sql.NullString{String: "Jane Doe", Valid: true},
 			},
 		},
+		{
+			name: "team game with no teams",
+			game: SavedGame{
+				WinningPlayerId:  sql.NullInt32{Valid: false},
+				WinningTeamId:    sql.NullInt32{Valid: true},
+			},
+		},
+		{
+			name: "player game with no players",
+			game: SavedGame{
+				WinningPlayerId:  sql.NullInt32{Valid: true},
+				WinningTeamId:    sql.NullInt32{Valid: false},
+			},
+		},
+		{
+			name: "player game with no winning player",
+			game: SavedGame{
+				WinningPlayerId:   sql.NullInt32{Valid: true},
+				WinningTeamId:     sql.NullInt32{Valid: false},
+			},
+		},
 	}
 
 	for _, gameTest := range tests {
