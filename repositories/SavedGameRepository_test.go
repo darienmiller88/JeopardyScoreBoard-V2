@@ -389,6 +389,32 @@ func TestGetAllSavedGamesFromLocationDB_SubqueryMultipleRows(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
 }
 
+func TestGetAllSavedGamesFromLocationDB_UnhappyPath_ScanError(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	locationName := "Elmwood"
+
+	// Create rows with wrong data type to cause scan error
+	rows := sqlmock.NewRows([]string{
+		"id", "created_at", "updated_at", "total_score", "average_score",
+		"location_id", "winning_player_name", "winning_team_id", "winning_player_id",
+	}).
+		AddRow("invalid_id", time.Now(), time.Now(), 16000, 4000.0, 1, "Alice", nil, 1)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs(locationName).
+		WillReturnRows(rows)
+
+	// Act
+	result := repo.GetAllSavedGamesFromLocationDB(locationName)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
 
 
 ////////////////////////////
