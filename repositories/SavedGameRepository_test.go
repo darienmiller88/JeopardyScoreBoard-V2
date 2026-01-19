@@ -415,6 +415,29 @@ func TestGetAllSavedGamesFromLocationDB_UnhappyPath_ScanError(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestGetAllSavedGamesFromLocationDB_EmptyLocationName(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"created_at",
+		"updated_at",
+		"total_score",
+		"average_score",
+		"location_id",
+		"winning_player_name",
+		"winning_team_id",
+		"winning_player_id",
+	})
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs("").
+		WillReturnRows(rows)
+
+	result := repo.GetAllSavedGamesFromLocationDB("")
+
+	require.NoError(t, result.Err)
+	require.Len(t, result.ResultData, 0)
+}
 
 
 ////////////////////////////
