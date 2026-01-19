@@ -785,3 +785,35 @@ func TestDeleteSavedGameDB_UnhappyPath_SqlInjectionAttempt(t *testing.T) {
 	assert.Empty(t, result.ResultData)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestDeleteSavedGameDB_UnhappyPath_MultipleCallsSameId(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "1"
+
+	// First delete succeeds
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	// Second delete fails (game already deleted)
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnResult(sqlmock.NewResult(0, 0))
+
+	// Act
+	result1 := repo.DeleteSavedGameDB(savedGameId)
+	result2 := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	// First delete succeeds
+	assert.NoError(t, result1.Err)
+	assert.Equal(t, http.StatusOK, result1.StatusCode)
+
+	// Second delete fails
+	assert.Error(t, result2.Err)
+	assert.Equal(t, http.StatusNotFound, result2.StatusCode)
+	assert.Contains(t, result2.Err.Error(), "saved game not found")
+
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
