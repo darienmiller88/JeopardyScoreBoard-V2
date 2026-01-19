@@ -376,6 +376,20 @@ func TestGetAllSavedGamesFromLocationDB_QueryError(t *testing.T) {
 	require.Len(t, result.ResultData, 0)
 }
 
+func TestGetAllSavedGamesFromLocationDB_SubqueryMultipleRows(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs("Duplicate Location").
+		WillReturnError(errors.New("more than one row returned by a subquery"))
+
+	result := repo.GetAllSavedGamesFromLocationDB("Duplicate Location")
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
+
+
 
 ////////////////////////////
 //
