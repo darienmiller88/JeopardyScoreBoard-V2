@@ -326,6 +326,50 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_NoResults(t *testing.T) {
 	require.Len(t, result.ResultData, 0)
 }
 
+func TestGetAllSavedGamesFromLocationDB_HappyPath_MixedPlayerAndTeamGames(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+
+	locationName := "Elmwood"
+	now := time.Now()
+
+	rows := sqlmock.NewRows([]string{
+		"id", "created_at", "updated_at", "total_score", "average_score",
+		"location_id", "winning_player_name", "winning_team_id", "winning_player_id",
+	}).
+		AddRow(1, now, now, 16000, 4000.0, 1, "Alice", nil, 1).
+		AddRow(2, now, now, 20000, 5000.0, 1, nil, 5, nil).
+		AddRow(3, now, now, 18000, 4500.0, 1, "Bob", nil, 2)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs(locationName).
+		WillReturnRows(rows)
+
+	// Act
+	result := repo.GetAllSavedGamesFromLocationDB(locationName)
+
+	// Assert
+	assert.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Len(t, result.ResultData, 3)
+	
+	// First game: player winner
+	assert.True(t, result.ResultData[0].WinningPlayerName.Valid)
+	assert.Equal(t, "Alice", result.ResultData[0].WinningPlayerName.String)
+	assert.False(t, result.ResultData[0].WinningTeamId.Valid)
+	
+	// Second game: team winner
+	assert.False(t, result.ResultData[1].WinningPlayerName.Valid)
+	assert.True(t, result.ResultData[1].WinningTeamId.Valid)
+	assert.Equal(t, int32(5), result.ResultData[1].WinningTeamId.Int32)
+	
+	// Third game: player winner
+	assert.True(t, result.ResultData[2].WinningPlayerName.Valid)
+	assert.Equal(t, "Bob", result.ResultData[2].WinningPlayerName.String)
+	
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
 func TestGetAllSavedGamesFromLocationDB_HappyPath_NullWinnerFields(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
