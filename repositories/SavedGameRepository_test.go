@@ -4,6 +4,7 @@ import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -360,6 +361,21 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_NullWinnerFields(t *testing.T)
 	require.False(t, result.ResultData[0].WinningPlayerName.Valid)
 	require.False(t, result.ResultData[0].WinningTeamId.Valid)
 }
+
+func TestGetAllSavedGamesFromLocationDB_QueryError(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs("Elmwood").
+		WillReturnError(errors.New("db failure"))
+
+	result := repo.GetAllSavedGamesFromLocationDB("Elmwood")
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	require.Len(t, result.ResultData, 0)
+}
+
 
 ////////////////////////////
 //
