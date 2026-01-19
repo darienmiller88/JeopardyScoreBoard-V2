@@ -624,3 +624,22 @@ func TestDeleteSavedGameDB_UnhappyPath_InvalidIdFormat(t *testing.T) {
 	assert.Contains(t, result.Err.Error(), "invalid input syntax")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestDeleteSavedGameDB_UnhappyPath_EmptyId(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := ""
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnError(fmt.Errorf("pq: invalid input syntax for integer: \"\""))
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
