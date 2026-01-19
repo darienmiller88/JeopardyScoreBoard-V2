@@ -745,3 +745,24 @@ func TestDeleteSavedGameDB_UnhappyPath_ClosedDatabase(t *testing.T) {
 	assert.Empty(t, result.ResultData)
 	_ = mock
 }
+
+func TestDeleteSavedGameDB_UnhappyPath_SqlInjectionAttempt(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+
+	// SQL injection attempt
+	savedGameId := "1 OR 1=1"
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnError(fmt.Errorf("pq: invalid input syntax for integer"))
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
