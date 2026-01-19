@@ -729,3 +729,19 @@ func TestDeleteSavedGameDB_UnhappyPath_ConnectionTimeout(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestDeleteSavedGameDB_UnhappyPath_ClosedDatabase(t *testing.T) {
+	// Arrange
+	db, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "1"
+
+	db.Close() // Close database before deletion
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	_ = mock
+}
