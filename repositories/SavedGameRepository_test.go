@@ -545,6 +545,9 @@ func TestGetAllSavedGamesFromLocationDB_EmptyLocationName(t *testing.T) {
 // DELETE 
 /////////////////////////////
 
+// TestDeleteSavedGameDB_HappyPath_DeletesExistingGame verifies that when a valid
+// saved game ID is provided, the function successfully deletes the game from the
+// database and returns a 200 OK status with a success message confirming the deletion.
 func TestDeleteSavedGameDB_HappyPath_DeletesExistingGame(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -564,6 +567,9 @@ func TestDeleteSavedGameDB_HappyPath_DeletesExistingGame(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_HappyPath_DeletesGameWithHighId verifies that the function
+// correctly handles deletion of saved games with large ID values (edge case for ID
+// range) and returns appropriate success messages containing the specific ID.
 func TestDeleteSavedGameDB_HappyPath_DeletesGameWithHighId(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 	savedGameId := "99999"
@@ -583,6 +589,9 @@ func TestDeleteSavedGameDB_HappyPath_DeletesGameWithHighId(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_HappyPath_DeletesGameWithSpecialCaseId tests the edge case
+// of deleting a game with ID of 0, which is a boundary value that might be handled
+// specially in some systems. Verifies that ID 0 is treated as a valid ID.
 func TestDeleteSavedGameDB_HappyPath_DeletesGameWithSpecialCaseId(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -602,6 +611,9 @@ func TestDeleteSavedGameDB_HappyPath_DeletesGameWithSpecialCaseId(t *testing.T) 
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_DatabaseError verifies that when the database
+// encounters a connection error during deletion, the function returns a 500 Internal
+// Server Error with the appropriate error message and no result data.
 func TestDeleteSavedGameDB_UnhappyPath_DatabaseError(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -623,6 +635,9 @@ func TestDeleteSavedGameDB_UnhappyPath_DatabaseError(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_InvalidIdFormat verifies that when a non-numeric
+// ID is provided (which PostgreSQL cannot cast to integer), the function handles the
+// database type conversion error gracefully and returns a 500 error.
 func TestDeleteSavedGameDB_UnhappyPath_InvalidIdFormat(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -644,6 +659,9 @@ func TestDeleteSavedGameDB_UnhappyPath_InvalidIdFormat(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_EmptyId verifies that when an empty string is
+// provided as the game ID, the database rejects it with a type conversion error,
+// and the function properly handles this error case.
 func TestDeleteSavedGameDB_UnhappyPath_EmptyId(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -663,6 +681,9 @@ func TestDeleteSavedGameDB_UnhappyPath_EmptyId(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_NegativeId verifies that when attempting to delete
+// a game with a negative ID (which likely doesn't exist), the function detects that
+// no rows were affected and returns a 404 Not Found error with an appropriate message.
 func TestDeleteSavedGameDB_UnhappyPath_NegativeId(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -683,6 +704,9 @@ func TestDeleteSavedGameDB_UnhappyPath_NegativeId(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_RowsAffectedError verifies that when the database
+// cannot determine how many rows were affected by the delete operation (internal DB error),
+// the function handles this gracefully and returns a 500 error.
 func TestDeleteSavedGameDB_UnhappyPath_RowsAffectedError(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -705,6 +729,10 @@ func TestDeleteSavedGameDB_UnhappyPath_RowsAffectedError(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_ForeignKeyViolation verifies error handling when
+// deletion would violate foreign key constraints. Although CASCADE should typically
+// prevent this, this test ensures the function handles constraint violations gracefully
+// in case of misconfigured database schemas or missing CASCADE directives.
 func TestDeleteSavedGameDB_UnhappyPath_ForeignKeyViolation(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -712,7 +740,7 @@ func TestDeleteSavedGameDB_UnhappyPath_ForeignKeyViolation(t *testing.T) {
 	savedGameId := "1"
 
 	// Simulate foreign key constraint violation (though CASCADE should prevent this)
-	mock.ExpectExec(`DELETE FROM saved_games WHERE id=\$1`).
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
 		WithArgs(savedGameId).
 		WillReturnError(fmt.Errorf("pq: foreign key constraint violation"))
 
@@ -727,6 +755,9 @@ func TestDeleteSavedGameDB_UnhappyPath_ForeignKeyViolation(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_ConnectionTimeout verifies that when the database
+// connection times out during the delete operation, the function handles the timeout
+// error properly and returns a 500 status with a descriptive error message.
 func TestDeleteSavedGameDB_UnhappyPath_ConnectionTimeout(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -748,6 +779,9 @@ func TestDeleteSavedGameDB_UnhappyPath_ConnectionTimeout(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_ClosedDatabase verifies that attempting to delete
+// a game after the database connection has been closed is handled gracefully. The
+// function should return an error rather than panicking.
 func TestDeleteSavedGameDB_UnhappyPath_ClosedDatabase(t *testing.T) {
 	// Arrange
 	db, mock, repo := setupSavedGameRepo(t)
@@ -765,6 +799,9 @@ func TestDeleteSavedGameDB_UnhappyPath_ClosedDatabase(t *testing.T) {
 	_ = mock
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_SqlInjectionAttempt verifies that SQL injection
+// attempts (e.g., "1 OR 1=1") are safely handled by parameterized queries. The database
+// should reject the malformed input as an invalid integer, preventing the injection attack.
 func TestDeleteSavedGameDB_UnhappyPath_SqlInjectionAttempt(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -786,6 +823,10 @@ func TestDeleteSavedGameDB_UnhappyPath_SqlInjectionAttempt(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestDeleteSavedGameDB_UnhappyPath_MultipleCallsSameId verifies idempotency behavior
+// when attempting to delete the same game twice. The first deletion should succeed,
+// but the second attempt should fail with a 404 Not Found since the game no longer exists.
+// This tests the proper handling of "already deleted" scenarios.
 func TestDeleteSavedGameDB_UnhappyPath_MultipleCallsSameId(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -816,4 +857,92 @@ func TestDeleteSavedGameDB_UnhappyPath_MultipleCallsSameId(t *testing.T) {
 	assert.Contains(t, result2.Err.Error(), "saved game not found")
 
 	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+
+
+///////////////////////////
+//POST/ADD
+//////////////////////////
+
+
+// Tests:
+// - WinningPlayerId is valid (player-based game)
+// - Saved game insert succeeds
+// - One player inserted into savedgameplayers
+// - Transaction commits successfully
+// - Returns 201 Created with populated SavedGame ID
+func TestAddSavedGameDB_HappyPath_PlayerWin_SinglePlayer(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGame := models.SavedGame{
+		TotalPoints:    3000,
+		AveragePoints: 1500,
+		WinningPlayerId: sql.NullInt32{Int32: 1, Valid: true},
+		WinningPlayerName: sql.NullString{String: "Alice", Valid: true},
+		LocationId:     2,
+		Players: []models.Player{
+			{ID: 1, Score: 1500},
+		},
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewPlayerSavedGame)).
+		WithArgs(
+			savedGame.TotalPoints,
+			savedGame.AveragePoints,
+			savedGame.WinningPlayerName,
+			savedGame.WinningPlayerName,
+			savedGame.LocationId,
+		).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(42))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertPlayersForSavedGame)).
+		WithArgs(1, 42, 1500, 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit()
+
+	result := repo.AddSavedGameDB(savedGame)
+
+	require.NoError(t, result.Err)
+	require.Equal(t, http.StatusCreated, result.StatusCode)
+	require.Equal(t, 42, result.ResultData.ID)
+}
+
+// Tests:
+// - Multiple players added to savedgameplayers
+// - Loop executes fully
+// - Transaction commits once all inserts succeed
+func TestAddSavedGameDB_HappyPath_PlayerWin_MultiplePlayers(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGame := models.SavedGame{
+		TotalPoints:    6000,
+		AveragePoints: 2000,
+		WinningPlayerId: sql.NullInt32{Int32: 2, Valid: true},
+		WinningPlayerName: sql.NullString{String: "Bob", Valid: true},
+		LocationId:     1,
+		Players: []models.Player{
+			{ID: 1, Score: 2000},
+			{ID: 2, Score: 2500},
+			{ID: 3, Score: 1500},
+		},
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewPlayerSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(99))
+
+	for _, p := range savedGame.Players {
+		mock.ExpectExec(regexp.QuoteMeta(constants.InsertPlayersForSavedGame)).
+			WithArgs(p.ID, 99, p.Score, p.ID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+	}
+
+	mock.ExpectCommit()
+
+	result := repo.AddSavedGameDB(savedGame)
+
+	require.NoError(t, result.Err)
+	require.Equal(t, http.StatusCreated, result.StatusCode)
+	require.Equal(t, 99, result.ResultData.ID)
 }
