@@ -583,6 +583,25 @@ func TestDeleteSavedGameDB_HappyPath_DeletesGameWithHighId(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestDeleteSavedGameDB_HappyPath_DeletesGameWithSpecialCaseId(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "0" // Edge case: ID of 0
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Contains(t, result.ResultData, "Saved game 0 deleted successfully")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
 func TestDeleteSavedGameDB_UnhappyPath_DatabaseError(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
