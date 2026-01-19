@@ -647,10 +647,9 @@ func TestDeleteSavedGameDB_UnhappyPath_EmptyId(t *testing.T) {
 func TestDeleteSavedGameDB_UnhappyPath_NegativeId(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
-
 	savedGameId := "-1"
 
-	mock.ExpectExec(`DELETE FROM saved_games WHERE id=\$1`).
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
 		WithArgs(savedGameId).
 		WillReturnResult(sqlmock.NewResult(0, 0)) // No rows affected
 
@@ -664,3 +663,69 @@ func TestDeleteSavedGameDB_UnhappyPath_NegativeId(t *testing.T) {
 	assert.Contains(t, result.Err.Error(), "saved game not found by id: -1")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestDeleteSavedGameDB_UnhappyPath_RowsAffectedError(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "1"
+	rowsAffectedError := fmt.Errorf("failed to get rows affected")
+
+	// Return a result that will error when RowsAffected() is called
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnResult(sqlmock.NewErrorResult(rowsAffectedError))
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.Contains(t, result.Err.Error(), "failed to get rows affected")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteSavedGameDB_UnhappyPath_ForeignKeyViolation(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+
+	savedGameId := "1"
+
+	// Simulate foreign key constraint violation (though CASCADE should prevent this)
+	mock.ExpectExec(`DELETE FROM saved_games WHERE id=\$1`).
+		WithArgs(savedGameId).
+		WillReturnError(fmt.Errorf("pq: foreign key constraint violation"))
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.Contains(t, result.Err.Error(), "foreign key constraint")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteSavedGameDB_UnhappyPath_ConnectionTimeout(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "1"
+	timeoutError := fmt.Errorf("connection timeout")
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnError(timeoutError)
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.Contains(t, result.Err.Error(), "connection timeout")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
