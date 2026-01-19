@@ -603,3 +603,24 @@ func TestDeleteSavedGameDB_UnhappyPath_DatabaseError(t *testing.T) {
 	assert.Contains(t, result.Err.Error(), "database connection lost")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestDeleteSavedGameDB_UnhappyPath_InvalidIdFormat(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "invalid_id"
+
+	// PostgreSQL would reject this, simulating that error
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnError(fmt.Errorf("pq: invalid input syntax for integer: \"invalid_id\""))
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.Contains(t, result.Err.Error(), "invalid input syntax")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
