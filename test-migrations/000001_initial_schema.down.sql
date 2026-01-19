@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS saved_game_players;
-DROP TABLE IF EXISTS saved_game_teams;
-DROP TABLE IF EXISTS saved_games;
+DROP TABLE IF EXISTS savedgamesplayers;
+DROP TABLE IF EXISTS savedgamesteams;
+DROP TABLE IF EXISTS savedgames;
 DROP TABLE IF EXISTS players;
 DROP TABLE IF EXISTS teams;
 DROP TABLE IF EXISTS locations;

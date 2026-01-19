@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS players (
 -- ============================
 -- Saved Games
 -- ============================
-CREATE TABLE IF NOT EXISTS saved_games (
+CREATE TABLE IF NOT EXISTS savedgames (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -52,14 +52,14 @@ CREATE TABLE IF NOT EXISTS saved_games (
 -- ============================
 -- Saved Game Teams
 -- ============================
-CREATE TABLE IF NOT EXISTS saved_game_teams (
+CREATE TABLE IF NOT EXISTS savedgamesteams (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     team_score INT NOT NULL,
 
     team_id INT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-    saved_game_id INT NOT NULL REFERENCES saved_games(id) ON DELETE CASCADE,
+    saved_game_id INT NOT NULL REFERENCES savedgames(id) ON DELETE CASCADE,
 
     UNIQUE (saved_game_id, team_id)
 );
@@ -67,12 +67,12 @@ CREATE TABLE IF NOT EXISTS saved_game_teams (
 -- ============================
 -- Saved Game Players
 -- ============================
-CREATE TABLE IF NOT EXISTS saved_game_players (
+CREATE TABLE IF NOT EXISTS savedgamesplayers (
     id SERIAL PRIMARY KEY,
     player_name VARCHAR(60) NOT NULL,
     player_score INT NOT NULL,
 
-    saved_game_id INT NOT NULL REFERENCES saved_games(id) ON DELETE CASCADE,
+    saved_game_id INT NOT NULL REFERENCES savedgames(id) ON DELETE CASCADE,
     player_id INT REFERENCES players(id) ON DELETE SET NULL,
 
     UNIQUE (saved_game_id, player_id)
