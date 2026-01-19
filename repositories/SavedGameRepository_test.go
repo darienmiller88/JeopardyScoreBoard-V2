@@ -582,3 +582,24 @@ func TestDeleteSavedGameDB_HappyPath_DeletesGameWithHighId(t *testing.T) {
 	assert.Contains(t, result.ResultData, "deleted successfully")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestDeleteSavedGameDB_UnhappyPath_DatabaseError(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "1"
+	expectedError := fmt.Errorf("database connection lost")
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnError(expectedError)
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.Contains(t, result.Err.Error(), "database connection lost")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
