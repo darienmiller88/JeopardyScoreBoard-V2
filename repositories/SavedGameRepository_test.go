@@ -36,7 +36,9 @@ func setupSavedGameRepo(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock, *sqlSavedGameR
 ////////////////////////////
 //GET
 ///////////////////////////
-
+// TestGetAllSavedGamesDB_HappyPath_ReturnsMultipleGames verifies that GetAllSavedGamesDB
+// successfully retrieves multiple saved games from the database. It mocks a result set with
+// two games containing player winners and validates that all fields are correctly mapped.
 func TestGetAllSavedGamesDB_HappyPath_ReturnsMultipleGames(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -88,6 +90,9 @@ func TestGetAllSavedGamesDB_HappyPath_ReturnsMultipleGames(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesDB_HappyPath_ReturnsEmptyList verifies that when no saved games
+// exist in the database, the function returns an empty slice (not nil) with a 200 OK status.
+// This ensures the API can handle empty result sets gracefully.
 func TestGetAllSavedGamesDB_HappyPath_ReturnsEmptyList(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -110,6 +115,9 @@ func TestGetAllSavedGamesDB_HappyPath_ReturnsEmptyList(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesDB_HappyPath_ReturnsGameWithTeamWinner verifies that the function
+// correctly handles games won by teams rather than individual players. It checks that
+// WinningTeamId is populated while WinningPlayerId and WinningPlayerName are null.
 func TestGetAllSavedGamesDB_HappyPath_ReturnsGameWithTeamWinner(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -135,6 +143,9 @@ func TestGetAllSavedGamesDB_HappyPath_ReturnsGameWithTeamWinner(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesDB_UnhappyPath_DatabaseError verifies that when the database
+// encounters a connection error, the function returns a 500 Internal Server Error
+// with an appropriate error message and empty result set.
 func TestGetAllSavedGamesDB_UnhappyPath_DatabaseError(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -153,6 +164,9 @@ func TestGetAllSavedGamesDB_UnhappyPath_DatabaseError(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesDB_UnhappyPath_QueryTimeout tests the error handling when
+// a database query exceeds its timeout limit. Ensures the function returns a 500
+// status code with a descriptive timeout error message.
 func TestGetAllSavedGamesDB_UnhappyPath_QueryTimeout(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -171,6 +185,9 @@ func TestGetAllSavedGamesDB_UnhappyPath_QueryTimeout(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesDB_UnhappyPath_ScanError verifies that when database rows
+// contain data that cannot be scanned into the SavedGame struct (type mismatch),
+// the function handles the scan error gracefully and returns a 500 error.
 func TestGetAllSavedGamesDB_UnhappyPath_ScanError(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -194,6 +211,9 @@ func TestGetAllSavedGamesDB_UnhappyPath_ScanError(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesDB_HappyPath_ReturnsGamesWithNullValues verifies that the function
+// properly handles games where no winner has been determined yet (all winner fields are null).
+// This is a valid state for games that may still be in progress or incomplete.
 func TestGetAllSavedGamesDB_HappyPath_ReturnsGamesWithNullValues(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -220,6 +240,9 @@ func TestGetAllSavedGamesDB_HappyPath_ReturnsGamesWithNullValues(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesDB_UnhappyPath_ClosedDatabase verifies that when attempting
+// to query a closed database connection, the function returns an appropriate error
+// and 500 status code rather than panicking.
 func TestGetAllSavedGamesDB_UnhappyPath_ClosedDatabase(t *testing.T) {
 	// Arrange
 	db, mock, repo := setupSavedGameRepo(t)
@@ -235,6 +258,9 @@ func TestGetAllSavedGamesDB_UnhappyPath_ClosedDatabase(t *testing.T) {
 	_ = mock
 }
 
+// TestGetAllSavedGamesFromLocationDB_HappyPath_OneResult verifies that when querying
+// for saved games at a specific location, the function correctly retrieves and maps
+// a single game with all its associated data including winner information.
 func TestGetAllSavedGamesFromLocationDB_HappyPath_OneResult(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
@@ -272,6 +298,9 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_OneResult(t *testing.T) {
 	require.Equal(t, 4200, result.ResultData[0].TotalPoints)
 }
 
+// TestGetAllSavedGamesFromLocationDB_HappyPath_MultipleResults verifies that the function
+// can retrieve multiple saved games from the same location and correctly maps all rows
+// into the result slice.
 func TestGetAllSavedGamesFromLocationDB_HappyPath_MultipleResults(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
@@ -299,7 +328,9 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_MultipleResults(t *testing.T) 
 	require.Len(t, result.ResultData, 2)
 }
 
-
+// TestGetAllSavedGamesFromLocationDB_HappyPath_NoResults verifies that when querying
+// for a location with no saved games, the function returns an empty slice (not nil)
+// with a successful 200 OK status, allowing the API to handle empty results gracefully.
 func TestGetAllSavedGamesFromLocationDB_HappyPath_NoResults(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
@@ -326,6 +357,9 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_NoResults(t *testing.T) {
 	require.Len(t, result.ResultData, 0)
 }
 
+// TestGetAllSavedGamesFromLocationDB_HappyPath_MixedPlayerAndTeamGames verifies that
+// when a location has games won by both individual players and teams, the function
+// correctly differentiates between them based on which winner fields are populated.
 func TestGetAllSavedGamesFromLocationDB_HappyPath_MixedPlayerAndTeamGames(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -370,6 +404,9 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_MixedPlayerAndTeamGames(t *tes
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesFromLocationDB_HappyPath_NullWinnerFields verifies that games
+// with no determined winner (all winner fields null) are handled correctly. This might
+// represent games that are incomplete or where the winner hasn't been recorded yet.
 func TestGetAllSavedGamesFromLocationDB_HappyPath_NullWinnerFields(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
@@ -406,6 +443,9 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_NullWinnerFields(t *testing.T)
 	require.False(t, result.ResultData[0].WinningTeamId.Valid)
 }
 
+// TestGetAllSavedGamesFromLocationDB_QueryError verifies that when the database
+// query fails (e.g., connection issues, syntax errors), the function returns a
+// 500 Internal Server Error with an empty result set.
 func TestGetAllSavedGamesFromLocationDB_QueryError(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
@@ -420,6 +460,9 @@ func TestGetAllSavedGamesFromLocationDB_QueryError(t *testing.T) {
 	require.Len(t, result.ResultData, 0)
 }
 
+// TestGetAllSavedGamesFromLocationDB_SubqueryMultipleRows tests the error handling
+// when a subquery in the SQL statement unexpectedly returns multiple rows. This
+// typically indicates a database integrity issue and should be handled as an error.
 func TestGetAllSavedGamesFromLocationDB_SubqueryMultipleRows(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
@@ -433,6 +476,10 @@ func TestGetAllSavedGamesFromLocationDB_SubqueryMultipleRows(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
 }
 
+// TestGetAllSavedGamesFromLocationDB_UnhappyPath_ScanError verifies that when
+// database rows contain data types that don't match the expected struct fields
+// (e.g., string where int is expected), the function handles the scan error
+// gracefully and returns a 500 error.
 func TestGetAllSavedGamesFromLocationDB_UnhappyPath_ScanError(t *testing.T) {
 	// Arrange
 	_, mock, repo := setupSavedGameRepo(t)
@@ -459,6 +506,9 @@ func TestGetAllSavedGamesFromLocationDB_UnhappyPath_ScanError(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+// TestGetAllSavedGamesFromLocationDB_EmptyLocationName verifies that when an empty
+// string is provided as the location name, the query executes but returns no results.
+// This is a valid edge case that should be handled gracefully without errors.
 func TestGetAllSavedGamesFromLocationDB_EmptyLocationName(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 	rows := sqlmock.NewRows([]string{
@@ -484,6 +534,13 @@ func TestGetAllSavedGamesFromLocationDB_EmptyLocationName(t *testing.T) {
 }
 
 
+
+
+
+
+
+
+
 ////////////////////////////
-//
+// DELETE 
 /////////////////////////////
