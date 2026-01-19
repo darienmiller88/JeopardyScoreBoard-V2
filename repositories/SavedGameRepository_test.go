@@ -325,6 +325,41 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_NoResults(t *testing.T) {
 	require.Len(t, result.ResultData, 0)
 }
 
+func TestGetAllSavedGamesFromLocationDB_HappyPath_NullWinnerFields(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"created_at",
+		"updated_at",
+		"total_score",
+		"average_score",
+		"location_id",
+		"winning_player_name",
+		"winning_team_id",
+		"winning_player_id",
+	}).AddRow(
+		1,
+		time.Now(),
+		time.Now(),
+		2000,
+		1000,
+		3,
+		sql.NullString{Valid: false},
+		sql.NullInt32{Valid: false},
+		sql.NullInt32{Valid: false},
+	)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs("No Winners").
+		WillReturnRows(rows)
+
+	result := repo.GetAllSavedGamesFromLocationDB("No Winners")
+
+	require.NoError(t, result.Err)
+	require.False(t, result.ResultData[0].WinningPlayerName.Valid)
+	require.False(t, result.ResultData[0].WinningTeamId.Valid)
+}
 
 ////////////////////////////
 //
