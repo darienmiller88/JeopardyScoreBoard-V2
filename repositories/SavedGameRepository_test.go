@@ -1169,3 +1169,139 @@ func TestAddSavedGameDB_HappyPath_TeamWin_MultipleTeams(t *testing.T) {
 	require.Equal(t, http.StatusCreated, result.StatusCode)
 	require.Equal(t, 202, result.ResultData.ID)
 }
+
+// Tests:
+// - Failure to begin transaction
+// - Immediate 500 response
+// - No queries executed
+func TestAddSavedGameDB_UnhappyPath_TeamWin_BeginTransactionFails(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin().WillReturnError(errors.New("tx begin failed"))
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId: sql.NullInt32{Valid: false},
+		WinningTeamId:   sql.NullInt32{Int32: 1, Valid: true},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
+
+// Tests:
+// - FK violation on savedgames insert (missing location or team)
+// - Postgres error code 23503
+// - Returns 404 Not Found
+// - Transaction rolled back
+func TestAddSavedGameDB_UnhappyPath_TeamWin_InsertSavedGameFKViolation(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewTeamSavedGame)).
+		WillReturnError(&pq.Error{Code: "23503"})
+
+	mock.ExpectRollback()
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId: sql.NullInt32{Valid: false},
+		WinningTeamId:   sql.NullInt32{Int32: 999, Valid: true},
+		LocationId:      999,
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+}
+
+// Tests:
+// - Saved game insert succeeds
+// - Team insert fails due to missing team (FK violation)
+// - Returns 404
+// - Transaction rolled back
+func TestAddSavedGameDB_UnhappyPath_TeamWin_TeamInsertFKViolation(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewTeamSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(303))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertTeamsForSavedGame)).
+		WillReturnError(&pq.Error{Code: "23503"})
+
+	mock.ExpectRollback()
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId: sql.NullInt32{Valid: false},
+		WinningTeamId:   sql.NullInt32{Int32: 1, Valid: true},
+		LocationId:      1,
+		Teams: []models.Team{
+			{ID: 999, Score: 1000},
+		},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+}
+
+// Tests:
+// - Duplicate (team_id, saved_game_id) entry
+// - Unique constraint violation (23505)
+// - Returns 409 Conflict
+// - Transaction rolled back
+func TestAddSavedGameDB_UnhappyPath_TeamWin_DuplicateTeamGameEntry(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewTeamSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(404))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertTeamsForSavedGame)).
+		WillReturnError(&pq.Error{Code: "23505"})
+
+	mock.ExpectRollback()
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId: sql.NullInt32{Valid: false},
+		WinningTeamId:   sql.NullInt32{Int32: 1, Valid: true},
+		LocationId:      1,
+		Teams: []models.Team{
+			{ID: 1, Score: 1000},
+		},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusConflict, result.StatusCode)
+}
+
+// Tests:
+// - All inserts succeed
+// - Commit fails
+// - Returns 500
+// - Saved game is not confirmed persisted
+func TestAddSavedGameDB_UnhappyPath_TeamWin_CommitFails(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewTeamSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(505))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertTeamsForSavedGame)).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit().WillReturnError(errors.New("commit failed"))
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId: sql.NullInt32{Valid: false},
+		WinningTeamId:   sql.NullInt32{Int32: 1, Valid: true},
+		LocationId:      1,
+		Teams: []models.Team{
+			{ID: 1, Score: 1000},
+		},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
