@@ -446,7 +446,7 @@ func TestGetAllSavedGamesFromLocationDB_HappyPath_NullWinnerFields(t *testing.T)
 // TestGetAllSavedGamesFromLocationDB_QueryError verifies that when the database
 // query fails (e.g., connection issues, syntax errors), the function returns a
 // 500 Internal Server Error with an empty result set.
-func TestGetAllSavedGamesFromLocationDB_QueryError(t *testing.T) {
+func TestGetAllSavedGamesFromLocationDB_UnhappyPath_QueryError(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
@@ -463,7 +463,7 @@ func TestGetAllSavedGamesFromLocationDB_QueryError(t *testing.T) {
 // TestGetAllSavedGamesFromLocationDB_SubqueryMultipleRows tests the error handling
 // when a subquery in the SQL statement unexpectedly returns multiple rows. This
 // typically indicates a database integrity issue and should be handled as an error.
-func TestGetAllSavedGamesFromLocationDB_SubqueryMultipleRows(t *testing.T) {
+func TestGetAllSavedGamesFromLocationDB_UnhappyPath_SubqueryMultipleRows(t *testing.T) {
 	_, mock, repo := setupSavedGameRepo(t)
 
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
@@ -544,3 +544,22 @@ func TestGetAllSavedGamesFromLocationDB_EmptyLocationName(t *testing.T) {
 ////////////////////////////
 // DELETE 
 /////////////////////////////
+
+func TestDeleteSavedGameDB_HappyPath_DeletesExistingGame(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGameId := "1"
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameId).
+		WillReturnResult(sqlmock.NewResult(0, 1)) // 1 row affected
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.NoError(t, result.Err)
+	assert.Equal(t, http.StatusOK, result.StatusCode)
+	assert.Contains(t, result.ResultData, "Saved game 1 deleted successfully")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
