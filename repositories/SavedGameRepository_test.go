@@ -13,6 +13,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -945,4 +946,226 @@ func TestAddSavedGameDB_HappyPath_PlayerWin_MultiplePlayers(t *testing.T) {
 	require.NoError(t, result.Err)
 	require.Equal(t, http.StatusCreated, result.StatusCode)
 	require.Equal(t, 99, result.ResultData.ID)
+}
+
+////////////
+//UNHAPPY PATHS - Inserting Player saved game
+////////////
+
+// Tests:
+// - Failure to begin transaction
+// - Immediate 500 response
+// - No queries executed
+func TestAddSavedGameDB_UnhappyPath_PlayerWin_BeginTransactionFails(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin().WillReturnError(errors.New("tx begin failed"))
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId: sql.NullInt32{Int32: 1, Valid: true},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
+
+// Tests:
+// - FK violation on savedgames insert (missing location or player)
+// - Postgres error code 23503
+// - Returns 404 Not Found
+// - Transaction rolled back
+func TestAddSavedGameDB_UnhappyPath_PlayerWin_InsertSavedGameFKViolation(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewPlayerSavedGame)).
+		WillReturnError(&pq.Error{Code: "23503"})
+
+	mock.ExpectRollback()
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId:   sql.NullInt32{Int32: 1, Valid: true},
+		WinningPlayerName: sql.NullString{String: "Ghost", Valid: true},
+		LocationId:        999,
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+}
+
+// Tests:
+// - Saved game insert succeeds
+// - Player insert fails due to missing player (FK violation)
+// - Returns 404
+// - Transaction rolled back
+func TestAddSavedGameDB_UnhappyPath_PlayerWin_PlayerInsertFKViolation(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewPlayerSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(10))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertPlayersForSavedGame)).
+		WillReturnError(&pq.Error{Code: "23503"})
+
+	mock.ExpectRollback()
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId:   sql.NullInt32{Int32: 1, Valid: true},
+		WinningPlayerName: sql.NullString{String: "Alice", Valid: true},
+		LocationId:        1,
+		Players: []models.Player{
+			{ID: 999, Score: 1000},
+		},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+}
+
+// Tests:
+// - Duplicate (player_id, saved_game_id) entry
+// - Unique constraint violation (23505)
+// - Returns 409 Conflict
+// - Transaction rolled back
+func TestAddSavedGameDB_UnhappyPath_PlayerWin_DuplicatePlayerGameEntry(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewPlayerSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(50))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertPlayersForSavedGame)).
+		WillReturnError(&pq.Error{Code: "23505"})
+
+	mock.ExpectRollback()
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId:   sql.NullInt32{Int32: 1, Valid: true},
+		WinningPlayerName: sql.NullString{String: "Alice", Valid: true},
+		LocationId:        1,
+		Players: []models.Player{
+			{ID: 1, Score: 1000},
+		},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusConflict, result.StatusCode)
+	require.Nil(t, mock.ExpectationsWereMet())
+}
+
+// Tests:
+// - All inserts succeed
+// - Commit fails
+// - Returns 500
+// - Data is not confirmed persisted
+func TestAddSavedGameDB_UnhappyPath_PlayerWin_CommitFails(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewPlayerSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(77))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertPlayersForSavedGame)).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit().WillReturnError(errors.New("commit failed"))
+
+	result := repo.AddSavedGameDB(models.SavedGame{
+		WinningPlayerId:   sql.NullInt32{Int32: 1, Valid: true},
+		WinningPlayerName: sql.NullString{String: "Alice", Valid: true},
+		LocationId:        1,
+		Players: []models.Player{
+			{ID: 1, Score: 1000},
+		},
+	})
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
+
+////////////////////////////////////////////
+//HAPPY PATHS - inserting team saved game
+//////////////////////////////////////////
+
+// Tests:
+// - WinningPlayerId is NOT valid (team-based game)
+// - Saved game insert succeeds
+// - One team inserted into savedgameteams
+// - Transaction commits successfully
+// - Returns 201 Created with populated SavedGame ID
+func TestAddSavedGameDB_HappyPath_TeamWin_SingleTeam(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGame := models.SavedGame{
+		TotalPoints:   4000,
+		AveragePoints: 2000,
+		WinningTeamId: sql.NullInt32{Int32: 3, Valid: true},
+		LocationId:    4,
+		Teams: []models.Team{
+			{ID: 3, Score: 4000},
+		},
+	}
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewTeamSavedGame)).
+		WithArgs(
+			savedGame.TotalPoints,
+			savedGame.AveragePoints,
+			savedGame.WinningTeamId,
+			savedGame.LocationId,
+		).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(101))
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.InsertTeamsForSavedGame)).
+		WithArgs(3, 101, 4000).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.ExpectCommit()
+
+	result := repo.AddSavedGameDB(savedGame)
+
+	require.NoError(t, result.Err)
+	require.Equal(t, http.StatusCreated, result.StatusCode)
+	require.Equal(t, 101, result.ResultData.ID)
+}
+
+// Tests:
+// - Multiple teams added to savedgameteams
+// - Loop executes fully
+// - Transaction commits after all inserts succeed
+func TestAddSavedGameDB_HappyPath_TeamWin_MultipleTeams(t *testing.T) {
+	_, mock, repo := setupSavedGameRepo(t)
+	savedGame := models.SavedGame{
+		TotalPoints:    9000,
+		AveragePoints: 3001.65,
+		WinningTeamId:   sql.NullInt32{Int32: 2, Valid: true},
+		LocationId:     6,
+		Teams: []models.Team{
+			{ID: 1, Score: 3000},
+			{ID: 2, Score: 4000},
+			{ID: 3, Score: 2000},
+		},
+	}
+
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.InsertNewTeamSavedGame)).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(202))
+
+	for _, team := range savedGame.Teams {
+		mock.ExpectExec(regexp.QuoteMeta(constants.InsertTeamsForSavedGame)).
+			WithArgs(team.ID, 202, team.Score).
+			WillReturnResult(sqlmock.NewResult(1, 1))
+	}
+
+	mock.ExpectCommit()
+
+	result := repo.AddSavedGameDB(savedGame)
+
+	require.NoError(t, result.Err)
+	require.Equal(t, http.StatusCreated, result.StatusCode)
+	require.Equal(t, 202, result.ResultData.ID)
 }
