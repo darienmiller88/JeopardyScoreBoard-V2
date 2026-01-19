@@ -643,3 +643,24 @@ func TestDeleteSavedGameDB_UnhappyPath_EmptyId(t *testing.T) {
 	assert.Empty(t, result.ResultData)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestDeleteSavedGameDB_UnhappyPath_NegativeId(t *testing.T) {
+	// Arrange
+	_, mock, repo := setupSavedGameRepo(t)
+
+	savedGameId := "-1"
+
+	mock.ExpectExec(`DELETE FROM saved_games WHERE id=\$1`).
+		WithArgs(savedGameId).
+		WillReturnResult(sqlmock.NewResult(0, 0)) // No rows affected
+
+	// Act
+	result := repo.DeleteSavedGameDB(savedGameId)
+
+	// Assert
+	assert.Error(t, result.Err)
+	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+	assert.Empty(t, result.ResultData)
+	assert.Contains(t, result.Err.Error(), "saved game not found by id: -1")
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
