@@ -3,6 +3,7 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -104,6 +105,14 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 		// FK violation returns a 23503
 		if errors.As(err, &pqErr) && pqErr.Code == "23503" {
 			return getResult(fmt.Errorf("no location or winning player name found"), http.StatusNotFound, models.SavedGame{})
+		}
+
+		if errors.Is(err, sql.ErrNoRows) {
+			return getResult(
+				fmt.Errorf("no location or winning player name found"),
+				http.StatusNotFound,
+				models.SavedGame{},
+			)
 		}
 
 		return getResult(err, http.StatusInternalServerError, models.SavedGame{})

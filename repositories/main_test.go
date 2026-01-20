@@ -49,12 +49,13 @@ func TestMain(m *testing.M) {
 	if err := migrations.Up(); err != nil && err != migrate.ErrNoChange {
         log.Fatal(err)
     }
-		
+	
 	code := m.Run()
-	
-	migrations.Down()
-	_ = db.Close()
-	
-	os.Exit(code)
+	defer func ()  {
+		migrations.Down()	
+		_ = db.Close()
+		
+		os.Exit(code)
+	} ()
 }
 

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/models"
+	"database/sql"
 	"net/http"
 	"testing"
 
@@ -116,6 +117,10 @@ func TestGetAllSavedGamesFromLocationDB_NonExistentLocation_Happy(t *testing.T) 
 	assert.Equal(t, 0, len(result.ResultData))
 }
 
+//////////////////////
+// DELETE
+/////////////////////
+
 func TestDeleteSavedGameDB_Happy(t *testing.T) {
 	repo := GetSqlSavedGameRepository(db)
 	id := "1"
@@ -194,4 +199,138 @@ func TestDeleteSavedGameDB_AlreadyDeleted_Unhappy(t *testing.T) {
 	assert.NotNil(t, result2.Err)
 	assert.Contains(t, result2.Err.Error(), "saved game not found by id")
 	assert.Equal(t, "", result2.ResultData)
+}
+
+//////////////////
+// POSt/INSERT
+////////////////
+
+// Test helper function to create a valid standard saved game model
+func createValidStandardSavedGame(t *testing.T, db *sqlx.DB) models.SavedGame {
+	// Get valid location ID
+	var locationId int
+	err := db.Get(&locationId, "SELECT id FROM locations WHERE location_name = $1", "Elmwood")
+
+	if err != nil {
+		t.Fatalf("Failed to get test location: %v", err)
+	}
+
+	players := []models.Player{
+		{
+			PlayerName: "playerone",
+			LocationID: locationId,
+			Score: 5000,
+		},
+		{
+			PlayerName: "playertwo",
+			LocationID: locationId,
+			Score: 4000,
+		},
+	}
+
+	query := `INSERT INTO players (player_name, location_id) VALUES ($1, $2) RETURNING id`
+
+	for i := range players {
+		err := db.QueryRow(
+			query,
+			players[i].PlayerName,
+			players[i].LocationID,
+		).Scan(&players[i].ID)
+
+		if err != nil {
+			t.Fatalf("Failed to insert player: %v", err)
+		}
+	}
+
+	return models.SavedGame{
+		TotalPoints:       100,
+		AveragePoints:     50.0,
+		WinningPlayerName: sql.NullString{String: players[0].PlayerName, Valid: true},
+		WinningPlayerId:   sql.NullInt32{Int32: int32(players[0].ID), Valid: true},
+		LocationId:        locationId,
+		Players:           players,
+	}
+}
+
+// Test helper to clean up saved game by ID
+func cleanupSavedGame(t *testing.T, db *sqlx.DB, savedGameId int) {
+	// Delete from junction table first
+	_, err := db.Exec("DELETE FROM savedgamesplayers WHERE saved_game_id = $1", savedGameId)
+	if err != nil {
+		t.Logf("Warning: Failed to clean up savedgameplayers: %v", err)
+	}
+
+	// Delete saved game
+	_, err = db.Exec("DELETE FROM savedgames WHERE id = $1", savedGameId)
+	if err != nil {
+		t.Logf("Warning: Failed to clean up savedgame: %v", err)
+	}
+
+	// Delete players
+	_, err = db.Exec("DELETE FROM players")
+	if err != nil {
+		t.Logf("Warning: Failed to clean up savedgame: %v", err)
+	}
+}
+
+func TestAddStandardSavedGame_Happy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	savedGame := createValidStandardSavedGame(t, db)
+
+	result := repo.AddSavedGameDB(savedGame)
+	if result.Err == nil {
+		defer cleanupSavedGame(t, db, result.ResultData.ID)
+	}
+
+	assert.Equal(t, http.StatusCreated, result.StatusCode)
+	assert.Nil(t, result.Err)
+	assert.NotZero(t, result.ResultData.ID)
+}
+
+func TestAddStandardSavedGame_MultiplePlayerScores_Happy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	savedGame := createValidStandardSavedGame(t, db)
+
+	result := repo.addStandardSavedGame(savedGame)
+	if result.Err == nil {
+		defer cleanupSavedGame(t, db, result.ResultData.ID)
+	}
+
+	for _, player := range savedGame.Players {
+		var score int64
+		err := db.Get(
+			&score,
+			`SELECT player_score 
+			 FROM savedgamesplayers 
+			 WHERE saved_game_id = $1 AND player_id = $2`,
+			result.ResultData.ID,
+			player.ID,
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, int64(player.Score), score)
+	}
+}
+
+func TestAddStandardSavedGame_EmptyPlayers_Happy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	savedGame := createValidStandardSavedGame(t, db)
+	savedGame.Players = []models.Player{}
+
+	result := repo.addStandardSavedGame(savedGame)
+	if result.Err == nil {
+		defer cleanupSavedGame(t, db, result.ResultData.ID)
+	}
+
+	assert.Equal(t, http.StatusCreated, result.StatusCode)
+
+	var count int
+	err := db.Get(
+		&count,
+		`SELECT COUNT(*) FROM savedgamesplayers WHERE saved_game_id = $1`,
+		result.ResultData.ID,
+	)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, count)
 }

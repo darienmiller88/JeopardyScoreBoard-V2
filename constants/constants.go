@@ -16,14 +16,23 @@ const(
 	`
 
 	InsertNewPlayerSavedGame string = `
-		INSERT INTO SavedGames (total_score, average_score, winning_player_name, winning_player_id, location_id)
-		VALUES(
-			$1, 
+		INSERT INTO SavedGames (
+			total_score,
+			average_score,
+			winning_player_name,
+			winning_player_id,
+			location_id
+		)
+		SELECT
+			$1,
 			$2,
 			$3,
-			(SELECT id FROM players WHERE player_name=$4),
+			p.id,
 			$5
-		) RETURNING id
+		FROM players p
+		WHERE p.player_name = $4
+		AND p.location_id = $5
+		RETURNING id
 	`
 
 	InsertNewTeamSavedGame string = `
