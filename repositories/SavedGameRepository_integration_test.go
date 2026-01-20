@@ -219,12 +219,12 @@ func createValidStandardSavedGame(t *testing.T, db *sqlx.DB) models.SavedGame {
 		{
 			PlayerName: "playerone",
 			LocationID: locationId,
-			Score: 5000,
+			Score:      5000,
 		},
 		{
 			PlayerName: "playertwo",
 			LocationID: locationId,
-			Score: 4000,
+			Score:      4000,
 		},
 	}
 
@@ -278,9 +278,7 @@ func TestAddStandardSavedGame_Happy(t *testing.T) {
 	savedGame := createValidStandardSavedGame(t, db)
 
 	result := repo.AddSavedGameDB(savedGame)
-	if result.Err == nil {
-		defer cleanupSavedGame(t, db, result.ResultData.ID)
-	}
+	defer cleanupSavedGame(t, db, result.ResultData.ID)
 
 	assert.Equal(t, http.StatusCreated, result.StatusCode)
 	assert.Nil(t, result.Err)
@@ -292,9 +290,7 @@ func TestAddStandardSavedGame_MultiplePlayerScores_Happy(t *testing.T) {
 	savedGame := createValidStandardSavedGame(t, db)
 
 	result := repo.addStandardSavedGame(savedGame)
-	if result.Err == nil {
-		defer cleanupSavedGame(t, db, result.ResultData.ID)
-	}
+	defer cleanupSavedGame(t, db, result.ResultData.ID)
 
 	for _, player := range savedGame.Players {
 		var score int64
@@ -333,4 +329,35 @@ func TestAddStandardSavedGame_EmptyPlayers_Happy(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, 0, count)
+}
+
+///////////////////////////////////////////
+//UNHAPPY PATHS - Player based saved game
+///////////////////////////////////////////
+
+func TestAddStandardSavedGame_InvalidLocation_Unhappy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	savedGame := createValidStandardSavedGame(t, db)
+	savedGame.LocationId = 999999
+
+	result := repo.addStandardSavedGame(savedGame)
+	defer cleanupSavedGame(t, db, result.ResultData.ID)
+
+	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+	assert.NotNil(t, result.Err)
+	assert.Equal(t, models.SavedGame{}, result.ResultData)
+}
+
+func TestAddStandardSavedGame_InvalidWinningPlayer_Unhappy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	savedGame := createValidStandardSavedGame(t, db)
+	savedGame.WinningPlayerName = sql.NullString{
+		String: "does-not-exist",
+		Valid: true,
+	}
+
+	result := repo.addStandardSavedGame(savedGame)
+
+	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+	assert.NotNil(t, result.Err)
 }
