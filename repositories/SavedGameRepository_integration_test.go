@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Test helper function to create a test saved game
@@ -341,4 +342,132 @@ func TestAddStandardSavedGame_DuplicatePlayer_Unhappy(t *testing.T) {
 
     assert.Equal(t, http.StatusConflict, result.StatusCode)
     assert.NotNil(t, result.Err)
+}
+
+///////////////////////////
+//Team save Game
+///////////////////////////
+
+func getValidTeams(t *testing.T, db *sqlx.DB) []models.Team {
+	teams := []models.Team{}
+
+	err := db.Select(&teams, `SELECT * FROM teams LIMIT 2`)
+
+	if err != nil {
+		t.Fatalf("Failed to get test locations: %v", err)
+	}
+
+	return teams
+}
+
+func cleanupTeamSavedGame(db *sqlx.DB) {
+	_, _ = db.Exec("DELETE FROM savedgamesteams")
+	_, _ = db.Exec("DELETE FROM savedgames")
+}
+
+// HAPPY PATH:
+// Creates a team-based saved game with a valid winning team and multiple teams.
+func TestAddTeamSavedGame_Happy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	var locationId int
+	err := db.Get(&locationId, `SELECT id FROM locations WHERE location_name = $1`, "Elmwood")
+	require.NoError(t, err)
+
+	teams := getValidTeams(t, db)
+	savedGame := models.SavedGame{
+		TotalPoints:   6000,
+		AveragePoints: 3000,
+		WinningTeamId: sql.NullInt32{Int32: int32(teams[0].ID), Valid: true},
+		LocationId:    locationId,
+		Teams:         teams,
+	}
+
+	result := repo.addTeamSavedGame(savedGame)
+	defer cleanupTeamSavedGame(db)
+
+	require.Equal(t, http.StatusCreated, result.StatusCode)
+	require.NoError(t, result.Err)
+	require.NotZero(t, result.ResultData.ID)
+
+	var count int
+	err = db.Get(&count,
+		`SELECT COUNT(*) FROM savedgamesteams WHERE saved_game_id = $1`,
+		result.ResultData.ID,
+	)
+	require.NoError(t, err)
+	require.Equal(t, len(teams), count)
+}
+
+// HAPPY PATH:
+// Creates a team-based saved game with a single team.
+func TestAddTeamSavedGame_SingleTeam_Happy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	var locationId int
+	err := db.Get(&locationId, `SELECT id FROM locations WHERE location_name = $1`, "Elmwood")
+	require.NoError(t, err)
+
+	//gets two teams
+	teams := getValidTeams(t, db)
+	teams = teams[:1]
+
+	savedGame := models.SavedGame{
+		TotalPoints:   3000,
+		AveragePoints: 3000,
+		WinningTeamId: sql.NullInt32{Int32: int32(teams[0].ID), Valid: true},
+		LocationId:    locationId,
+		Teams:         teams,
+	}
+
+	result := repo.addTeamSavedGame(savedGame)
+	defer cleanupSavedGame(t, db)
+
+	require.Equal(t, http.StatusCreated, result.StatusCode)
+	require.NoError(t, result.Err)
+}
+
+
+////////////////////////////////////
+// UNHAPPY PATHS - Team saved game
+/////////////////////////////////////
+
+// UNHAPPY PATH:
+// Fails when winning_team_id does not exist.
+func TestAddTeamSavedGame_InvalidWinningTeam_Unhappy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	var locationId int
+	err := db.Get(&locationId, `SELECT id FROM locations WHERE location_name = $1`, "Elmwood")
+	require.NoError(t, err)
+
+	savedGame := models.SavedGame{
+		TotalPoints:   4000,
+		AveragePoints: 2000,
+		WinningTeamId: sql.NullInt32{Int32: 999999, Valid: true},
+		LocationId:    locationId,
+	}
+
+	result := repo.addTeamSavedGame(savedGame)
+
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+	require.Error(t, result.Err)
+}
+
+// UNHAPPY PATH:
+// Fails when location_id does not exist.
+func TestAddTeamSavedGame_InvalidLocation_Unhappy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	savedGame := models.SavedGame{
+		TotalPoints:   5000,
+		AveragePoints: 2500,
+		WinningTeamId: sql.NullInt32{Int32: 1, Valid: true},
+		LocationId:    999999,
+	}
+
+	result := repo.addTeamSavedGame(savedGame)
+
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+	require.Error(t, result.Err)
 }
