@@ -471,3 +471,29 @@ func TestAddTeamSavedGame_InvalidLocation_Unhappy(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, result.StatusCode)
 	require.Error(t, result.Err)
 }
+
+// UNHAPPY PATH:
+// Fails when a team in savedGame.Teams does not exist.
+func TestAddTeamSavedGame_InvalidTeamId_Unhappy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	var locationId int
+	err := db.Get(&locationId, `SELECT id FROM locations WHERE location_name = $1`, "Elmwood")
+	require.NoError(t, err)
+
+	teams := getValidTeams(t, db)
+	teams[0].ID = 999999
+
+	savedGame := models.SavedGame{
+		TotalPoints:   6000,
+		AveragePoints: 3000,
+		WinningTeamId: sql.NullInt32{Int32: int32(teams[1].ID), Valid: true},
+		LocationId:    locationId,
+		Teams:         teams,
+	}
+
+	result := repo.addTeamSavedGame(savedGame)
+
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+	require.Error(t, result.Err)
+}
