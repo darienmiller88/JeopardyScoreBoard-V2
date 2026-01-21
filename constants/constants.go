@@ -46,12 +46,17 @@ const(
 	`
 
 	InsertPlayersForSavedGame string = `
-		INSERT INTO SavedGamesPlayers (player_id, saved_game_id, player_score, player_name)
-		VALUES(
+		INSERT INTO SavedGamesPlayers (
+			player_id,
+			saved_game_id,
+			player_score,
+			player_name
+		)
+		VALUES (
 			$1,
 			$2,
 			$3,
-			(SELECT player_name FROM players WHERE id=$4)
+			(SELECT player_name FROM players WHERE id = $1)
 		)
 	`
 

@@ -122,10 +122,9 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 	for _, player := range savedGame.Players {
 		_, err := tx.Exec(
 			constants.InsertPlayersForSavedGame,
-			player.ID,
-			savedGame.ID,
-			player.Score,
-			player.ID, // Lookup for player name
+			player.ID,    // $1
+			savedGame.ID, // $2
+			player.Score, // $3
 		)
 
 		if err != nil {
@@ -133,7 +132,9 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 
 			if errors.As(err, &pqErr) {
 				switch pqErr.Code {
-				case "23503": // fk violation
+				case "23502"://null violation for player_name if a name not from the players table is set.
+					return getResult(fmt.Errorf("no player name with id %d does not exist", player.ID), http.StatusNotFound, models.SavedGame{})
+				case "23503": // fk violation for invalid player_id if set (doesn't exist in players)
 					return getResult(fmt.Errorf("player with id %d not found", player.ID), http.StatusNotFound, models.SavedGame{})
 				case "23505": // unique key violation
 					return getResult(fmt.Errorf("duplicate player-id:game-id entry for player %d", player.ID), http.StatusConflict, models.SavedGame{})

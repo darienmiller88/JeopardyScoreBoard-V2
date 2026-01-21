@@ -898,7 +898,7 @@ func TestAddSavedGameDB_HappyPath_PlayerWin_SinglePlayer(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(42))
 
 	mock.ExpectExec(regexp.QuoteMeta(constants.InsertPlayersForSavedGame)).
-		WithArgs(1, 42, 1500, 1).
+		WithArgs(1, 42, 1500).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	mock.ExpectCommit()
@@ -935,7 +935,7 @@ func TestAddSavedGameDB_HappyPath_PlayerWin_MultiplePlayers(t *testing.T) {
 
 	for _, p := range savedGame.Players {
 		mock.ExpectExec(regexp.QuoteMeta(constants.InsertPlayersForSavedGame)).
-			WithArgs(p.ID, 99, p.Score, p.ID).
+			WithArgs(p.ID, 99, p.Score).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 	}
 

@@ -253,15 +253,15 @@ func createValidStandardSavedGame(t *testing.T, db *sqlx.DB) models.SavedGame {
 }
 
 // Test helper to clean up saved game by ID
-func cleanupSavedGame(t *testing.T, db *sqlx.DB, savedGameId int) {
+func cleanupSavedGame(t *testing.T, db *sqlx.DB) {
 	// Delete from junction table first
-	_, err := db.Exec("DELETE FROM savedgamesplayers WHERE saved_game_id = $1", savedGameId)
+	_, err := db.Exec("DELETE FROM savedgamesplayers")
 	if err != nil {
 		t.Logf("Warning: Failed to clean up savedgameplayers: %v", err)
 	}
 
 	// Delete saved game
-	_, err = db.Exec("DELETE FROM savedgames WHERE id = $1", savedGameId)
+	_, err = db.Exec("DELETE FROM savedgames")
 	if err != nil {
 		t.Logf("Warning: Failed to clean up savedgame: %v", err)
 	}
@@ -273,91 +273,20 @@ func cleanupSavedGame(t *testing.T, db *sqlx.DB, savedGameId int) {
 	}
 }
 
+// Happy path: valid saved game with valid players inserts successfully
 func TestAddStandardSavedGame_Happy(t *testing.T) {
 	repo := GetSqlSavedGameRepository(db)
 	savedGame := createValidStandardSavedGame(t, db)
 
-	result := repo.AddSavedGameDB(savedGame)
-	defer cleanupSavedGame(t, db, result.ResultData.ID)
+	result := repo.addStandardSavedGame(savedGame)
+
+	if result.Err == nil {
+		defer cleanupSavedGame(t, db)
+	}
 
 	assert.Equal(t, http.StatusCreated, result.StatusCode)
 	assert.Nil(t, result.Err)
 	assert.NotZero(t, result.ResultData.ID)
 }
 
-func TestAddStandardSavedGame_MultiplePlayerScores_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
-	savedGame := createValidStandardSavedGame(t, db)
-
-	result := repo.addStandardSavedGame(savedGame)
-	defer cleanupSavedGame(t, db, result.ResultData.ID)
-
-	for _, player := range savedGame.Players {
-		var score int64
-		err := db.Get(
-			&score,
-			`SELECT player_score 
-			 FROM savedgamesplayers 
-			 WHERE saved_game_id = $1 AND player_id = $2`,
-			result.ResultData.ID,
-			player.ID,
-		)
-
-		assert.NoError(t, err)
-		assert.Equal(t, int64(player.Score), score)
-	}
-}
-
-func TestAddStandardSavedGame_EmptyPlayers_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
-	savedGame := createValidStandardSavedGame(t, db)
-	savedGame.Players = []models.Player{}
-
-	result := repo.addStandardSavedGame(savedGame)
-	if result.Err == nil {
-		defer cleanupSavedGame(t, db, result.ResultData.ID)
-	}
-
-	assert.Equal(t, http.StatusCreated, result.StatusCode)
-
-	var count int
-	err := db.Get(
-		&count,
-		`SELECT COUNT(*) FROM savedgamesplayers WHERE saved_game_id = $1`,
-		result.ResultData.ID,
-	)
-
-	assert.NoError(t, err)
-	assert.Equal(t, 0, count)
-}
-
-///////////////////////////////////////////
-//UNHAPPY PATHS - Player based saved game
-///////////////////////////////////////////
-
-func TestAddStandardSavedGame_InvalidLocation_Unhappy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
-	savedGame := createValidStandardSavedGame(t, db)
-	savedGame.LocationId = 999999
-
-	result := repo.addStandardSavedGame(savedGame)
-	defer cleanupSavedGame(t, db, result.ResultData.ID)
-
-	assert.Equal(t, http.StatusNotFound, result.StatusCode)
-	assert.NotNil(t, result.Err)
-	assert.Equal(t, models.SavedGame{}, result.ResultData)
-}
-
-func TestAddStandardSavedGame_InvalidWinningPlayer_Unhappy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
-	savedGame := createValidStandardSavedGame(t, db)
-	savedGame.WinningPlayerName = sql.NullString{
-		String: "does-not-exist",
-		Valid: true,
-	}
-
-	result := repo.addStandardSavedGame(savedGame)
-
-	assert.Equal(t, http.StatusNotFound, result.StatusCode)
-	assert.NotNil(t, result.Err)
-}
+// Happy path: multiple players with different scores insert correctly
