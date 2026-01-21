@@ -290,3 +290,55 @@ func TestAddStandardSavedGame_Happy(t *testing.T) {
 }
 
 // Happy path: multiple players with different scores insert correctly
+func TestAddStandardSavedGame_MultiplePlayerScores_Happy(t *testing.T) {
+    repo := GetSqlSavedGameRepository(db)
+    savedGame := createValidStandardSavedGame(t, db)
+
+    savedGame.Players[0].Score = 5000
+    savedGame.Players[1].Score = 4000
+
+    result := repo.addStandardSavedGame(savedGame)
+	defer cleanupSavedGame(t, db)
+
+    assert.Equal(t, http.StatusCreated, result.StatusCode)
+    assert.Nil(t, result.Err)
+}
+
+// Unhappy path: invalid location ID returns 404
+func TestAddStandardSavedGame_InvalidLocation_Unhappy(t *testing.T) {
+    repo := GetSqlSavedGameRepository(db)
+    savedGame := createValidStandardSavedGame(t, db)
+    savedGame.LocationId = 999999
+
+    result := repo.addStandardSavedGame(savedGame)
+	defer cleanupSavedGame(t, db)
+
+    assert.Equal(t, http.StatusNotFound, result.StatusCode)
+    assert.NotNil(t, result.Err)
+}
+
+// Unhappy path: invalid player ID in players list returns 404
+func TestAddStandardSavedGame_InvalidPlayerId_Unhappy(t *testing.T) {
+    repo := GetSqlSavedGameRepository(db)
+    savedGame := createValidStandardSavedGame(t, db)
+    savedGame.Players[0].ID = 999999
+
+    result := repo.addStandardSavedGame(savedGame)
+	defer cleanupSavedGame(t, db)
+
+    assert.Equal(t, http.StatusNotFound, result.StatusCode)
+    assert.NotNil(t, result.Err)
+}
+
+// Unhappy path: duplicate player in same saved game returns 409
+func TestAddStandardSavedGame_DuplicatePlayer_Unhappy(t *testing.T) {
+    repo := GetSqlSavedGameRepository(db)
+    savedGame := createValidStandardSavedGame(t, db)
+
+    savedGame.Players = append(savedGame.Players, savedGame.Players[0])
+
+    result := repo.addStandardSavedGame(savedGame)
+
+    assert.Equal(t, http.StatusConflict, result.StatusCode)
+    assert.NotNil(t, result.Err)
+}
