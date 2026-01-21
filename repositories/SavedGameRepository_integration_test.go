@@ -497,3 +497,29 @@ func TestAddTeamSavedGame_InvalidTeamId_Unhappy(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, result.StatusCode)
 	require.Error(t, result.Err)
 }
+
+// UNHAPPY PATH:
+// Fails when the same team is inserted twice for the same saved game.
+func TestAddTeamSavedGame_DuplicateTeam_Unhappy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	var locationId int
+	err := db.Get(&locationId, `SELECT id FROM locations WHERE location_name = $1`, "Elmwood")
+	require.NoError(t, err)
+
+	teams := getValidTeams(t, db)
+	teams = append(teams, teams[0]) // duplicate
+
+	savedGame := models.SavedGame{
+		TotalPoints:   7000,
+		AveragePoints: 3500,
+		WinningTeamId: sql.NullInt32{Int32: int32(teams[0].ID), Valid: true},
+		LocationId:    locationId,
+		Teams:         teams,
+	}
+
+	result := repo.addTeamSavedGame(savedGame)
+
+	require.Equal(t, http.StatusConflict, result.StatusCode)
+	require.Error(t, result.Err)
+}
