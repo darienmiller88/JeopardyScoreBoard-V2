@@ -10,4 +10,6 @@ type Team struct{
 	UpdatedAt  time.Time  `db:"updated_at"`
 	LocationID int        `db:"location_id"`
 	Score      int        `db:"-"` 
+	Players    []Player   `db:"-"`
+	TeamName   string     `db:"-"`
 }

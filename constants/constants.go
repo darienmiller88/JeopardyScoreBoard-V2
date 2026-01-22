@@ -97,6 +97,31 @@ const(
 		ON locations.id=players.location_id
 		WHERE locations.location_name=$1
 	`
+
+
+	//Get Teams
+	GetAllTeamsByName string = `
+		SELECT locations.location_name
+		FROM locations
+		JOIN teams
+		ON locations.id=teams.location_id
+	`
+
+	GetAllPlayersOnTeam string = `
+		SELECT * FROM players WHERE team_id = $1
+	`
+
+	GetTeamById string = `
+		SELECT * FROM teams WHERE id=$1
+	`
+
+	// GetTeamid string = `
+	// 	SELECT teams.id 
+	// 	FROM teams
+	// 	JOIN locations
+	// 	ON locations.id=teams.location_id
+	// 	WHERE locations.location_name=$1
+	// `
 	
 	//Get saved games
 	GetAllSavedGames string = `
