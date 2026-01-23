@@ -98,8 +98,11 @@ const(
 		WHERE locations.location_name=$1
 	`
 
+	//////////////////////
+	//Get Teams queries
+	//////////////////////
 
-	//Get Teams
+	//Get all team names, which are just the location names
 	GetAllTeamsByName string = `
 		SELECT locations.location_name
 		FROM locations
@@ -107,32 +110,37 @@ const(
 		ON locations.id=teams.location_id
 	`
 
+	//Get all players on a certain team
 	GetAllPlayersOnTeam string = `
 		SELECT * FROM players WHERE team_id = $1
 	`
 
+	//Get a certain team by an id
 	GetTeamById string = `
 		SELECT * FROM teams WHERE id=$1
 	`
 
-	// GetTeamid string = `
-	// 	SELECT teams.id 
-	// 	FROM teams
-	// 	JOIN locations
-	// 	ON locations.id=teams.location_id
-	// 	WHERE locations.location_name=$1
-	// `
 	
-	//Get saved games
+
+	//////////////////////////////
+	// Get Saved games
+	/////////////////////////////
+	
+	//Get all saved games
 	GetAllSavedGames string = `
 		SELECT * FROM savedgames
 	`
 
+	//Get all saved games from a certain location
 	GetAllSavedGamesFromLocation string = `
 		SELECT * FROM savedgames WHERE location_id=(SELECT id FROM locations WHERE location_name=$1)
 	`
 
+	/////////////////////////////
 	//UPDATE
+	/////////////////////////////
+
+	//Update a players name
 	UpdatePlayerName string = `
 		UPDATE players SET player_name=$1 WHERE player_name=$2
 	`
