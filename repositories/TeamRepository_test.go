@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/constants"
+	"database/sql"
 	"errors"
 	"net/http"
 	"regexp"
@@ -109,4 +110,20 @@ func TestGetAllTeamNames_QueryError_Unhappy(t *testing.T) {
 
 	require.Error(t, result.Err)
 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
+
+// Unhappy: team id does not exist → 404
+func TestGetTeamWithAllPlayersDB_TeamNotFound_Unhappy(t *testing.T) {
+	mock, repo := setupTeamRepo(t)
+
+	teamId := 999
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetTeamById)).
+		WithArgs(teamId).
+		WillReturnError(sql.ErrNoRows)
+
+	result := repo.GetTeamWithAllPlayersDB(teamId)
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
 }
