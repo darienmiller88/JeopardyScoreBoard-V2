@@ -51,11 +51,11 @@ func TestMain(m *testing.M) {
     }
 	
 	code := m.Run()
-	defer func ()  {
-		migrations.Down()	
-		_ = db.Close()
-		
-		os.Exit(code)
-	} ()
+	migrations.Down()	
+	_ = db.Close()
+	
+	os.Exit(code)
+	// defer func ()  {
+	// } ()
 }
 

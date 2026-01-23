@@ -99,6 +99,12 @@ func TestGetAllTeamNames_Happy(t *testing.T) {
 	require.Len(t, result.ResultData, 2)
 }
 
+
+
+/////////////////////////
+//UNHAPPY PATHS
+/////////////////////////
+
 // Unhappy: DB error when fetching names → 500
 func TestGetAllTeamNames_QueryError_Unhappy(t *testing.T) {
 	mock, repo := setupTeamRepo(t)
