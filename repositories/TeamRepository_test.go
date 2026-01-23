@@ -150,3 +150,19 @@ func TestGetTeamWithAllPlayersDB_PlayerQueryError_Unhappy(t *testing.T) {
 	require.Error(t, result.Err)
 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
 }
+
+// Unhappy: DB error when fetching team → 500
+func TestGetTeamWithAllPlayersDB_TeamQueryError_Unhappy(t *testing.T) {
+	mock, repo := setupTeamRepo(t)
+
+	teamId := 10
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetTeamById)).
+		WithArgs(teamId).
+		WillReturnError(errors.New("db failure"))
+
+	result := repo.GetTeamWithAllPlayersDB(teamId)
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
