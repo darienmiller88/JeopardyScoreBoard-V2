@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/constants"
+	"errors"
 	"net/http"
 	"regexp"
 	"testing"
@@ -95,4 +96,17 @@ func TestGetAllTeamNames_Happy(t *testing.T) {
 	require.NoError(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)
 	require.Len(t, result.ResultData, 2)
+}
+
+// Unhappy: DB error when fetching names → 500
+func TestGetAllTeamNames_QueryError_Unhappy(t *testing.T) {
+	mock, repo := setupTeamRepo(t)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllTeamsByName)).
+		WillReturnError(errors.New("db error"))
+
+	result := repo.GetAllTeamNames()
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
 }
