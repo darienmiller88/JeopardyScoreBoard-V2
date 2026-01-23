@@ -127,3 +127,26 @@ func TestGetTeamWithAllPlayersDB_TeamNotFound_Unhappy(t *testing.T) {
 	require.Error(t, result.Err)
 	require.Equal(t, http.StatusNotFound, result.StatusCode)
 }
+
+// Unhappy: players query fails → 500
+func TestGetTeamWithAllPlayersDB_PlayerQueryError_Unhappy(t *testing.T) {
+	mock, repo := setupTeamRepo(t)
+
+	teamId := 10
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetTeamById)).
+		WithArgs(teamId).
+		WillReturnRows(
+			sqlmock.NewRows([]string{"id", "location_id", "created_at", "updated_at"}).
+				AddRow(teamId, 3, time.Now(), time.Now()),
+		)
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllPlayersOnTeam)).
+		WithArgs(teamId).
+		WillReturnError(errors.New("player query failed"))
+
+	result := repo.GetTeamWithAllPlayersDB(teamId)
+
+	require.Error(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
