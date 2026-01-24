@@ -96,6 +96,10 @@ const(
 		SELECT * FROM players WHERE id=$1
 	`
 
+	GetPlayerByName string = `
+		SELECT * FROM players WHERE player_name=$1
+	`
+
 	GetAllPlayersFromLocation string = `
 		SELECT players.*
 		FROM players 

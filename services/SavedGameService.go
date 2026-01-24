@@ -10,6 +10,8 @@ type SaveGameService interface{
 	AddSavedGame(savedGame models.SavedGame)          models.Result[models.SavedGame]
 	DeleteSavedGame(savedGameId string)               models.Result[string]
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
+	
+	
 }
 
 type SaveGameServiceImpl struct{
@@ -28,6 +30,7 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 	if err := savedGame.Validate(); err != nil{
 		return models.Result[models.SavedGame]{}
 	}
+
 	
 	return s.Repository.AddSavedGameDB(savedGame)
 }

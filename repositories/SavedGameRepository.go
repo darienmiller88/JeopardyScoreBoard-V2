@@ -18,6 +18,8 @@ type SavedGameRepository interface {
 	AddSavedGameDB(savedGame models.SavedGame)          models.Result[models.SavedGame]
 	DeleteSavedGameDB(savedGameId string)               models.Result[string]
 	GetAllSavedGamesDB()                                models.Result[[]models.SavedGame]
+
+	ArePlayersValid(players []models.Player) models.Result[[]models.Player]
 }
 
 type sqlSavedGameRepository struct {
@@ -29,19 +31,46 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
 	return &sqlSavedGameRepository{db: newDB}
 }
 
-// Get all Saved games from database.
+//determines if a list of players is valid (exists in the database)
 func (s *sqlSavedGameRepository) ArePlayersValid(players []models.Player) models.Result[[]models.Player]{
 	validPlayers := []models.Player{}
 
 	if err := s.db.Select(&validPlayers, constants.GetAllPlayers); err != nil {
+		if err == sql.ErrNoRows {
+			return utils.GetResult(fmt.Errorf("No players added yet"), http.StatusNotFound, validPlayers)
+		}
+
 		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
 	}
 
-	
+	validPlayersMap := make(map[string]struct{}, len(validPlayers))
+
+	for _, player := range validPlayers {
+		validPlayersMap[player.PlayerName] = struct{}{}	
+	}
+
+	for _, player := range players {
+		if _, ok := validPlayersMap[player.PlayerName]; !ok{
+			return utils.GetResult(fmt.Errorf("player '%s' does not exist", player.PlayerName), http.StatusNotFound, []models.Player{})
+		}
+	}
+
+	return utils.GetResult(nil, http.StatusOK, []models.Player{})
 }
 
-func (s *sqlSavedGameRepository) IsWinningPlayerValid(playerName string) bool{
-	
+//Checks if a winning player exists
+func (s *sqlSavedGameRepository) IsWinningPlayerValid(playerName string) models.Result[models.Player]{
+	player := models.Player{}
+
+	if err := s.db.Get(&player, constants.GetPlayerByName, playerName); err != nil{
+		if err == sql.ErrNoRows {
+			return utils.GetResult(fmt.Errorf("winning player '%s' does not exist", playerName), http.StatusNotFound, models.Player{})
+		}
+
+		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
+	}
+
+	return utils.GetResult(nil, http.StatusOK, models.Player{})
 }
 
 // Get all Saved games from database.
