@@ -19,7 +19,10 @@ type SavedGameRepository interface {
 	DeleteSavedGameDB(savedGameId string)               models.Result[string]
 	GetAllSavedGamesDB()                                models.Result[[]models.SavedGame]
 
+	//read methods to allow service layer to validate saved game model before it is inserted
 	ArePlayersValid(players []models.Player) models.Result[[]models.Player]
+	IsWinningPlayerValid(playerName string) models.Result[models.Player]
+	
 }
 
 type sqlSavedGameRepository struct {

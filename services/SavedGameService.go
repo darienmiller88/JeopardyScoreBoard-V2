@@ -3,6 +3,8 @@ package services
 import (
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/repositories"
+	"JeopardyScoreBoardV2/utils"
+	"net/http"
 )
 
 type SaveGameService interface{
@@ -11,7 +13,7 @@ type SaveGameService interface{
 	DeleteSavedGame(savedGameId string)               models.Result[string]
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
 	
-	
+
 }
 
 type SaveGameServiceImpl struct{
@@ -26,12 +28,33 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 	return s.Repository.GetAllSavedGamesDB()
 }
 
+//Business rules for a saved game:
+
+/*
+- Any player from any site can play at any site
+- Winning player MUST exist if a player game is played
+- All players who play MUST exist
+- game type can be either a team game or player game, but not both nor neither (validated in model)
+- in a team game or player game, at least one team or player MUST be present
+- Team location id must exist in the locations table
+- winning team id MUST exist if a team game is played
+*/
+
 func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
 	if err := savedGame.Validate(); err != nil{
-		return models.Result[models.SavedGame]{}
+		return utils.GetResult(err, http.StatusUnprocessableEntity, savedGame)
 	}
 
-	
+	//Check if the players the client added actually exist.
+	if result := s.Repository.ArePlayersValid(savedGame.Players); result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, savedGame)
+	}
+
+	//Check if the winning player exists
+	if result := s.Repository.IsWinningPlayerValid(savedGame.WinningPlayerName.String); result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, savedGame)
+	}
+
 	return s.Repository.AddSavedGameDB(savedGame)
 }
 

@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"errors"
-	"strings"
 	"time"
 )
 
@@ -45,31 +44,12 @@ func (s *SavedGame) validateGameType() error{
 
 	//Of course, both the winnning player id and winning team id can't be null
 	if !s.WinningPlayerId.Valid && !s.WinningTeamId.Valid {
-		return errors.New("saved game must have either a winning team id and winning player id")
-	}
-
-	//If there is a player id, it must also be accompanied with a valid winning player name
-	if s.WinningPlayerId.Valid && s.validateWinningPlayerNameHasTwoParts() != nil {
-		return errors.New("saved game cannot have both a winning team id and winning player id")
+		return errors.New("saved game cannot have both a null a winning team id and winning player id")
 	}
 
 	//If the saved game is a team game, there can be no winning player name 
 	if s.WinningTeamId.Valid && s.WinningPlayerName.Valid {
 		return errors.New("team game cannot have a winning player, only winning team id")
-	}
-
-	return nil
-}
-
-func (s *SavedGame) validateWinningPlayerNameHasTwoParts() error{	
-	if !s.WinningPlayerName.Valid {
-		return errors.New("must supply winning player name when player id is supplied")
-	}
-
-	fields := strings.Fields(s.WinningPlayerName.String)
-
-	if len(fields) != 2 {
-		return errors.New("Player name must have exactly two parts: ex -> 'jane doe'")
 	}
 
 	return nil
