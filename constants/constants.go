@@ -83,6 +83,10 @@ const(
 		SELECT location_name FROM locations WHERE location_name=$1
 	`
 
+	GetLocationById string = `
+		SELECT location_name FROM locations WHERE id=$1
+	`
+
 	//////////////////////
 	//Get Players Queries
 	//////////////////////

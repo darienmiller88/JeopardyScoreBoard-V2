@@ -15,8 +15,9 @@ import (
 //LocationRepository interface to allow mocking when testing the service. The test can provide the service
 //a dummy implementation
 type LocationRepository interface{
-	GetLocation(locationName string) models.Result[string]
-	GetAllLocations()                models.Result[[]string]
+	GetLocation(locationName string)  models.Result[string]
+	GetAllLocations()                 models.Result[[]string]
+	IsLocationIdValid(locationId int) models.Result[string]
 }
 
 type sqlLocationRepository struct{
@@ -54,11 +55,17 @@ func (s *sqlLocationRepository) GetLocation(locationName string) models.Result[s
 	return utils.GetResult(nil, http.StatusOK, location)
 }
 
-// //Helper function to allow repos to send result payloads with less text.
-// func utils.GetResult[T any](err error, statusCode int, payload T) models.Result[T] {
-// 	return models.Result[T]{
-// 		StatusCode: statusCode,
-// 		Err: err,
-// 		ResultData: payload,
-// 	}
-// }
+//Get one location from the database
+func (s *sqlLocationRepository) IsLocationIdValid(locationId int) models.Result[string]{
+	location := ""
+	
+	if err := s.db.Get(&location, constants.GetLocationById, locationId); err != nil{
+		if err == sql.ErrNoRows {
+			return utils.GetResult(fmt.Errorf("No location with id %d", locationId), http.StatusNotFound, "")	
+		}
+
+		return utils.GetResult(err, http.StatusInternalServerError, "")
+	}
+
+	return utils.GetResult(nil, http.StatusOK, location)
+}

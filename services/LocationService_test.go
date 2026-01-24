@@ -11,8 +11,8 @@ import (
 )
 
 type mockLocationRepository struct{
-	locationResult  models.Result[string]
-	locationsResult models.Result[[]string]
+	locationResult      models.Result[string]
+	locationsResult     models.Result[[]string]
 }
 
 func (m *mockLocationRepository) GetAllLocations() models.Result[[]string]{
@@ -20,6 +20,10 @@ func (m *mockLocationRepository) GetAllLocations() models.Result[[]string]{
 }
 
 func (m *mockLocationRepository) GetLocation(locationName string) models.Result[string]{
+	return m.locationResult
+}
+
+func (m *mockLocationRepository) IsLocationIdValid(locationId int) models.Result[string]{
 	return m.locationResult
 }
 
