@@ -22,7 +22,7 @@ type SavedGameRepository interface {
 	//read methods to allow service layer to validate saved game model before it is inserted
 	ArePlayersValid(players []models.Player) models.Result[[]models.Player]
 	IsWinningPlayerValid(playerName string) models.Result[models.Player]
-	
+	IsWinningTeamIdValid(teamId int) models.Result[int]
 }
 
 type sqlSavedGameRepository struct {
@@ -74,6 +74,21 @@ func (s *sqlSavedGameRepository) IsWinningPlayerValid(playerName string) models.
 	}
 
 	return utils.GetResult(nil, http.StatusOK, models.Player{})
+}
+
+//Checks if a winning team exists
+func (s *sqlSavedGameRepository) IsWinningTeamIdValid(teamId int) models.Result[int]{
+	team := models.Team{}
+
+	if err := s.db.Get(&team, constants.GetTeamById, teamId); err != nil{
+		if err == sql.ErrNoRows {
+			return utils.GetResult(fmt.Errorf("winning team id '%d' does not exist", teamId), http.StatusNotFound, 0)
+		}
+
+		return utils.GetResult(err, http.StatusInternalServerError, 0)
+	}
+
+	return utils.GetResult(nil, http.StatusOK, 0)
 }
 
 // Get all Saved games from database.

@@ -33,13 +33,12 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 /*
 - Any player from any site can play at any site
 - Winning player MUST exist if a player game is played
-- All players who play MUST exist
-- game type can be either a team game or player game, but not both nor neither (validated in model)
+- All players who play MUST exist in the players Table
+- game type can be either a team game or player game, but not both and not neither (validated in model)
 - in a team game or player game, at least one team or player MUST be present
 - Team location id must exist in the locations table
 - winning team id MUST exist if a team game is played
 */
-
 func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
 	if err := savedGame.Validate(); err != nil{
 		return utils.GetResult(err, http.StatusUnprocessableEntity, savedGame)
@@ -52,6 +51,11 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 
 	//Check if the winning player exists
 	if result := s.Repository.IsWinningPlayerValid(savedGame.WinningPlayerName.String); result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, savedGame)
+	}
+
+	//Check if the winning team exists
+	if result := s.Repository.IsWinningTeamIdValid(int(savedGame.WinningTeamId.Int32)); result.Err != nil {
 		return utils.GetResult(result.Err, result.StatusCode, savedGame)
 	}
 
