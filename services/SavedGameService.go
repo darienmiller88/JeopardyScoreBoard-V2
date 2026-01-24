@@ -40,6 +40,8 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 - winning team id MUST exist if a team game is played
 */
 func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
+	//Validate the game to ensure it's either a team game or saved game, and that both have at
+	//least one player or team participating.
 	if err := savedGame.Validate(); err != nil{
 		return utils.GetResult(err, http.StatusUnprocessableEntity, savedGame)
 	}
