@@ -8,7 +8,7 @@ import (
 type SaveGameService interface{
 	GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]
 	AddSavedGame(savedGame models.SavedGame)          models.Result[models.SavedGame]
-	DeleteSavedGame(savedGameId string)                  models.Result[string]
+	DeleteSavedGame(savedGameId string)               models.Result[string]
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
 }
 
@@ -25,6 +25,10 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 }
 
 func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
+	if err := savedGame.Validate(); err != nil{
+		return models.Result[models.SavedGame]{}
+	}
+	
 	return s.Repository.AddSavedGameDB(savedGame)
 }
 

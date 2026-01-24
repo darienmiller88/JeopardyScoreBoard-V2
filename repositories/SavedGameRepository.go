@@ -3,6 +3,7 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"JeopardyScoreBoardV2/utils"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -29,14 +30,29 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
 }
 
 // Get all Saved games from database.
+func (s *sqlSavedGameRepository) ArePlayersValid(players []models.Player) models.Result[[]models.Player]{
+	validPlayers := []models.Player{}
+
+	if err := s.db.Select(&validPlayers, constants.GetAllPlayers); err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
+	}
+
+	
+}
+
+func (s *sqlSavedGameRepository) IsWinningPlayerValid(playerName string) bool{
+	
+}
+
+// Get all Saved games from database.
 func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
 	savedGames := []models.SavedGame{}
 	
 	if err := s.db.Select(&savedGames, constants.GetAllSavedGames); err != nil {
-		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
 	
-	return getResult(nil, http.StatusOK, savedGames)
+	return utils.GetResult(nil, http.StatusOK, savedGames)
 }
 
 // Get all saved games played at a specific location.
@@ -44,10 +60,10 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName str
 	savedGames := []models.SavedGame{}
 	
 	if err := s.db.Select(&savedGames, constants.GetAllSavedGamesFromLocation, locationName); err != nil {
-		return getResult(err, http.StatusInternalServerError, []models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
 	
-	return getResult(nil, http.StatusOK, savedGames)
+	return utils.GetResult(nil, http.StatusOK, savedGames)
 }
 
 // Delete a saved game
@@ -55,20 +71,20 @@ func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Re
 	result, err := s.db.Exec(constants.DeleteSavedGame, savedGameId)
 
 	if err != nil {
-		return getResult(err, http.StatusInternalServerError, "")
+		return utils.GetResult(err, http.StatusInternalServerError, "")
 	}
 	
 	rowsAffected, err := result.RowsAffected()
 	
 	if err != nil {
-		return getResult(err, http.StatusInternalServerError, "")
+		return utils.GetResult(err, http.StatusInternalServerError, "")
 	}
 	
 	if rowsAffected == 0 {
-		return getResult(fmt.Errorf("saved game not found by id: %s", savedGameId), http.StatusNotFound, "")
+		return utils.GetResult(fmt.Errorf("saved game not found by id: %s", savedGameId), http.StatusNotFound, "")
 	}
 	
-	return getResult(nil, http.StatusOK, fmt.Sprintf("Saved game %s deleted successfully", savedGameId))
+	return utils.GetResult(nil, http.StatusOK, fmt.Sprintf("Saved game %s deleted successfully", savedGameId))
 }
 
 // Add a new saved game
@@ -85,7 +101,7 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 	tx, err := s.db.Beginx()
 
 	if err != nil {
-		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
 	defer tx.Rollback()
@@ -104,18 +120,18 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 		var pqErr *pq.Error
 		// FK violation returns a 23503
 		if errors.As(err, &pqErr) && pqErr.Code == "23503" {
-			return getResult(fmt.Errorf("no location or winning player name found"), http.StatusNotFound, models.SavedGame{})
+			return utils.GetResult(fmt.Errorf("no location or winning player name found"), http.StatusNotFound, models.SavedGame{})
 		}
 
 		if errors.Is(err, sql.ErrNoRows) {
-			return getResult(
+			return utils.GetResult(
 				fmt.Errorf("no location or winning player name found"),
 				http.StatusNotFound,
 				models.SavedGame{},
 			)
 		}
 
-		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
 	// Loop over and add each player to the junction table "savedgameplayers"
@@ -133,24 +149,24 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 			if errors.As(err, &pqErr) {
 				switch pqErr.Code {
 				case "23502"://null violation for player_name if a name not from the players table is set.
-					return getResult(fmt.Errorf("no player name with id %d does not exist", player.ID), http.StatusNotFound, models.SavedGame{})
+					return utils.GetResult(fmt.Errorf("no player name with id %d does not exist", player.ID), http.StatusNotFound, models.SavedGame{})
 				case "23503": // fk violation for invalid player_id if set (doesn't exist in players)
-					return getResult(fmt.Errorf("player with id %d not found", player.ID), http.StatusNotFound, models.SavedGame{})
+					return utils.GetResult(fmt.Errorf("player with id %d not found", player.ID), http.StatusNotFound, models.SavedGame{})
 				case "23505": // unique key violation
-					return getResult(fmt.Errorf("duplicate player-id:game-id entry for player %d", player.ID), http.StatusConflict, models.SavedGame{})
+					return utils.GetResult(fmt.Errorf("duplicate player-id:game-id entry for player %d", player.ID), http.StatusConflict, models.SavedGame{})
 				}
 			}
 
-			return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 		}
 	}
 
 	// Commit transaction
 	if err = tx.Commit(); err != nil {
-		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
-	return getResult(nil, http.StatusCreated, savedGame)
+	return utils.GetResult(nil, http.StatusCreated, savedGame)
 }
 
 func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
@@ -158,7 +174,7 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 	tx, err := s.db.Beginx()
 
 	if err != nil {
-		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
 	defer tx.Rollback()
@@ -177,10 +193,10 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 		
 		// FK violation returns a 23503
 		if errors.As(err, &pqErr) && pqErr.Code == "23503" {
-			return getResult(fmt.Errorf("no location or winning team found"), http.StatusNotFound, models.SavedGame{})
+			return utils.GetResult(fmt.Errorf("no location or winning team found"), http.StatusNotFound, models.SavedGame{})
 		}
 
-		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
 	// Loop over and add each team to the junction table "savedgameteams"
@@ -198,20 +214,20 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 			if errors.As(err, &pqErr) {
 				switch pqErr.Code {
 				case "23503": // fk violation
-					return getResult(fmt.Errorf("team with id %d not found", team.ID), http.StatusNotFound, models.SavedGame{})
+					return utils.GetResult(fmt.Errorf("team with id %d not found", team.ID), http.StatusNotFound, models.SavedGame{})
 				case "23505": // unique key violation
-					return getResult(fmt.Errorf("duplicate team-id:game-id entry for team %d", team.ID), http.StatusConflict, models.SavedGame{})
+					return utils.GetResult(fmt.Errorf("duplicate team-id:game-id entry for team %d", team.ID), http.StatusConflict, models.SavedGame{})
 				}
 			}
 
-			return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 		}
 	}
 
 	// Commit transaction
 	if err = tx.Commit(); err != nil {
-		return getResult(err, http.StatusInternalServerError, models.SavedGame{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
-	return getResult(nil, http.StatusCreated, savedGame)
+	return utils.GetResult(nil, http.StatusCreated, savedGame)
 }

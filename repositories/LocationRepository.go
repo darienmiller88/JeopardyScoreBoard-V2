@@ -7,6 +7,7 @@ import (
 
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"JeopardyScoreBoardV2/utils"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -32,10 +33,10 @@ func (s *sqlLocationRepository) GetAllLocations() models.Result[[]string]{
 	locations := []string{}
 	
 	if err := s.db.Select(&locations, constants.GetAllLocations); err != nil{
-		return getResult(err, http.StatusInternalServerError, []string{})
+		return utils.GetResult(err, http.StatusInternalServerError, []string{})
 	}
 
-	return getResult(nil, http.StatusOK, locations)
+	return utils.GetResult(nil, http.StatusOK, locations)
 }
 
 //Get one location from the database
@@ -44,20 +45,20 @@ func (s *sqlLocationRepository) GetLocation(locationName string) models.Result[s
 	
 	if err := s.db.Get(&location, constants.GetLocation, locationName); err != nil{
 		if err == sql.ErrNoRows {
-			return getResult(fmt.Errorf("No location found with name %s", locationName), http.StatusNotFound, "")	
+			return utils.GetResult(fmt.Errorf("No location found with name %s", locationName), http.StatusNotFound, "")	
 		}
 
-		return getResult(err, http.StatusInternalServerError, "")
+		return utils.GetResult(err, http.StatusInternalServerError, "")
 	}
 
-	return getResult(nil, http.StatusOK, location)
+	return utils.GetResult(nil, http.StatusOK, location)
 }
 
-//Helper function to allow repos to send result payloads with less text.
-func getResult[T any](err error, statusCode int, payload T) models.Result[T] {
-	return models.Result[T]{
-		StatusCode: statusCode,
-		Err: err,
-		ResultData: payload,
-	}
-}
+// //Helper function to allow repos to send result payloads with less text.
+// func utils.GetResult[T any](err error, statusCode int, payload T) models.Result[T] {
+// 	return models.Result[T]{
+// 		StatusCode: statusCode,
+// 		Err: err,
+// 		ResultData: payload,
+// 	}
+// }

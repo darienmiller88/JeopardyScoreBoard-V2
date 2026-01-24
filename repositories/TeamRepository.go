@@ -3,6 +3,7 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"JeopardyScoreBoardV2/utils"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -30,21 +31,21 @@ func (s *sqlTeamRepository) GetTeamWithAllPlayersDB(teamId int) models.Result[mo
 
 	if err := s.db.Get(&team, constants.GetTeamById, teamId); err != nil{
 		if err == sql.ErrNoRows {
-			return getResult(fmt.Errorf("No team found with id %d", teamId), http.StatusNotFound, team)	
+			return utils.GetResult(fmt.Errorf("No team found with id %d", teamId), http.StatusNotFound, team)	
 		} 
 
-		return getResult(err, http.StatusInternalServerError, team)
+		return utils.GetResult(err, http.StatusInternalServerError, team)
 	}
 
 	players := []models.Player{}
 
 	if err := s.db.Select(&players, constants.GetAllPlayersOnTeam, teamId); err != nil{
-		return getResult(err, http.StatusInternalServerError, team)
+		return utils.GetResult(err, http.StatusInternalServerError, team)
 	}
 	
 	team.Players = players
 
-	return getResult(nil, http.StatusOK, team)
+	return utils.GetResult(nil, http.StatusOK, team)
 }	
 
 //Get all team names (to be put on a select tag on the front end)
@@ -52,8 +53,8 @@ func (s *sqlTeamRepository) GetAllTeamNames() models.Result[[]string]{
 	teamNames := []string{}
 
 	if err := s.db.Select(&teamNames, constants.GetAllTeamsByName); err != nil{
-		return getResult(err, http.StatusInternalServerError, []string{})
+		return utils.GetResult(err, http.StatusInternalServerError, []string{})
 	}	
 
-	return getResult(nil, http.StatusOK, teamNames)
+	return utils.GetResult(nil, http.StatusOK, teamNames)
 }

@@ -3,6 +3,7 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
+	"JeopardyScoreBoardV2/utils"
 	"errors"
 	"fmt"
 	"net/http"
@@ -43,16 +44,16 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 		if errors.As(err, &pqErr) {
 			switch pqErr.Code {
 			case "23502", "23503": // NOT NULL or FK violation
-				return getResult(fmt.Errorf("no location '%s' found", locationName), http.StatusNotFound, models.Player{})
+				return utils.GetResult(fmt.Errorf("no location '%s' found", locationName), http.StatusNotFound, models.Player{})
 			case "23505": //unique key violation
-				return getResult(fmt.Errorf("name %s is already taken", player.PlayerName), http.StatusConflict, models.Player{})
+				return utils.GetResult(fmt.Errorf("name %s is already taken", player.PlayerName), http.StatusConflict, models.Player{})
 			}
 		}
 
-		return getResult(err, http.StatusInternalServerError, models.Player{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	return getResult(nil, http.StatusCreated, player)
+	return utils.GetResult(nil, http.StatusCreated, player)
 }
 
 // Function to update a players name for a given location.
@@ -63,19 +64,19 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 		var pqErr *pq.Error
 
 		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
-			return getResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
+			return utils.GetResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
 		}
 
-		return getResult(err, http.StatusInternalServerError, models.Player{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
 	numRowsAffected, _ := result.RowsAffected()
 
 	if numRowsAffected == 0 {
-		return getResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
+		return utils.GetResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
 	}
 
-	return getResult(nil, http.StatusOK, models.Player{PlayerName: newPlayerName})
+	return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: newPlayerName})
 }
 
 // Remove a single player from a given location.
@@ -83,34 +84,34 @@ func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[mode
 	result, err := s.db.Exec(constants.DeletePlayer, playerName)
 
 	if err != nil {
-		return getResult(err, http.StatusInternalServerError, models.Player{})
+		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
 	numRowsAffected, _ := result.RowsAffected()
 
 	if numRowsAffected == 0 {
-		return getResult(fmt.Errorf("could not find player %s", playerName), http.StatusNotFound, models.Player{})
+		return utils.GetResult(fmt.Errorf("could not find player %s", playerName), http.StatusNotFound, models.Player{})
 	}
 
-	return getResult(nil, http.StatusOK, models.Player{PlayerName: playerName})
+	return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: playerName})
 }
 
 func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
 	players := []models.Player{}
 
 	if err := s.db.Select(&players, constants.GetAllPlayersFromLocation, locationName); err != nil {
-		return getResult(err, http.StatusInternalServerError, players)
+		return utils.GetResult(err, http.StatusInternalServerError, players)
 	}
 
-	return getResult(nil, http.StatusOK, players)
+	return utils.GetResult(nil, http.StatusOK, players)
 }
 
 func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
 	players := []models.Player{}
 
 	if err := s.db.Select(&players, constants.GetAllPlayers); err != nil {
-		return getResult(err, http.StatusInternalServerError, players)
+		return utils.GetResult(err, http.StatusInternalServerError, players)
 	}
 
-	return getResult(nil, http.StatusOK, players)
+	return utils.GetResult(nil, http.StatusOK, players)
 }

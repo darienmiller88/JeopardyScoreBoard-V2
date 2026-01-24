@@ -72,6 +72,8 @@ const(
 	//READ
 	/////////////////////////
 
+
+
 	//Get location(s)
 	GetAllLocations string = `
 		SELECT location_name FROM locations
@@ -80,6 +82,10 @@ const(
 	GetLocation string = `
 		SELECT location_name FROM locations WHERE location_name=$1
 	`
+
+	//////////////////////
+	//Get Players Queries
+	//////////////////////
 
 	//Get player(s)
 	GetAllPlayers string = `
