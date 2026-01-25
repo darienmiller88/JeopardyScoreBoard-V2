@@ -93,26 +93,34 @@ func (s *SavedGame) CalculateWinner(){
 		s.WinningTeamId.Int32 = int32(s.Teams[0].ID)
 	} else{
 		if s.IsPlayerGame {
-			winningPlayer := s.Players[0]
-	
-			for _, player := range s.Players[1:] {
-				if player.Score > winningPlayer.Score {
-					winningPlayer = player
-				}
-			}
-
-			s.WinningPlayerName.String = winningPlayer.PlayerName
-			s.WinningPlayerId.Int32 = int32(winningPlayer.ID)
+			s.calcWinnerForPlayers()
 		} else{
-			winningTeam := s.Teams[0]
-	
-			for _, team := range s.Teams[1:] {
-				if team.Score > winningTeam.Score {
-					winningTeam = team
-				}
-			}	
-			
-			s.WinningTeamId.Int32 = int32(winningTeam.ID)
+			s.calcWinnerForTeams()
 		}
 	}
+}
+
+func (s *SavedGame) calcWinnerForPlayers(){
+	winningPlayer := s.Players[0]
+	
+	for _, player := range s.Players[1:] {
+		if player.Score > winningPlayer.Score {
+			winningPlayer = player
+		}
+	}
+
+	s.WinningPlayerName.String = winningPlayer.PlayerName
+	s.WinningPlayerId.Int32 = int32(winningPlayer.ID)
+}
+
+func (s *SavedGame) calcWinnerForTeams(){
+	winningTeam := s.Teams[0]
+	
+	for _, team := range s.Teams[1:] {
+		if team.Score > winningTeam.Score {
+			winningTeam = team
+		}
+	}	
+	
+	s.WinningTeamId.Int32 = int32(winningTeam.ID)
 }
