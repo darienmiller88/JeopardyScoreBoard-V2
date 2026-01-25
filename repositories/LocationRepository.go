@@ -16,8 +16,8 @@ import (
 //a dummy implementation
 type LocationRepository interface{
 	GetLocation(locationName string)  models.Result[string]
+	GetLocationById(locationId int)   models.Result[models.Location]
 	GetAllLocations()                 models.Result[[]string]
-	IsLocationIdValid(locationId int) models.Result[string]
 }
 
 type sqlLocationRepository struct{
@@ -56,15 +56,15 @@ func (s *sqlLocationRepository) GetLocation(locationName string) models.Result[s
 }
 
 //Get one location from the database
-func (s *sqlLocationRepository) IsLocationIdValid(locationId int) models.Result[string]{
-	location := ""
+func (s *sqlLocationRepository) GetLocationById(locationId int) models.Result[models.Location]{
+	location := models.Location{}
 	
 	if err := s.db.Get(&location, constants.GetLocationById, locationId); err != nil{
 		if err == sql.ErrNoRows {
-			return utils.GetResult(fmt.Errorf("No location with id %d", locationId), http.StatusNotFound, "")	
+			return utils.GetResult(fmt.Errorf("No location found with id %d", locationId), http.StatusNotFound, location)	
 		}
 
-		return utils.GetResult(err, http.StatusInternalServerError, "")
+		return utils.GetResult(err, http.StatusInternalServerError, location)
 	}
 
 	return utils.GetResult(nil, http.StatusOK, location)

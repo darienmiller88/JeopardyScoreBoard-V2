@@ -61,11 +61,12 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 		return utils.GetResult(err, http.StatusUnprocessableEntity, savedGame)
 	}
 
+	//Check if the location id for the saved game exists
+	if result := s.isLocationIdValid(savedGame.LocationId); result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, savedGame)
+	}
+	
 	if savedGame.IsPlayerGame {
-		//Check if the location id for the saved game exists
-		if result := s.LocationRepository.IsLocationIdValid(savedGame.LocationId); result.Err != nil {
-			return utils.GetResult(result.Err, result.StatusCode, savedGame)
-		}
 
 		//Check if the players the client added actually exist.
 		if result := s.arePlayersValid(savedGame.Players); result.Err != nil {
@@ -91,7 +92,19 @@ func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId string) models.Result[
 	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
 }
 
-//determines if a list of players is valid (exists in the database)
+//Checks if an location id actually exists
+func (s *SaveGameServiceImpl) isLocationIdValid(locationId int) models.Result[models.Location]{
+	result := s.LocationRepository.GetLocationById(locationId)
+
+	if result.Err != nil {
+		return result
+	}
+
+	return utils.GetResult(nil, http.StatusOK, result.ResultData)
+}
+
+
+//checks if a list of players is valid (exists in the database)
 func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Result[[]models.Player]  {
 	result := s.PlayerRepository.GetAllPlayersFromAllLocations()
 
