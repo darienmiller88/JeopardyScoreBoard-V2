@@ -27,6 +27,7 @@ type PlayerRepository interface {
 	RemovePlayer(playerName string) models.Result[models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 
+	//Read method to help validate saved game
 	ArePlayersValid(players []models.Player) models.Result[[]models.Player]	
 }
 
@@ -64,32 +65,6 @@ func (s *sqlPlayerRepository) ArePlayersValid(players []models.Player) models.Re
 	}
 
 	return utils.GetResult(nil, http.StatusOK, []models.Player{})
-}
-
-//Checks if a winning player exists
-func (s *sqlSavedGameRepository) IsWinningPlayerValid(player models.Player) models.Result[models.Player]{
-	validPlayer := models.Player{}
-
-	//check to see if the player id actually exists
-	if err := s.db.Get(&validPlayer, constants.GetPlayerById, player.ID); err != nil{
-		if err == sql.ErrNoRows {
-			return utils.GetResult(fmt.Errorf("no winning player with id '%d'", player.ID), http.StatusNotFound, models.Player{})
-		}
-
-		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
-	}
-
-	//First check the winning players name to see if the name
-	if err := s.db.Get(&validPlayer, constants.GetPlayerByName, player.PlayerName); err != nil{
-		if err == sql.ErrNoRows {
-			return utils.GetResult(fmt.Errorf("winning player '%s' does not exist", player.PlayerName), http.StatusNotFound, models.Player{})
-		}
-
-		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
-	}
-
-
-	return utils.GetResult(nil, http.StatusOK, models.Player{})
 }
 
 // Add a single player to a given location.

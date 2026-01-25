@@ -12,14 +12,13 @@ type SaveGameService interface{
 	AddSavedGame(savedGame models.SavedGame)          models.Result[models.SavedGame]
 	DeleteSavedGame(savedGameId string)               models.Result[string]
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
-	
-
 }
 
 type SaveGameServiceImpl struct{
 	SavedGameRepository repositories.SavedGameRepository 
 	LocationRepository  repositories.LocationRepository
 	PlayerRepository    repositories.PlayerRepository
+	TeamRepository      repositories.TeamRepository
 }
 
 func (s *SaveGameServiceImpl) GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]{
@@ -71,9 +70,11 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 		if result := s.PlayerRepository.ArePlayersValid(savedGame.Players); result.Err != nil {
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
 		}
-		
-		//check if teams exist
 
+		//check if teams exist
+		if result := s.TeamRepository; result.Err != nil {
+			return utils.GetResult(result.Err, result.StatusCode, savedGame)
+		}
 	} else{
 		
 	}

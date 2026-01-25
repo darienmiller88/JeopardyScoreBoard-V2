@@ -129,9 +129,13 @@ const(
 		SELECT * FROM players WHERE team_id = $1
 	`
 
-	//Get a certain team by an id
 	GetTeamById string = `
 		SELECT * FROM teams WHERE id=$1
+	`
+
+	//Get a certain team by an id
+	GetAllTeams string = `
+		SELECT * FROM teams
 	`
 
 	

@@ -13,8 +13,8 @@ import (
 
 type TeamRepository interface {
 	GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team]
-	IsWinningTeamIdValid(teamId int)    models.Result[int]
 	GetAllTeamNames()                   models.Result[[]string]
+	GetAllTeams()                       models.Result[[]models.Team]
 }   
 
 type sqlTeamRepository struct {
@@ -61,16 +61,12 @@ func (s *sqlTeamRepository) GetAllTeamNames() models.Result[[]string]{
 }
 
 //Checks if a winning team exists
-func (s *sqlTeamRepository) IsWinningTeamIdValid(teamId int) models.Result[int]{
-	team := models.Team{}
+func (s *sqlTeamRepository) GetAllTeams() models.Result[[]models.Team]{
+	teams := []models.Team{}
 
-	if err := s.db.Get(&team, constants.GetTeamById, teamId); err != nil{
-		if err == sql.ErrNoRows {
-			return utils.GetResult(fmt.Errorf("winning team id '%d' does not exist", teamId), http.StatusNotFound, 0)
-		}
-
-		return utils.GetResult(err, http.StatusInternalServerError, 0)
+	if err := s.db.Get(&teams, constants.GetAllTeams); err != nil{
+		return utils.GetResult(err, http.StatusInternalServerError, []models.Team{})
 	}
 
-	return utils.GetResult(nil, http.StatusOK, 0)
+	return utils.GetResult(nil, http.StatusOK, teams)
 }

@@ -18,10 +18,6 @@ type SavedGameRepository interface {
 	AddSavedGameDB(savedGame models.SavedGame)          models.Result[models.SavedGame]
 	DeleteSavedGameDB(savedGameId string)               models.Result[string]
 	GetAllSavedGamesDB()                                models.Result[[]models.SavedGame]
-
-	//read methods to allow service layer to validate saved game model before it is inserted
-	IsWinningPlayerValid(playerName string) models.Result[models.Player]
-	IsWinningTeamIdValid(teamId int) models.Result[int]
 }
 
 type sqlSavedGameRepository struct {
@@ -32,10 +28,6 @@ type sqlSavedGameRepository struct {
 func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
 	return &sqlSavedGameRepository{db: newDB}
 }
-
-
-
-
 
 // Get all Saved games from database.
 func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
