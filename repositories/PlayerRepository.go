@@ -4,6 +4,7 @@ import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/utils"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -25,6 +26,8 @@ type PlayerRepository interface {
 	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
 	RemovePlayer(playerName string) models.Result[models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
+
+	ArePlayersValid(players []models.Player) models.Result[[]models.Player]	
 }
 
 type sqlPlayerRepository struct {
@@ -34,6 +37,48 @@ type sqlPlayerRepository struct {
 // Receive new Instance of MongoPlayerCardRepository.
 func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository {
 	return &sqlPlayerRepository{db: newDB}
+}
+
+//determines if a list of players is valid (exists in the database)
+func (s *sqlPlayerRepository) ArePlayersValid(players []models.Player) models.Result[[]models.Player]{
+	validPlayers := []models.Player{}
+
+	if err := s.db.Select(&validPlayers, constants.GetAllPlayers); err != nil {
+		if err == sql.ErrNoRows {
+			return utils.GetResult(fmt.Errorf("No players added yet"), http.StatusNotFound, validPlayers)
+		}
+
+		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
+	}
+
+	validPlayersMap := make(map[string]struct{}, len(validPlayers))
+
+	for _, player := range validPlayers {
+		validPlayersMap[player.PlayerName] = struct{}{}	
+	}
+
+	for _, player := range players {
+		if _, ok := validPlayersMap[player.PlayerName]; !ok{
+			return utils.GetResult(fmt.Errorf("player '%s' does not exist", player.PlayerName), http.StatusNotFound, []models.Player{})
+		}
+	}
+
+	return utils.GetResult(nil, http.StatusOK, []models.Player{})
+}
+
+//Checks if a winning player exists
+func (s *sqlSavedGameRepository) IsWinningPlayerValid(playerName string) models.Result[models.Player]{
+	player := models.Player{}
+
+	if err := s.db.Get(&player, constants.GetPlayerByName, playerName); err != nil{
+		if err == sql.ErrNoRows {
+			return utils.GetResult(fmt.Errorf("winning player '%s' does not exist", playerName), http.StatusNotFound, models.Player{})
+		}
+
+		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
+	}
+
+	return utils.GetResult(nil, http.StatusOK, models.Player{})
 }
 
 // Add a single player to a given location.

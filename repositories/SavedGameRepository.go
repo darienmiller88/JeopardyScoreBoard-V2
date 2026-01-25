@@ -20,7 +20,6 @@ type SavedGameRepository interface {
 	GetAllSavedGamesDB()                                models.Result[[]models.SavedGame]
 
 	//read methods to allow service layer to validate saved game model before it is inserted
-	ArePlayersValid(players []models.Player) models.Result[[]models.Player]
 	IsWinningPlayerValid(playerName string) models.Result[models.Player]
 	IsWinningTeamIdValid(teamId int) models.Result[int]
 }
@@ -34,47 +33,7 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
 	return &sqlSavedGameRepository{db: newDB}
 }
 
-//determines if a list of players is valid (exists in the database)
-func (s *sqlSavedGameRepository) ArePlayersValid(players []models.Player) models.Result[[]models.Player]{
-	validPlayers := []models.Player{}
 
-	if err := s.db.Select(&validPlayers, constants.GetAllPlayers); err != nil {
-		if err == sql.ErrNoRows {
-			return utils.GetResult(fmt.Errorf("No players added yet"), http.StatusNotFound, validPlayers)
-		}
-
-		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
-	}
-
-	validPlayersMap := make(map[string]struct{}, len(validPlayers))
-
-	for _, player := range validPlayers {
-		validPlayersMap[player.PlayerName] = struct{}{}	
-	}
-
-	for _, player := range players {
-		if _, ok := validPlayersMap[player.PlayerName]; !ok{
-			return utils.GetResult(fmt.Errorf("player '%s' does not exist", player.PlayerName), http.StatusNotFound, []models.Player{})
-		}
-	}
-
-	return utils.GetResult(nil, http.StatusOK, []models.Player{})
-}
-
-//Checks if a winning player exists
-func (s *sqlSavedGameRepository) IsWinningPlayerValid(playerName string) models.Result[models.Player]{
-	player := models.Player{}
-
-	if err := s.db.Get(&player, constants.GetPlayerByName, playerName); err != nil{
-		if err == sql.ErrNoRows {
-			return utils.GetResult(fmt.Errorf("winning player '%s' does not exist", playerName), http.StatusNotFound, models.Player{})
-		}
-
-		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
-	}
-
-	return utils.GetResult(nil, http.StatusOK, models.Player{})
-}
 
 //Checks if a winning team exists
 func (s *sqlSavedGameRepository) IsWinningTeamIdValid(teamId int) models.Result[int]{
