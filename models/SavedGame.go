@@ -21,7 +21,8 @@ type SavedGame struct {
 	IsPlayerGame      bool		     `json:"is_player_game"`
 	
 	//These fields will be used to fill WinningPlayerId, WinningTeamId, and WinningPlayerName. The less
-	//I depend on the client for correct information, the better.
+	//I depend on the client for correct information, the better. Therefore, these will be the only
+	//fields to be validated.
 	Players           []Player       `json:"players" db:"-"`
 	Teams             []Team         `json:"teams"   db:"-"`
 }

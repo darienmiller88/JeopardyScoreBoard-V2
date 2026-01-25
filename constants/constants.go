@@ -2,6 +2,11 @@ package constants
 
 const(
 	//CREATE
+
+
+	//////////////////////////
+	//Insert Player Queries
+	//////////////////////////
 	InsertNewPlayerWithTeam string = `
 		INSERT INTO players (player_name, location_id, team_id)
 		VALUES(:player_name, :location_id, :team_id) RETURNING id
@@ -15,6 +20,11 @@ const(
 		) RETURNING id
 	`
 
+
+	//////////////////////////////
+	//Insert saved game Queries
+	/////////////////////////////
+
 	InsertNewPlayerSavedGame string = `
 		INSERT INTO SavedGames (
 			total_score,
@@ -23,16 +33,13 @@ const(
 			winning_player_id,
 			location_id
 		)
-		SELECT
+		VALUES(
 			$1,
 			$2,
 			$3,
-			p.id,
+			$4,
 			$5
-		FROM players p
-		WHERE p.player_name = $4
-		AND p.location_id = $5
-		RETURNING id
+		) RETURNING id
 	`
 
 	InsertNewTeamSavedGame string = `
@@ -73,6 +80,9 @@ const(
 	/////////////////////////
 
 
+	//////////////////////
+	//Get Locations Queries
+	//////////////////////
 
 	//Get location(s)
 	GetAllLocations string = `

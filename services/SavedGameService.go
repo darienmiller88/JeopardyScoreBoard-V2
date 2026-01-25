@@ -33,20 +33,7 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 //Business rules for a saved game:
 
 /*
-- Any player from any site can play at any site
-- Winning player MUST exist if a player game is played
-- Winning player must be a player in the game, not a random player in 
-- All players who play MUST exist in the players Table
-- game type can be either a team game or player game, but not both and not neither (validated in model)
-- in a team game or player game, at least one team or player MUST be present
-- a player game CANNOT have teams added
-- a team game CANNOT have players added
 - location id must exist in the locations table
-- winning team id MUST exist if a team game is played
-- total score must equal to the sum score of all players/teams
-- average score must equal to the average score of all players/teams
-
-
 - player game must have at least one player
 - player game cannot have any teams added
 - players must actually exist
@@ -67,7 +54,6 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 	}
 	
 	if savedGame.IsPlayerGame {
-
 		//Check if the players the client added actually exist.
 		if result := s.arePlayersValid(savedGame.Players); result.Err != nil {
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
