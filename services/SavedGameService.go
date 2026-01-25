@@ -34,12 +34,15 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 
 /*
 - location id must exist in the locations table
+- game type must be a player game or team game, but not both.
 - player game must have at least one player
 - player game cannot have any teams added
 - players must actually exist
 - team game must have at least one team
 - team game cannot have any players added
 - teams must actually exist (id must be real)
+
+Winners for each type of game, and the total score will be calculated server side.
 */
 func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
 	//Validate the game to ensure it's either a team game or saved game, and that both have at
@@ -59,18 +62,19 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
 		}
 
-		//check if teams exist
+	} else{
+		//check if teams the client added actually exist
 		if result := s.areTeamsValid(savedGame.Teams); result.Err != nil {
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
 		}
-	} else{
-		
 	}
 		
+	//Perform the following calculations on the saved game
 	savedGame.CalculateTotalPoints()
 	savedGame.CalculateAveragePoints()
 	savedGame.CalculateWinner()
 
+	//Finaly, after validating for all edge cases, pass the saved game to repository to be inserted.
 	return s.SavedGameRepository.AddSavedGameDB(savedGame)
 }
 
