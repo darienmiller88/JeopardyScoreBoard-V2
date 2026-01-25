@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/go-ozzo/ozzo-validation/v4"
 )
 
-type Player struct{ 
+type Player struct {
 	ID         int           `db:"id"`
 	CreatedAt  time.Time     `db:"created_at"`
 	UpdatedAt  time.Time     `db:"updated_at"`
@@ -19,31 +17,35 @@ type Player struct{
 	Score      int           `json:"score" db:"-"`
 }
 
-const(
+const (
 	minLength int = 4
 	maxLength int = 40
 )
 
-func (p *Player) Validate() error{
-	return validation.ValidateStruct(
-		p,
-		validation.Field(
-			&p.PlayerName, 
-			validation.Required, 
-			validation.Length(minLength, maxLength).Error(fmt.Sprintf("Player name must be between %d and %d", minLength, maxLength)), 
-			validation.By(p.validatePlayerNameHasTwoParts),
-		),
-	)
+func (p *Player) Validate() error {
+	if err := p.validatePlayerNameLength(); err != nil {
+		return err
+	}
+
+	if err := p.validatePlayerNameHasTwoParts(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (p *Player) validatePlayerNameHasTwoParts(field interface{}) error{
-	playerName, ok := field.(string)
+func (p *Player) validatePlayerNameLength() error {
+	playNameLen := len(p.PlayerName)
 
-	if !ok{
-		return fmt.Errorf("could not parse %T into object", field)
+	if playNameLen < 4 || playNameLen > 40 {
+		return fmt.Errorf("player name must be between %d and %d", minLength, maxLength)
 	}
-	
-	fields := strings.Fields(playerName)
+
+	return nil
+}
+
+func (p *Player) validatePlayerNameHasTwoParts() error {
+	fields := strings.Fields(p.PlayerName)
 
 	if len(fields) != 2 {
 		return fmt.Errorf("Player name must have exactly two parts: ex -> 'jane doe'")

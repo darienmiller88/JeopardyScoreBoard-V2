@@ -6,6 +6,7 @@ import (
 
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/repositories"
+	"JeopardyScoreBoardV2/utils"
 )
 
 type PlayerService interface{
@@ -24,14 +25,11 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName
 	player := models.Player{ PlayerName: newPlayerName }
 
 	if err := player.Validate(); err != nil {
-		return models.Result[models.Player]{ Err: err, StatusCode: http.StatusUnprocessableEntity }
+		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
 
 	if oldPlayerName == newPlayerName {
-		return models.Result[models.Player]{ 
-			Err: fmt.Errorf("old and new names must be different"), 
-			StatusCode: http.StatusUnprocessableEntity,
-		}		
+		return utils.GetResult(fmt.Errorf("old and new names must be different"), http.StatusUnprocessableEntity, player)			
 	}
 	
 	return p.Repository.UpdatePlayerName(oldPlayerName, newPlayerName)
