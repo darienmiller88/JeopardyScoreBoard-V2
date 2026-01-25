@@ -35,6 +35,7 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 /*
 - Any player from any site can play at any site
 - Winning player MUST exist if a player game is played
+- Winning player must be a player in the game, not a random player in 
 - All players who play MUST exist in the players Table
 - game type can be either a team game or player game, but not both and not neither (validated in model)
 - in a team game or player game, at least one team or player MUST be present
@@ -44,6 +45,14 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 - winning team id MUST exist if a team game is played
 - total score must equal to the sum score of all players/teams
 - average score must equal to the average score of all players/teams
+
+
+- player game must have at least one player
+- player game cannot have any teams added
+- players must actually exist
+- team game must have at least one team
+- team game cannot have any players added
+- teams must actually exist (id must be real)
 */
 func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
 	//Validate the game to ensure it's either a team game or saved game, and that both have at
@@ -52,7 +61,7 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 		return utils.GetResult(err, http.StatusUnprocessableEntity, savedGame)
 	}
 
-	if savedGame.WinningPlayerId.Valid {
+	if savedGame.IsPlayerGame {
 		//Check if the location id for the saved game exists
 		if result := s.LocationRepository.IsLocationIdValid(savedGame.LocationId); result.Err != nil {
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
@@ -63,19 +72,15 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
 		}
 		
-		//Check if the winning player exists
-		if result := s.SavedGameRepository.IsWinningPlayerValid(savedGame.WinningPlayerName.String); result.Err != nil {
-			return utils.GetResult(result.Err, result.StatusCode, savedGame)
-		}
+		//check if teams exist
 
-
-		savedGame.TotalPoints = s.getTotalScore(savedGame)
-		savedGame.AveragePoints = s.getAverageScore(savedGame)
 	} else{
-
+		
 	}
-
-
+		
+	savedGame.CalculateTotalPoints()
+	savedGame.CalculateAveragePoints()
+	savedGame.CalculateWinner()
 
 	//Check if the winning team exists
 	if result := s.SavedGameRepository.IsWinningTeamIdValid(int(savedGame.WinningTeamId.Int32)); result.Err != nil {
@@ -87,32 +92,4 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 
 func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId string) models.Result[string]{
 	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
-}
-
-func (s *SaveGameServiceImpl) getTotalScore(savedGame models.SavedGame) int{
-	sum := 0
-	
-	if savedGame.WinningPlayerId.Valid {
-		for _, player := range savedGame.Players {
-			sum += player.Score
-		}
-	} else{
-		for _, team := range savedGame.Teams {
-			sum += team.Score
-		}
-	}
-
-	return sum
-}
-
-func (s *SaveGameServiceImpl) getAverageScore(savedGame models.SavedGame) float64{
-	averageScore := 0.0
-	
-	if savedGame.WinningPlayerId.Valid {
-		averageScore = float64(s.getTotalScore(savedGame)) / float64(len(savedGame.Players))
-	} else{
-		averageScore = float64(s.getTotalScore(savedGame)) / float64(len(savedGame.Teams))		
-	}
-
-	return averageScore
 }
