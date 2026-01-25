@@ -35,20 +35,7 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
 
 
 
-//Checks if a winning team exists
-func (s *sqlSavedGameRepository) IsWinningTeamIdValid(teamId int) models.Result[int]{
-	team := models.Team{}
 
-	if err := s.db.Get(&team, constants.GetTeamById, teamId); err != nil{
-		if err == sql.ErrNoRows {
-			return utils.GetResult(fmt.Errorf("winning team id '%d' does not exist", teamId), http.StatusNotFound, 0)
-		}
-
-		return utils.GetResult(err, http.StatusInternalServerError, 0)
-	}
-
-	return utils.GetResult(nil, http.StatusOK, 0)
-}
 
 // Get all Saved games from database.
 func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
