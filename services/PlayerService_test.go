@@ -36,6 +36,9 @@ func (m *mockPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]m
 	return m.playersResult
 }
 
+func (m *mockPlayerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player]{
+	return m.playersResult
+}
 
 ////////////////////
 // CREATE/POST tests

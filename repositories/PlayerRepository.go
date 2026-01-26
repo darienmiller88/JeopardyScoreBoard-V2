@@ -11,13 +11,6 @@ import (
 	"github.com/lib/pq"
 )
 
-const (
-	push               string = "$push"
-	pull               string = "$pull"
-	uniqueKeyViolation string = "23505"
-	notNullViolation   string = "23502"
-)
-
 type PlayerRepository interface {
 	UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]
 	AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]
