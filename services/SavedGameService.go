@@ -67,9 +67,13 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 		savedGame.Players = result.ResultData
 	} else{
 		//check if teams the client added actually exist
-		if result := s.areTeamsValid(savedGame.Teams); result.Err != nil {
+		result := s.areTeamsValid(savedGame.Teams)
+
+		if result.Err != nil {
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
 		}
+
+		savedGame.Teams = result.ResultData
 	}
 		
 	//Perform the following calculations on the saved game
@@ -118,49 +122,23 @@ func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Re
     return result 
 }
 
-// func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Result[[]models.Player]  {
-// 	result := s.PlayerRepository.GetAllPlayersFromAllLocations()
-
-// 	if result.Err != nil {
-// 		return result
-// 	}
-
-// 	validPlayersMap := make(map[string]struct{}, len(result.ResultData))
-
-// 	for _, player := range result.ResultData {
-// 		validPlayersMap[player.PlayerName] = struct{}{}	
-// 	}
-
-// 	for _, player := range players {
-// 		if _, ok := validPlayersMap[player.PlayerName]; !ok{
-// 			return utils.GetResult(fmt.Errorf("player '%s' does not exist", player.PlayerName), http.StatusNotFound, []models.Player{})
-// 		}
-// 	}
-
-// 	return utils.GetResult(nil, http.StatusOK, []models.Player{})
-// }
-
 //Checks if teams are valid by seeing if their ids exist.
 func (s *SaveGameServiceImpl) areTeamsValid(teams []models.Team) models.Result[[]models.Team]{
-	result := s.TeamRepository.GetAllTeams()
+	teamIds := make([]int, len(teams))
 
-	if result.Err != nil {
-		return result
-	}
+    for i, team := range teams {
+        teamIds[i] = team.ID
+    }
 
-	validTeamIdsMap := make(map[int]struct{}, len(result.ResultData))
+    result := s.TeamRepository.GetTeamsByIds(teamIds)
 
-	//Create a map of the team ids for faster indexing.
-	for _, team := range result.ResultData {
-		validTeamIdsMap[team.ID] = struct{}{}	
-	}
+    if result.Err != nil {
+        return result
+    }
 
-	//Index each team id into the map to see if they exist
-	for _, team := range teams {
-		if _, ok := validTeamIdsMap[team.ID]; !ok{
-			return utils.GetResult(fmt.Errorf("team id '%d' does not exist", team.ID), http.StatusNotFound, []models.Team{})
-		}
-	}
+    if len(result.ResultData) != len(teamIds) {
+        return utils.GetResult(fmt.Errorf("one or more teams do not exist"), http.StatusNotFound, []models.Team{})
+    }
 
-	return utils.GetResult(nil, http.StatusOK, []models.Team{})
+    return result 
 }

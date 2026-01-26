@@ -9,12 +9,14 @@ import (
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type TeamRepository interface {
 	GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team]
 	GetAllTeamNames()                   models.Result[[]string]
 	GetAllTeams()                       models.Result[[]models.Team]
+	GetTeamsByIds(teamIds []int)        models.Result[[]models.Team]
 }   
 
 type sqlTeamRepository struct {
@@ -65,6 +67,17 @@ func (s *sqlTeamRepository) GetAllTeams() models.Result[[]models.Team]{
 	teams := []models.Team{}
 
 	if err := s.db.Get(&teams, constants.GetAllTeams); err != nil{
+		return utils.GetResult(err, http.StatusInternalServerError, []models.Team{})
+	}
+
+	return utils.GetResult(nil, http.StatusOK, teams)
+}
+
+//Checks if a winning team exists
+func (s *sqlTeamRepository) GetAllTeamsByIds(teamIds []int) models.Result[[]models.Team]{
+	teams := []models.Team{}
+
+	if err := s.db.Get(&teams, constants.GetTeamsByIds, pq.Array(teamIds)); err != nil{
 		return utils.GetResult(err, http.StatusInternalServerError, []models.Team{})
 	}
 

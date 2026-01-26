@@ -113,7 +113,7 @@ const(
 	GetPlayerByName string = `
 		SELECT * FROM players WHERE player_name=$1
 	`
-	
+
 	GetPlayersByNames string = `
 		SELECT id, player_name FROM players WHERE player_name = ANY($1)
 	`
@@ -150,6 +150,10 @@ const(
 	//Get a certain team by an id
 	GetAllTeams string = `
 		SELECT * FROM teams
+	`
+
+	GetTeamsByIds string = `
+		SELECT * FROM teams WHERE id = ANY($1)
 	`
 
 	//////////////////////////////
