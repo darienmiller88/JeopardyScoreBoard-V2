@@ -28,7 +28,7 @@ func TestPlayerModelValidation_NameTooShort(t *testing.T) {
 
 	err := player.Validate()
 
-	assert.Contains(t, err.Error(), fmt.Sprintf("Player name must be between %d and %d", minLength, maxLength))
+	assert.Contains(t, err.Error(), fmt.Sprintf("player name must be between %d and %d", minLength, maxLength))
 }
 
 func TestPlayerModelValidation_NameTooLong(t *testing.T) {
@@ -38,7 +38,7 @@ func TestPlayerModelValidation_NameTooLong(t *testing.T) {
 
 	err := player.Validate()
 
-	assert.Contains(t, err.Error(), fmt.Sprintf("Player name must be between %d and %d", minLength, maxLength))
+	assert.Contains(t, err.Error(), fmt.Sprintf("player name must be between %d and %d", minLength, maxLength))
 }
 
 
