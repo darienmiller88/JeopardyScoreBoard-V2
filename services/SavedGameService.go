@@ -58,10 +58,13 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 	
 	if savedGame.IsPlayerGame {
 		//Check if the players the client added actually exist.
-		if result := s.arePlayersValid(savedGame.Players); result.Err != nil {
+		result := s.arePlayersValid(savedGame.Players)
+		
+		if result.Err != nil {
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
 		}
 
+		savedGame.Players = result.ResultData
 	} else{
 		//check if teams the client added actually exist
 		if result := s.areTeamsValid(savedGame.Teams); result.Err != nil {
@@ -95,27 +98,47 @@ func (s *SaveGameServiceImpl) isLocationIdValid(locationId int) models.Result[mo
 
 
 //checks if a list of players is valid (exists in the database)
-func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Result[[]models.Player]  {
-	result := s.PlayerRepository.GetAllPlayersFromAllLocations()
+func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Result[[]models.Player] {
+    names := make([]string, len(players))
 
-	if result.Err != nil {
-		return result
-	}
+    for i, player := range players {
+        names[i] = player.PlayerName
+    }
 
-	validPlayersMap := make(map[string]struct{}, len(result.ResultData))
+    result := s.PlayerRepository.GetPlayersByNames(names)
 
-	for _, player := range result.ResultData {
-		validPlayersMap[player.PlayerName] = struct{}{}	
-	}
+    if result.Err != nil {
+        return result
+    }
 
-	for _, player := range players {
-		if _, ok := validPlayersMap[player.PlayerName]; !ok{
-			return utils.GetResult(fmt.Errorf("player '%s' does not exist", player.PlayerName), http.StatusNotFound, []models.Player{})
-		}
-	}
+    if len(result.ResultData) != len(names) {
+        return utils.GetResult(fmt.Errorf("one or more players do not exist"), http.StatusNotFound, []models.Player{})
+    }
 
-	return utils.GetResult(nil, http.StatusOK, []models.Player{})
+    return result 
 }
+
+// func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Result[[]models.Player]  {
+// 	result := s.PlayerRepository.GetAllPlayersFromAllLocations()
+
+// 	if result.Err != nil {
+// 		return result
+// 	}
+
+// 	validPlayersMap := make(map[string]struct{}, len(result.ResultData))
+
+// 	for _, player := range result.ResultData {
+// 		validPlayersMap[player.PlayerName] = struct{}{}	
+// 	}
+
+// 	for _, player := range players {
+// 		if _, ok := validPlayersMap[player.PlayerName]; !ok{
+// 			return utils.GetResult(fmt.Errorf("player '%s' does not exist", player.PlayerName), http.StatusNotFound, []models.Player{})
+// 		}
+// 	}
+
+// 	return utils.GetResult(nil, http.StatusOK, []models.Player{})
+// }
 
 //Checks if teams are valid by seeing if their ids exist.
 func (s *SaveGameServiceImpl) areTeamsValid(teams []models.Team) models.Result[[]models.Team]{

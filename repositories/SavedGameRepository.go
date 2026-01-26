@@ -99,20 +99,6 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 	).Scan(&savedGame.ID)
 
 	if err != nil {
-		// var pqErr *pq.Error
-		// // FK violation returns a 23503
-		// if errors.As(err, &pqErr) && pqErr.Code == "23503" {
-		// 	return utils.GetResult(fmt.Errorf("no location or winning player name found"), http.StatusNotFound, models.SavedGame{})
-		// }
-
-		// if errors.Is(err, sql.ErrNoRows) {
-		// 	return utils.GetResult(
-		// 		fmt.Errorf("no location or winning player name found"),
-		// 		http.StatusNotFound,
-		// 		models.SavedGame{},
-		// 	)
-		// }
-
 		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
@@ -127,19 +113,6 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 		)
 
 		if err != nil {
-			// var pqErr *pq.Error
-
-			// if errors.As(err, &pqErr) {
-			// 	switch pqErr.Code {
-			// 	case "23502"://null violation for player_name if a name not from the players table is set.
-			// 		return utils.GetResult(fmt.Errorf("no player name with id %d does not exist", player.ID), http.StatusNotFound, models.SavedGame{})
-			// 	case "23503": // fk violation for invalid player_id if set (doesn't exist in players)
-			// 		return utils.GetResult(fmt.Errorf("player with id %d not found", player.ID), http.StatusNotFound, models.SavedGame{})
-			// 	case "23505": // unique key violation
-			// 		return utils.GetResult(fmt.Errorf("duplicate player-id:game-id entry for player %d", player.ID), http.StatusConflict, models.SavedGame{})
-			// 	}
-			// }
-
 			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 		}
 	}

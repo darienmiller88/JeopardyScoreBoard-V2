@@ -113,6 +113,10 @@ const(
 	GetPlayerByName string = `
 		SELECT * FROM players WHERE player_name=$1
 	`
+	
+	GetPlayersByNames string = `
+		SELECT id, player_name FROM players WHERE player_name = ANY($1)
+	`
 
 	GetAllPlayersFromLocation string = `
 		SELECT players.*
@@ -147,8 +151,6 @@ const(
 	GetAllTeams string = `
 		SELECT * FROM teams
 	`
-
-	
 
 	//////////////////////////////
 	// Get Saved games
