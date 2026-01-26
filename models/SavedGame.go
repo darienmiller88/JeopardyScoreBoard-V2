@@ -18,7 +18,7 @@ type SavedGame struct {
 	LocationId        int            `json:"location_id" db:"location_id"`
 
 	//This will be used to determine which array gets filled: Teams or Players
-	IsPlayerGame      bool		     `json:"is_player_game"`
+	IsPlayerGame      bool		     `json:"is_player_game" db:"-"`
 	
 	//These fields will be used to fill WinningPlayerId, WinningTeamId, and WinningPlayerName. The less
 	//I depend on the client for correct information, the better. Therefore, these will be the only
@@ -90,10 +90,10 @@ func (s *SavedGame) CalculateAveragePoints(){
 //At this point, it is assumed that the .Validate() method has been called first.
 func (s *SavedGame) CalculateWinner(){
 	if len(s.Players) == 1 {
-		s.WinningPlayerName.String = s.Players[0].PlayerName
-		s.WinningPlayerId.Int32 = int32(s.Players[0].ID)
+		s.WinningPlayerName = newNullString(s.Players[0].PlayerName)
+		s.WinningPlayerId = newNullInt32(s.Players[0].ID)
 	} else if len(s.Teams) == 1{
-		s.WinningTeamId.Int32 = int32(s.Teams[0].ID)
+		s.WinningTeamId = newNullInt32(s.Teams[0].ID)
 	} else{
 		if s.IsPlayerGame {
 			s.calcWinnerForPlayers()
@@ -112,8 +112,8 @@ func (s *SavedGame) calcWinnerForPlayers(){
 		}
 	}
 
-	s.WinningPlayerName.String = winningPlayer.PlayerName
-	s.WinningPlayerId.Int32 = int32(winningPlayer.ID)
+	s.WinningPlayerName = newNullString(winningPlayer.PlayerName)
+	s.WinningPlayerId = newNullInt32(winningPlayer.ID)
 }
 
 func (s *SavedGame) calcWinnerForTeams(){
@@ -125,5 +125,13 @@ func (s *SavedGame) calcWinnerForTeams(){
 		}
 	}	
 	
-	s.WinningTeamId.Int32 = int32(winningTeam.ID)
+	s.WinningTeamId = newNullInt32(winningTeam.ID)
+}
+
+func newNullInt32(newInt int) sql.NullInt32 {
+	return sql.NullInt32{Int32: int32(newInt), Valid: true}
+}
+
+func newNullString(newString string) sql.NullString {
+	return sql.NullString{String: newString, Valid: true}
 }

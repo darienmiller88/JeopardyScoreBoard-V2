@@ -63,7 +63,7 @@ const(
 			$1,
 			$2,
 			$3,
-			(SELECT player_name FROM players WHERE id = $1)
+			$4
 		)
 	`
 
