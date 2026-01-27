@@ -122,7 +122,7 @@ func TestGetAllSavedGamesFromLocationDB_NonExistentLocation_Happy(t *testing.T) 
 // DELETE
 /////////////////////
 
-func TestDeleteSavedGameDB_Happy(t *testing.T) {
+func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
 	repo := GetSqlSavedGameRepository(db)
 	id := "1"
 

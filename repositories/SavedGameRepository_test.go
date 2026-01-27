@@ -112,6 +112,21 @@ func TestGetAllSavedGamesFromLocationDB_Happy(t *testing.T) {
 	require.Len(t, result.ResultData, 2)
 }
 
+func TestGetAllSavedGamesFromLocationDB_NoRows_Happy(t *testing.T) {
+	mock, repo := setupSavedGameRepo(t)
+	location := "Nowhere"
+
+	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
+		WithArgs(location).
+		WillReturnRows(sqlmock.NewRows(savedGameColumns))
+
+	result := repo.GetAllSavedGamesFromLocationDB(location)
+
+	require.Nil(t, result.Err)
+	require.Empty(t, result.ResultData)
+}
+
+
 
 func TestGetAllSavedGamesDB_Error_Unhappy(t *testing.T) {
 	mock, repo := setupSavedGameRepo(t)
@@ -140,25 +155,85 @@ func TestGetAllSavedGamesFromLocationDB_Error_Unhappy(t *testing.T) {
 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
 }
 
-func TestGetAllSavedGamesFromLocationDB_NoRows_Happy(t *testing.T) {
-	mock, repo := setupSavedGameRepo(t)
-	location := "Nowhere"
 
-	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllSavedGamesFromLocation)).
-		WithArgs(location).
-		WillReturnRows(sqlmock.NewRows(savedGameColumns))
-
-	result := repo.GetAllSavedGamesFromLocationDB(location)
-
-	require.Nil(t, result.Err)
-	require.Empty(t, result.ResultData)
-}
 
 
 ////////////////////////////
 // DELETE
 /////////////////////////////
 
-// TestDeleteSavedGameDB_HappyPath_DeletesExistingGame verifies that when a valid
-// saved game ID is provided, the function successfully deletes the game from the
-// database and returns a 200 OK status with a success message confirming the deletion.
+// DeleteSavedGameDB_Happy
+// Tests successful deletion when the saved game exists and 1 row is affected.
+func TestDeleteSavedGameDB_Happy(t *testing.T) {
+	mock, repo := setupSavedGameRepo(t)
+
+	savedGameID := "sg-123"
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameID).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	result := repo.DeleteSavedGameDB(savedGameID)
+
+	require.Nil(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Contains(t, result.ResultData, savedGameID)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+// DeleteSavedGameDB_Unhappy_DBExecError
+// Tests when the database returns an error during Exec.
+func TestDeleteSavedGameDB_Unhappy_DBExecError(t *testing.T) {
+	mock, repo := setupSavedGameRepo(t)
+
+	savedGameID := "sg-123"
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameID).
+		WillReturnError(errors.New("db failure"))
+
+	result := repo.DeleteSavedGameDB(savedGameID)
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	require.Empty(t, result.ResultData)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+// DeleteSavedGameDB_Unhappy_RowsAffectedError
+// Tests when Exec succeeds but RowsAffected() returns an error.
+func TestDeleteSavedGameDB_Unhappy_RowsAffectedError(t *testing.T) {
+	mock, repo := setupSavedGameRepo(t)
+
+	savedGameID := "sg-123"
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameID).
+		WillReturnResult(sqlmock.NewErrorResult(errors.New("rows affected error")))
+
+	result := repo.DeleteSavedGameDB(savedGameID)
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	require.Empty(t, result.ResultData)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+// DeleteSavedGameDB_Unhappy_NoRowsAffected
+// Tests when Exec succeeds but no rows are deleted (saved game not found).
+func TestDeleteSavedGameDB_Unhappy_NoRowsAffected(t *testing.T) {
+	mock, repo := setupSavedGameRepo(t)
+
+	savedGameID := "sg-999"
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
+		WithArgs(savedGameID).
+		WillReturnResult(sqlmock.NewResult(0, 0))
+
+	result := repo.DeleteSavedGameDB(savedGameID)
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+	require.Empty(t, result.ResultData)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
