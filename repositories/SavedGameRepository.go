@@ -145,13 +145,6 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 	).Scan(&savedGame.ID)
 
 	if err != nil {
-		// var pqErr *pq.Error
-
-		// // FK violation returns a 23503
-		// if errors.As(err, &pqErr) && pqErr.Code == "23503" {
-		// 	return utils.GetResult(fmt.Errorf("no location or winning team found"), http.StatusNotFound, models.SavedGame{})
-		// }
-
 		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
@@ -165,17 +158,6 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 		)
 
 		if err != nil {
-			// var pqErr *pq.Error
-
-			// if errors.As(err, &pqErr) {
-			// 	switch pqErr.Code {
-			// 	case "23503": // fk violation
-			// 		return utils.GetResult(fmt.Errorf("team with id %d not found", team.ID), http.StatusNotFound, models.SavedGame{})
-			// 	case "23505": // unique key violation
-			// 		return utils.GetResult(fmt.Errorf("duplicate team-id:game-id entry for team %d", team.ID), http.StatusConflict, models.SavedGame{})
-			// 	}
-			// }
-
 			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 		}
 	}

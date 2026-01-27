@@ -68,7 +68,7 @@ func TestGetAllSavedGamesDB_Unhappy(t *testing.T) {
 	assert.Equal(t, []models.SavedGame{}, result.ResultData)
 }
 
-func TestGetAllSavedGamesFromLocationDB_Happy(t *testing.T) {
+func TestGetAllSavedGamesFromLocationDB_Integration_Happy(t *testing.T) {
 	repo := GetSqlSavedGameRepository(db)
 	locationName := "Elmwood" // Using one of the 8 fixed locations
 
