@@ -275,7 +275,7 @@ func cleanupSavedGame(t *testing.T, db *sqlx.DB) {
 }
 
 // Happy path: valid saved game with valid players inserts successfully
-func TestAddStandardSavedGame_Happy(t *testing.T) {
+func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 	repo := GetSqlSavedGameRepository(db)
 	savedGame := createValidStandardSavedGame(t, db)
 
