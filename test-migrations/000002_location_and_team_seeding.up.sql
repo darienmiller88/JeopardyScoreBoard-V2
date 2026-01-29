@@ -30,3 +30,40 @@ INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_
 INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_name='W 154th St'));
 INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_name='Pelham Bay'));
 
+INSERT INTO savedgames (
+    location_id,
+    winning_player_id,
+    winning_player_name,
+    total_score,
+    average_score
+)
+VALUES
+(
+    (SELECT id FROM locations WHERE location_name = 'Elmwood'),
+    (SELECT id FROM players WHERE player_name = 'playerone'),
+    'playerone',
+    1200,
+    400.0
+),
+(
+    (SELECT id FROM locations WHERE location_name = 'Lawrence'),
+    (SELECT id FROM players WHERE player_name = 'playerone'),
+    'playerone',
+    2200,
+    600.25
+),
+(
+    (SELECT id FROM locations WHERE location_name = 'Flushing'),
+    (SELECT id FROM players WHERE player_name = 'playertwo'),
+    'playertwo',
+    2200,
+    600.25
+),
+(
+    (SELECT id FROM locations WHERE location_name = 'Lawrence'),
+    (SELECT id FROM players WHERE player_name = 'playerthree'),
+    'playerthree',
+    2200,
+    600.25
+)
+ON CONFLICT (savedgameid) DO NOTHING;

@@ -121,7 +121,6 @@ func TestGetAllTeamNames_QueryError_Unhappy(t *testing.T) {
 // Unhappy: team id does not exist → 404
 func TestGetTeamWithAllPlayersDB_TeamNotFound_Unhappy(t *testing.T) {
 	mock, repo := setupTeamRepo(t)
-
 	teamId := 999
 
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetTeamById)).
@@ -137,7 +136,6 @@ func TestGetTeamWithAllPlayersDB_TeamNotFound_Unhappy(t *testing.T) {
 // Unhappy: players query fails → 500
 func TestGetTeamWithAllPlayersDB_PlayerQueryError_Unhappy(t *testing.T) {
 	mock, repo := setupTeamRepo(t)
-
 	teamId := 10
 
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetTeamById)).
