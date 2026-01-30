@@ -123,6 +123,73 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_DBClosed(t *testing.
 }
 
 
+
+
+//======================================
+// DELETE / tests deleting saved games
+//======================================
+
+func getAnySavedGameID(t *testing.T) string {
+	var id string
+	err := db.Get(&id, "SELECT id FROM savedgames LIMIT 1")
+	require.NoError(t, err)
+	return id
+}
+
+func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	// Get a real saved game id
+	id := getAnySavedGameID(t)
+
+	// Count before
+	var before int
+	err := db.Get(&before, "SELECT COUNT(*) FROM savedgames")
+	require.NoError(t, err)
+
+	result := repo.DeleteSavedGameDB(id)
+
+	require.Nil(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Contains(t, result.ResultData, id)
+
+	// Count after
+	var after int
+	err = db.Get(&after, "SELECT COUNT(*) FROM savedgames")
+	require.NoError(t, err)
+
+	require.Equal(t, before-1, after)
+
+	// Verify it is truly gone
+	var exists int
+	err = db.Get(&exists, "SELECT COUNT(*) FROM savedgames WHERE id=$1", id)
+	require.NoError(t, err)
+	require.Equal(t, 0, exists)
+}
+
+func TestDeleteSavedGameDB_Integration_Unhappy_NotFound(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	fakeID := "999"
+	result := repo.DeleteSavedGameDB(fakeID)
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusNotFound, result.StatusCode)
+}
+
+func TestDeleteSavedGameDB_Integration_Unhappy_DBClosed(t *testing.T) {
+	badDB := db
+	badDB.Close()
+
+	repo := GetSqlSavedGameRepository(badDB)
+	result := repo.DeleteSavedGameDB("9999")
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
+
+
+
+
 // // Test helper function to create a test saved game
 // func createTestSavedGame(t *testing.T, db *sqlx.DB, id string) {
 // 	// Create a saved game with known data
