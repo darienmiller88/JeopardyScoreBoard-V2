@@ -1,48 +1,51 @@
 package repositories
 
 import (
-	"JeopardyScoreBoardV2/constants"
-	"JeopardyScoreBoardV2/models"
-	"database/sql"
 	"net/http"
 	"testing"
 
-	"github.com/jmoiron/sqlx"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func getLocationID(t *testing.T, tx *sqlx.Tx, locationName string) string {
-	var id string
-	err := tx.Get(
-		&id,
-		`SELECT locationid FROM locations WHERE location_name = $1`,
-		locationName,
-	)
-
-	require.NoError(t, err)
-
-	return id
-}
-
 // GetAllSavedGamesDB_Integration_Happy
-// Verifies that saved games inserted into the real DB are returned by GetAllSavedGamesDB.
+// Verifies all seeded saved games are returned from the real test database.
 func TestGetAllSavedGamesDB_Integration_Happy(t *testing.T) {
-	tx := db.MustBegin()
-	defer tx.Rollback()
-
-	repo := newTestSavedGameRepo(tx)
-
-	locationID := getLocationID(t, tx, "Elmwood")
-
-	_, err := tx.Exec(constants.InsertNewPlayerSavedGame, locationID)
-	require.NoError(t, err)
-
+	repo := GetSqlSavedGameRepository(db)
 	result := repo.GetAllSavedGamesDB()
 
 	require.Nil(t, result.Err)
-	require.GreaterOrEqual(t, len(result.ResultData), 2)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+
+	// From migrations: 8 total saved games
+	require.GreaterOrEqual(t, len(result.ResultData), 8)
+
+	// Spot check a known seeded value
+	found := false
+	for _, sg := range result.ResultData {
+		if sg.TotalPoints == 1200 {
+			found = true
+			break
+		}
+	}
+	require.True(t, found, "expected seeded saved game not found")
 }
+
+// GetAllSavedGamesDB_Integration_Unhappy_DBClosed
+// Verifies error is returned when the DB connection is closed.
+func TestGetAllSavedGamesDB_Integration_Unhappy_DBClosed(t *testing.T) {
+	badDB := db
+	badDB.Close() // simulate catastrophic failure
+
+	repo := GetSqlSavedGameRepository(badDB)
+
+	result := repo.GetAllSavedGamesDB()
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	require.Empty(t, result.ResultData)
+}
+
+
 
 
 
