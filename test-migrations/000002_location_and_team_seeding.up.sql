@@ -30,6 +30,10 @@ INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_
 INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_name='W 154th St'));
 INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_name='Pelham Bay'));
 
+
+-- =============================
+-- Seed player saved games
+-- =============================
 INSERT INTO savedgames (
     location_id,
     winning_player_id,
@@ -65,5 +69,44 @@ VALUES
     'playerthree',
     2200,
     600.25
+);
+-- Removed: ON CONFLICT (savedgameid) DO NOTHING;
+-- This would only work if savedgameid is defined as a unique constraint
+
+
+
+-- =============================
+-- Seed team saved games
+-- =============================
+INSERT INTO savedgames (
+    location_id,
+    winning_team_id, 
+    total_score, 
+    average_score
 )
-ON CONFLICT (savedgameid) DO NOTHING;
+VALUES
+(
+    (SELECT id FROM locations WHERE location_name = 'Elmwood'),
+    1,
+    1200,
+    400.0
+),
+(
+    (SELECT id FROM locations WHERE location_name = 'Lawrence'),
+    2,
+    2200,
+    600.25
+),
+(
+    (SELECT id FROM locations WHERE location_name = 'Flushing'),
+    3,
+    2200,
+    600.25
+),
+(
+    (SELECT id FROM locations WHERE location_name = 'Lawrence'),
+    4,
+    2200,
+    600.25
+);
+-- Removed: ON CONFLICT (savedgameid) DO NOTHING;
