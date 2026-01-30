@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//=======================================
+// GET / tests retrieving saved games
+//======================================
+
 // GetAllSavedGamesDB_Integration_Happy
 // Verifies all seeded saved games are returned from the real test database.
 func TestGetAllSavedGamesDB_Integration_Happy(t *testing.T) {
@@ -46,7 +50,77 @@ func TestGetAllSavedGamesDB_Integration_Unhappy_DBClosed(t *testing.T) {
 }
 
 
+// GetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood
+// Verifies Elmwood returns the 2 seeded saved games.
+func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
 
+	result := repo.GetAllSavedGamesFromLocationDB("Elmwood")
+
+	require.Nil(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Len(t, result.ResultData, 2)
+}
+
+// GetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence
+// Verifies Lawrence returns the 4 seeded saved games.
+func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	result := repo.GetAllSavedGamesFromLocationDB("Lawrence")
+
+	require.Nil(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Len(t, result.ResultData, 4)
+}
+
+// GetAllSavedGamesFromLocationDB_Integration_Happy_Flushing
+// Verifies Flushing returns the 2 seeded saved games.
+func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Flushing(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	result := repo.GetAllSavedGamesFromLocationDB("Flushing")
+
+	require.Nil(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Len(t, result.ResultData, 2)
+}
+
+// GetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames
+// Verifies empty slice when location exists but has no saved games.
+func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+	result := repo.GetAllSavedGamesFromLocationDB("Pelham Bay")
+
+	require.Nil(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Empty(t, result.ResultData)
+}
+
+// GetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation
+// Verifies empty slice when location name does not exist.
+func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation(t *testing.T) {
+	repo := GetSqlSavedGameRepository(db)
+
+	result := repo.GetAllSavedGamesFromLocationDB("NotARealLocation")
+
+	require.Nil(t, result.Err)
+	require.Equal(t, http.StatusOK, result.StatusCode)
+	require.Empty(t, result.ResultData)
+}
+
+// GetAllSavedGamesFromLocationDB_Integration_Unhappy_DBClosed
+// Verifies error when DB connection is closed.
+func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_DBClosed(t *testing.T) {
+	badDB := db
+	badDB.Close()
+
+	repo := GetSqlSavedGameRepository(badDB)
+	result := repo.GetAllSavedGamesFromLocationDB("Elmwood")
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	require.Empty(t, result.ResultData)
+}
 
 
 // // Test helper function to create a test saved game
