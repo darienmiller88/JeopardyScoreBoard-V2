@@ -4,6 +4,7 @@ import (
 	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/utils"
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -18,6 +19,7 @@ type PlayerRepository interface {
 	RemovePlayer(playerName string) models.Result[models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 	GetPlayersByNames(players []string) models.Result[[]models.Player]
+	GetPlayerByName(playerName string) models.Result[models.Player]
 }
 
 type sqlPlayerRepository struct {
@@ -31,18 +33,11 @@ func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository {
 
 // Add a single player to a given location.
 func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
-	if err := s.db.Get(&player.ID, constants.InsertNewPlayerWithoutTeam, player.PlayerName, locationName); err != nil {
-		// var pqErr *pq.Error
-
-		// if errors.As(err, &pqErr) {
-		// 	switch pqErr.Code {
-		// 	case "23502", "23503": // NOT NULL or FK violation
-		// 		return utils.GetResult(fmt.Errorf("no location '%s' found", locationName), http.StatusNotFound, models.Player{})
-		// 	case "23505": //unique key violation
-		// 		return utils.GetResult(fmt.Errorf("name %s is already taken", player.PlayerName), http.StatusConflict, models.Player{})
-		// 	}
-		// }
-
+	if err := s.db.QueryRow(
+		constants.InsertNewPlayerWithoutTeam,
+		player.PlayerName, 
+		locationName,
+	).Scan(&player.ID); err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
@@ -54,12 +49,6 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
 
 	if err != nil {
-		// var pqErr *pq.Error
-
-		// if errors.As(err, &pqErr) && pqErr.Code == "23505" {
-		// 	return utils.GetResult(fmt.Errorf("player name '%s' already exists", newPlayerName), http.StatusConflict, models.Player{})
-		// }
-
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
@@ -117,4 +106,18 @@ func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[
 	}
 
 	return utils.GetResult(nil, http.StatusOK, validPlayers)
+}
+
+func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player]{
+	player := models.Player{}
+
+	if err := s.db.Get(&player, constants.GetPlayerByName, playerName); err != nil {
+		if err == sql.ErrNoRows {
+			return utils.GetResult(err, http.StatusNotFound, player)
+		}
+
+		return utils.GetResult(err, http.StatusInternalServerError, player)
+	}
+
+	return utils.GetResult(nil, http.StatusOK, player)
 }

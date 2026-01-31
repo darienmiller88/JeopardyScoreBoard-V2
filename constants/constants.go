@@ -9,7 +9,7 @@ const(
 	//////////////////////////
 	InsertNewPlayerWithTeam string = `
 		INSERT INTO players (player_name, location_id, team_id)
-		VALUES(:player_name, :location_id, :team_id) RETURNING id
+		VALUES($1, $2, $3) RETURNING id
 	`
 
 	InsertNewPlayerWithoutTeam string = `

@@ -14,8 +14,8 @@ import (
 
 type TeamRepository interface {
 	GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team]
-	GetAllTeamNames()                   models.Result[[]string]
-	GetAllTeams()                       models.Result[[]models.Team]
+	GetAllTeamNamesDB()                 models.Result[[]string]
+	GetAllTeamsDB()                     models.Result[[]models.Team]
 	GetTeamsByIds(teamIds []int)        models.Result[[]models.Team]
 }   
 
@@ -52,7 +52,7 @@ func (s *sqlTeamRepository) GetTeamWithAllPlayersDB(teamId int) models.Result[mo
 }	
 
 //Get all team names (to be put on a select tag on the front end)
-func (s *sqlTeamRepository) GetAllTeamNames() models.Result[[]string]{
+func (s *sqlTeamRepository) GetAllTeamNamesDB() models.Result[[]string]{
 	teamNames := []string{}
 
 	if err := s.db.Select(&teamNames, constants.GetAllTeamsByName); err != nil{
@@ -63,7 +63,7 @@ func (s *sqlTeamRepository) GetAllTeamNames() models.Result[[]string]{
 }
 
 //Checks if a winning team exists
-func (s *sqlTeamRepository) GetAllTeams() models.Result[[]models.Team]{
+func (s *sqlTeamRepository) GetAllTeamsDB() models.Result[[]models.Team]{
 	teams := []models.Team{}
 
 	if err := s.db.Get(&teams, constants.GetAllTeams); err != nil{

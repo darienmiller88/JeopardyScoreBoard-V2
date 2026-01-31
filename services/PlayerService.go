@@ -31,6 +31,8 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName
 	if oldPlayerName == newPlayerName {
 		return utils.GetResult(fmt.Errorf("old and new names must be different"), http.StatusUnprocessableEntity, player)			
 	}
+
+	//ensure the new name isn't taken
 	
 	return p.Repository.UpdatePlayerName(oldPlayerName, newPlayerName)
 }
@@ -42,6 +44,8 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 		return models.Result[models.Player]{ Err: err, StatusCode: http.StatusUnprocessableEntity }
 	}
 	
+	//ensure the new name isn't taken
+
 	return p.Repository.AddPlayerToLocation(locationName, player)
 }
 
@@ -56,3 +60,7 @@ func (p *PlayerServiceImpl) GetAllPlayersFromAllLocations() models.Result[[]mode
 func (p *PlayerServiceImpl) GetPlayersFromLocation(locationName string) models.Result[[]models.Player]{
 	return p.Repository.GetPlayersFromLocation(locationName)
 }
+
+// func (p *PlayerServiceImpl) isPlayerNameTaken(playerName string) models.Result[models.Player]{
+
+// }
