@@ -71,7 +71,7 @@ func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Re
 
 // Add a new saved game
 func (s *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame] {
-	if savedGame.WinningPlayerId.Valid {
+	if savedGame.IsPlayerGame {
 		return s.addStandardSavedGame(savedGame)
 	} else {
 		return s.addTeamSavedGame(savedGame)
