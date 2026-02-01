@@ -33,11 +33,13 @@ func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository {
 
 // Add a single player to a given location.
 func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
-	if err := s.db.QueryRow(
+	err := s.db.QueryRow(
 		constants.InsertNewPlayerWithoutTeam,
 		player.PlayerName, 
 		locationName,
-	).Scan(&player.ID); err != nil {
+	).Scan(&player.ID)
+	
+	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 

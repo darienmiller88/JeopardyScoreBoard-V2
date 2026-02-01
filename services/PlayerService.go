@@ -44,6 +44,7 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 		return models.Result[models.Player]{ Err: err, StatusCode: http.StatusUnprocessableEntity }
 	}
 	
+	//ensure location exists
 	//ensure the new name isn't taken
 
 	return p.Repository.AddPlayerToLocation(locationName, player)

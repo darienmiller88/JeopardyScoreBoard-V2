@@ -40,10 +40,13 @@ func (m *mockPlayerRepository) GetPlayersByNames(players []string) models.Result
 	return m.playersResult
 }
 
+func (m *mockPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player]{
+	return m.playerResult
+}
+
 ////////////////////
 // CREATE/POST tests
 ////////////////////
-
 func TestAddPlayer_Ok(t *testing.T){
 	validPlayerName := "Jane Doe" //Valid name, two parts and vlaid length
 	mockRepo := &mockPlayerRepository{

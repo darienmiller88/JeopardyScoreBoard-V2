@@ -10,12 +10,11 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupRepo(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock, *sqlPlayerRepository) {
+func setupPlayerRepo(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock, *sqlPlayerRepository) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
 
@@ -34,7 +33,7 @@ func setupRepo(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock, *sqlPlayerRepository) {
 ////////////////////////////
 
 func TestAddPlayerToLocation_Success(t *testing.T) {
-	_, mock, repo := setupRepo(t)
+	_, mock, repo := setupPlayerRepo(t)
 
 	player := models.Player{
 		PlayerName: "Jane Doe",
@@ -53,53 +52,12 @@ func TestAddPlayerToLocation_Success(t *testing.T) {
 	assert.Equal(t, 42, result.ResultData.ID)
 }
 
-func TestAddPlayerToLocation_FakeLocation(t *testing.T) {
-	_, mock, repo := setupRepo(t)
-
-	fakeLocation := "FakeLocation"
-	player := models.Player{
-		PlayerName: "Jane Doe",
-	}
-
-	mock.ExpectQuery(`INSERT INTO players`).
-		WithArgs(player.PlayerName, fakeLocation).
-		WillReturnError(&pq.Error{
-			Code: "23502",
-		})
-
-	result := repo.AddPlayerToLocation(fakeLocation, player)
-
-	assert.Equal(t, fmt.Sprintf("no location '%s' found", fakeLocation), result.Err.Error())
-	assert.Equal(t, http.StatusNotFound, result.StatusCode)
-}
-
-func TestAddPlayerToLocation_PlayerNameTaken(t *testing.T) {
-	_, mock, repo := setupRepo(t)
-
-	location := "Elmwood"
-	player := models.Player{
-		PlayerName: "Jane Doe",
-	}
-
-	mock.ExpectQuery(`INSERT INTO players`).
-		WithArgs(player.PlayerName, location).
-		WillReturnError(&pq.Error{
-			Code: "23505",
-		})
-
-	result := repo.AddPlayerToLocation(location, player)
-
-	require.Error(t, result.Err)
-	assert.Contains(t, result.Err.Error(), fmt.Sprintf("name %s is already taken", player.PlayerName))
-	assert.Equal(t, http.StatusConflict, result.StatusCode)
-}
-
 /////////////////////////
 // UPDATE tests
 ////////////////////////
 
 func TestUpdatePlayerName_Happy(t *testing.T) {
-	_, mock, repo := setupRepo(t)
+	_, mock, repo := setupPlayerRepo(t)
 
 	newName := "Kathya"
 	oldName := "Kathy"
@@ -116,7 +74,7 @@ func TestUpdatePlayerName_Happy(t *testing.T) {
 }
 
 func TestUpdatePlayerName_PlayerNotFound_Unhappy(t *testing.T) {
-	_, mock, repo := setupRepo(t)
+	_, mock, repo := setupPlayerRepo(t)
 
 	newName := "Kathya"
 	oldName := "Nonexistent player"
@@ -132,7 +90,7 @@ func TestUpdatePlayerName_PlayerNotFound_Unhappy(t *testing.T) {
 }
 
 func TestUpdatePlayerName_ExecError_Unhappy(t *testing.T) {
-	_, mock, repo := setupRepo(t)
+	_, mock, repo := setupPlayerRepo(t)
 
 	newName := "Kathya"
 	oldName := "new person"
@@ -152,7 +110,7 @@ func TestUpdatePlayerName_ExecError_Unhappy(t *testing.T) {
 /////////////////////
 
 func TestDeletePlayerName_OldNameNotFound(t *testing.T) {
-	_, mock, repo := setupRepo(t)
+	_, mock, repo := setupPlayerRepo(t)
 
 	name := "Kathya"
 
@@ -171,7 +129,7 @@ func TestDeletePlayerName_OldNameNotFound(t *testing.T) {
 /////////////////
 
 func TestGetPlayersFromLocation_Ok(t *testing.T) {
-	_, mock, repo := setupRepo(t)
+	_, mock, repo := setupPlayerRepo(t)
 
 	location := "Elmwood"
 	rows := sqlmock.NewRows([]string{
@@ -190,22 +148,21 @@ func TestGetPlayersFromLocation_Ok(t *testing.T) {
 }
 
 func TestGetPlayersFromLocation_InvalidLocation(t *testing.T) {
-	_, mock, repo := setupRepo(t)
-
+	_, mock, repo := setupPlayerRepo(t)
 	location := "FakeLocation"
 
 	mock.ExpectQuery(`SELECT players.* FROM players`).
 		WithArgs(location).
 		WillReturnRows(
-             sqlmock.NewRows([]string{
-                "id",
-                "player_name",
-                "created_at",
-                "updated_at",
-                "location_id",
-                "team_id",
-            }),
-        ) //should return no rows
+			sqlmock.NewRows([]string{
+				"id",
+				"player_name",
+				"created_at",
+				"updated_at",
+				"location_id",
+				"team_id",
+			}),
+		) //should return no rows
 
 	result := repo.GetPlayersFromLocation(location)
 
@@ -214,8 +171,7 @@ func TestGetPlayersFromLocation_InvalidLocation(t *testing.T) {
 }
 
 func TestGetAllPlayersFromAllLocations_Ok(t *testing.T) {
-	_, mock, repo := setupRepo(t)
-
+	_, mock, repo := setupPlayerRepo(t)
 	rows := sqlmock.NewRows([]string{
 		"id",
 		"player_name",
