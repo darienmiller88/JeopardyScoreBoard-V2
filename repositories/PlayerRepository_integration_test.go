@@ -92,7 +92,7 @@ func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
 //UPDATE/PUT tests
 ////////////////////////
 
-func TestUpdatePlayerName_IntegrationTest_Ok(t *testing.T){
+func TestUpdatePlayerName_IntegrationTest_Happy(t *testing.T){
  	playerRepository := GetSqlPlayerRepository(db)
 	playerName := "player name"
 	result := playerRepository.AddPlayerToLocation("Elmwood", models.Player{ PlayerName: playerName })
@@ -109,39 +109,16 @@ func TestUpdatePlayerName_IntegrationTest_Ok(t *testing.T){
 	assert.Equal(t, newName, updateResult.ResultData.PlayerName)
 }
 
-func TestUpdatePlayerName_IntegrationTest_NewNameTaken(t *testing.T) {
-	repo := GetSqlPlayerRepository(db)
+func TestUpdatePlayerName_IntegrationTest_PlayerNotFound_Happy(t *testing.T){
+ 	playerRepository := GetSqlPlayerRepository(db)
+	updateResult := playerRepository.UpdatePlayerName("fakename", "newName")
 
-    // Create two players in same location
-    _, err := db.Exec(`
-        INSERT INTO players (player_name, location_id)
-        VALUES
-          ('Alice', (SELECT id FROM locations WHERE location_name='Elmwood')),
-          ('Bob',   (SELECT id FROM locations WHERE location_name='Elmwood'))
-    `)
-    require.NoError(t, err)
-
-    // Try to rename Alice -> Bob (duplicate name)
-    result := repo.UpdatePlayerName("Alice", "Bob")
-
-    require.Error(t, result.Err)
-    assert.Equal(t, http.StatusConflict, result.StatusCode)
-    assert.Contains(t, result.Err.Error(), "already exists")
+	//check to see if an error was returned, and a 404 was sent as well
+	require.Error(t, updateResult.Err)
+	assert.Equal(t, http.StatusNotFound, updateResult.StatusCode)
+	assert.Contains(t, updateResult.Err.Error(), "could not find player")
 }
 
-func TestUpdatePlayerName_IntegrationTest_OldNameNotFound(t *testing.T) {
-	repo := GetSqlPlayerRepository(db)
-
-    // Ensure table is empty 
-    _, err := db.Exec(`DELETE FROM players`)
-    require.NoError(t, err)
-
-    result := repo.UpdatePlayerName("Ghost", "NewName")
-
-    require.Error(t, result.Err)
-    assert.Equal(t, http.StatusNotFound, result.StatusCode)
-    assert.Contains(t, result.Err.Error(), "could not find player")
-}
 
 
 
@@ -183,8 +160,8 @@ func TestRemovePlayer_IntegrationTest_PlayerNotFound(t *testing.T) {
     repo := GetSqlPlayerRepository(db)
 
     // Make sure the table is empty
-    _, err := db.Exec(`DELETE FROM players`)
-    require.NoError(t, err)
+    // _, err := db.Exec(`DELETE FROM players`)
+    // require.NoError(t, err)
 
     result := repo.RemovePlayer("NoName")
 

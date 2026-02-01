@@ -16,6 +16,7 @@ import (
 func main(){
 	//Load env file immediately at the start of the program
 	godotenv.Load()
+	
 	//Create new chi router instance to push handlers to.
 	router := chi.NewRouter()
 

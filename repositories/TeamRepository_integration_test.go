@@ -34,7 +34,7 @@ func TestGetTeamWithAllPlayersDB_Integration_Happy(t *testing.T) {
 func TestGetAllTeamNames_Integration_Happy(t *testing.T) {
 	repo := GetSqlTeamRepository(db)
 
-	result := repo.GetAllTeamNames()
+	result := repo.GetAllTeamNamesDB()
 
 	require.NoError(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)
@@ -53,7 +53,7 @@ func TestGetAllTeamNames_MatchLocations_Happy(t *testing.T) {
 	`)
 	require.NoError(t, err)
 
-	result := repo.GetAllTeamNames()
+	result := repo.GetAllTeamNamesDB()
 
 	require.NoError(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)
@@ -77,7 +77,7 @@ func TestGetAllTeamNames_NoTeams_Happy(t *testing.T) {
 		`)
 	})
 
-	result := repo.GetAllTeamNames()
+	result := repo.GetAllTeamNamesDB()
 
 	require.NoError(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)

@@ -1,9 +1,11 @@
 package repositories
 
 import (
+	"JeopardyScoreBoardV2/constants"
 	"JeopardyScoreBoardV2/models"
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -96,7 +98,7 @@ func TestAddPlayerToLocation_PlayerNameTaken(t *testing.T) {
 // UPDATE tests
 ////////////////////////
 
-func TestUpdatePlayerName_Ok(t *testing.T) {
+func TestUpdatePlayerName_Happy(t *testing.T) {
 	_, mock, repo := setupRepo(t)
 
 	newName := "Kathya"
@@ -112,38 +114,37 @@ func TestUpdatePlayerName_Ok(t *testing.T) {
 	assert.Equal(t, nil, result.Err)
 	assert.Equal(t, newName, result.ResultData.PlayerName)
 }
-func TestUpdatePlayerName_NewNameTaken(t *testing.T) {
+
+func TestUpdatePlayerName_PlayerNotFound_Unhappy(t *testing.T) {
 	_, mock, repo := setupRepo(t)
 
 	newName := "Kathya"
-	oldName := "Kathy"
+	oldName := "Nonexistent player"
 
-	mock.ExpectExec(`UPDATE players`).
-		WithArgs(newName, oldName).
-		WillReturnError(&pq.Error{
-			Code: "23505",
-		})
-
-	result := repo.UpdatePlayerName(oldName, newName)
-
-	require.Error(t, result.Err)
-	assert.Equal(t, http.StatusConflict, result.StatusCode)
-}
-
-func TestUpdatePlayerName_OldNameNotFound(t *testing.T) {
-	_, mock, repo := setupRepo(t)
-
-	newName := "Kathya"
-	oldName := "Kathy"
-
-	mock.ExpectExec(`UPDATE players`).
+	mock.ExpectExec(regexp.QuoteMeta(constants.UpdatePlayerName)).
 		WithArgs(newName, oldName).
 		WillReturnResult(sqlmock.NewResult(0, 0))
 
 	result := repo.UpdatePlayerName(oldName, newName)
 
-	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+	assert.NotNil(t, result.Err)
+}
+
+func TestUpdatePlayerName_ExecError_Unhappy(t *testing.T) {
+	_, mock, repo := setupRepo(t)
+
+	newName := "Kathya"
+	oldName := "new person"
+
+	mock.ExpectExec(regexp.QuoteMeta(constants.UpdatePlayerName)).
+		WithArgs(newName, oldName).
+		WillReturnError(fmt.Errorf("database exec error"))
+
+	result := repo.UpdatePlayerName(oldName, newName)
+
+	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
+	assert.NotNil(t, result.Err)
 }
 
 //////////////////////

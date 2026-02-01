@@ -62,5 +62,10 @@ func (p *PlayerServiceImpl) GetPlayersFromLocation(locationName string) models.R
 }
 
 // func (p *PlayerServiceImpl) isPlayerNameTaken(playerName string) models.Result[models.Player]{
+// 	result := p.Repository.GetPlayerByName(playerName)
 
+// 	//If the repo returned a row, it means a name is taken
+// 	if result.ResultData.PlayerName != "" {
+		
+// 	}
 // }

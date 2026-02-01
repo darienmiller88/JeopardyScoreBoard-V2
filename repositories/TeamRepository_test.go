@@ -92,7 +92,7 @@ func TestGetAllTeamNames_Happy(t *testing.T) {
 				AddRow("Pelham Bay"),
 		)
 
-	result := repo.GetAllTeamNames()
+	result := repo.GetAllTeamNamesDB()
 
 	require.NoError(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)
@@ -112,7 +112,7 @@ func TestGetAllTeamNames_QueryError_Unhappy(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllTeamsByName)).
 		WillReturnError(errors.New("db error"))
 
-	result := repo.GetAllTeamNames()
+	result := repo.GetAllTeamNamesDB()
 
 	require.Error(t, result.Err)
 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
