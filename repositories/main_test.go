@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 	
 	code := m.Run()
 	migrations.Down()	
-	// _ = db.Close()
+	_ = db.Close()
 	
 	os.Exit(code)
 	// defer func ()  {

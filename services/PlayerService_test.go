@@ -56,7 +56,7 @@ func TestAddPlayer_Ok(t *testing.T){
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.AddPlayerToLocation("Elmwood", validPlayerName)
 
 	require.NoError(t, result.Err)
@@ -66,7 +66,7 @@ func TestAddPlayer_Ok(t *testing.T){
 
 func TestAddPlayer_NameTooShort(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 
 	result := service.AddPlayerToLocation("Elmwood", "Joe")
 
@@ -76,7 +76,7 @@ func TestAddPlayer_NameTooShort(t *testing.T) {
 
 func TestAddPlayer_NameTooLong(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 
 	result := service.AddPlayerToLocation("Elmwood", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdw")
 
@@ -86,7 +86,7 @@ func TestAddPlayer_NameTooLong(t *testing.T) {
 
 func TestAddPlayer_NameMustHaveTwoParts(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 
 	result := service.AddPlayerToLocation("Elmwood", "Cheryl")
 
@@ -120,7 +120,7 @@ func TestGetAllPlayersFromAllLocations_Ok(t *testing.T) {
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.GetAllPlayersFromAllLocations()
 
 	require.NoError(t, result.Err)
@@ -139,7 +139,7 @@ func TestGetPlayersFromLocation_Ok(t *testing.T) {
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.GetPlayersFromLocation("Elmwood")
 
 	require.NoError(t, result.Err)
@@ -155,7 +155,7 @@ func TestGetPlayersFromLocation_RepoError(t *testing.T) {
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.GetPlayersFromLocation("Elmwood")
 
 	require.Error(t, result.Err)
@@ -179,7 +179,7 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez")
 
 	require.NoError(t, result.Err)
@@ -189,7 +189,7 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 
 func TestUpdatePlayerName_Service_InvalidNewName(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 
 	result := service.UpdatePlayerName("Alice Twilight", "Bob") // too short (3 chars)
 
@@ -199,7 +199,7 @@ func TestUpdatePlayerName_Service_InvalidNewName(t *testing.T) {
 
 func TestUpdatePlayerName_Service_NameMustHaveTwoParts(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
-	service := &PlayerServiceImpl{Repository: mockRepo}
+	service := &PlayerServiceImpl{PlayerRepository: mockRepo}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Margaret")
 
@@ -209,7 +209,7 @@ func TestUpdatePlayerName_Service_NameMustHaveTwoParts(t *testing.T) {
 
 func TestUpdatePlayerName_Service_SameName(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 
 	result := service.UpdatePlayerName("Jane Doe", "Jane Doe")
 
@@ -226,7 +226,7 @@ func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.UpdatePlayerName("Alice", "Bob Melendez")
 
 	require.Error(t, result.Err)
@@ -258,7 +258,7 @@ func TestRemovePlayer_Service_Ok(t *testing.T) {
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.RemovePlayer(playerDeleted)
 
 	require.NoError(t, result.Err)
@@ -274,7 +274,7 @@ func TestRemovePlayer_Service_RepoError(t *testing.T) {
 		},
 	}
 
-	service := &PlayerServiceImpl{ Repository: mockRepo }
+	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 	result := service.RemovePlayer("Ghost Casper") 
 
 	require.Error(t, result.Err)

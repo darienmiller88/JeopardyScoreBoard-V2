@@ -18,7 +18,8 @@ type PlayerService interface{
 }
 
 type PlayerServiceImpl struct{
-	Repository repositories.PlayerRepository
+	PlayerRepository   repositories.PlayerRepository
+	LocationRepository repositories.LocationRepository
 }
 
 func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
@@ -34,7 +35,7 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName
 
 	//ensure the new name isn't taken
 	
-	return p.Repository.UpdatePlayerName(oldPlayerName, newPlayerName)
+	return p.PlayerRepository.UpdatePlayerName(oldPlayerName, newPlayerName)
 }
 
 func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {
@@ -47,19 +48,19 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 	//ensure location exists
 	//ensure the new name isn't taken
 
-	return p.Repository.AddPlayerToLocation(locationName, player)
+	return p.PlayerRepository.AddPlayerToLocation(locationName, player)
 }
 
 func (p *PlayerServiceImpl) RemovePlayer(playerName string) models.Result[models.Player]{
-	return  p.Repository.RemovePlayer(playerName)
+	return  p.PlayerRepository.RemovePlayer(playerName)
 }
 
 func (p *PlayerServiceImpl) GetAllPlayersFromAllLocations() models.Result[[]models.Player]{
-	return p.Repository.GetAllPlayersFromAllLocations()
+	return p.PlayerRepository.GetAllPlayersFromAllLocations()
 }
 
 func (p *PlayerServiceImpl) GetPlayersFromLocation(locationName string) models.Result[[]models.Player]{
-	return p.Repository.GetPlayersFromLocation(locationName)
+	return p.PlayerRepository.GetPlayersFromLocation(locationName)
 }
 
 // func (p *PlayerServiceImpl) isPlayerNameTaken(playerName string) models.Result[models.Player]{
