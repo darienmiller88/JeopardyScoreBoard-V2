@@ -24,8 +24,16 @@ func (i *Index) InitControllers(db *sqlx.DB){
 
 	//Initialize the controllers, and choose the service and repo implementation
 	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db) })
-	i.playersController.Init(&services.PlayerServiceImpl{ Repository: repositories.GetSqlPlayerRepository(db) })
-	i.savedGamesController.Init(&services.SaveGameServiceImpl{ Repository: repositories.GetSqlSavedGameRepository(db) })
+	i.playersController.Init(&services.PlayerServiceImpl{ 
+		PlayerRepository: repositories.GetSqlPlayerRepository(db),
+		LocationRepository: repositories.GetSqlLocationRepository(db),
+	})
+	i.savedGamesController.Init(&services.SaveGameServiceImpl{ 
+		SavedGameRepository: repositories.GetSqlSavedGameRepository(db),
+		LocationRepository: repositories.GetSqlLocationRepository(db),
+		TeamRepository: repositories.GetSqlTeamRepository(db),
+		PlayerRepository: repositories.GetSqlPlayerRepository(db),
+	})
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router
 	//in main.go

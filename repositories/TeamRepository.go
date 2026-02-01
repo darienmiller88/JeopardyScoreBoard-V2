@@ -16,7 +16,7 @@ type TeamRepository interface {
 	GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team]
 	GetAllTeamNamesDB()                 models.Result[[]string]
 	GetAllTeamsDB()                     models.Result[[]models.Team]
-	GetTeamsByIds(teamIds []int)        models.Result[[]models.Team]
+	GetAllTeamsByIds(teamIds []int)     models.Result[[]models.Team]
 }   
 
 type sqlTeamRepository struct {

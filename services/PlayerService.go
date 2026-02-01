@@ -42,10 +42,14 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 	player := models.Player{ PlayerName: playerName }
 
 	if err := player.Validate(); err != nil {
-		return models.Result[models.Player]{ Err: err, StatusCode: http.StatusUnprocessableEntity }
+		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
 	
 	//ensure location exists
+	if result := p.LocationRepository.GetLocation(locationName); result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, player)
+	}
+
 	//ensure the new name isn't taken
 
 	return p.PlayerRepository.AddPlayerToLocation(locationName, player)

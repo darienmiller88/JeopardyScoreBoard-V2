@@ -130,7 +130,7 @@ func (s *SaveGameServiceImpl) areTeamsValid(teams []models.Team) models.Result[[
         teamIds[i] = team.ID
     }
 
-    result := s.TeamRepository.GetTeamsByIds(teamIds)
+    result := s.TeamRepository.GetAllTeamsByIds(teamIds)
 
     if result.Err != nil {
         return result
