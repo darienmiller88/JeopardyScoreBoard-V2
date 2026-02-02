@@ -54,6 +54,10 @@ func (e *EncryptionService) Decrypt(ciphertext string) (string, error) {
     // Decode from string into a byte array 
     data, err := base64.StdEncoding.DecodeString(ciphertext)
 
+	if err != nil {
+		return "", err
+	}
+
 	//Get a new instance of a GCM (Galois/Counter mode) cipher algorithm
     gcm, err := e.getNewGCM()
 
