@@ -9,7 +9,7 @@ import (
 
 // Happy path: retrieves an existing team along with all assigned players
 func TestGetTeamWithAllPlayersDB_Integration_Happy(t *testing.T) {
-	repo := GetSqlTeamRepository(db)
+	repo := GetSqlTeamRepository(db, nil)
 
 	// Get an existing team ID
 	var teamId int
@@ -32,7 +32,7 @@ func TestGetTeamWithAllPlayersDB_Integration_Happy(t *testing.T) {
 
 // Happy path: retrieves all team names (location names)
 func TestGetAllTeamNames_Integration_Happy(t *testing.T) {
-	repo := GetSqlTeamRepository(db)
+	repo := GetSqlTeamRepository(db, nil)
 
 	result := repo.GetAllTeamNamesDB()
 
@@ -43,7 +43,7 @@ func TestGetAllTeamNames_Integration_Happy(t *testing.T) {
 
 // Happy path: team names exactly match location names
 func TestGetAllTeamNames_MatchLocations_Happy(t *testing.T) {
-	repo := GetSqlTeamRepository(db)
+	repo := GetSqlTeamRepository(db, nil)
 
 	var locationNames []string
 	err := db.Select(&locationNames, `
@@ -62,7 +62,7 @@ func TestGetAllTeamNames_MatchLocations_Happy(t *testing.T) {
 
 // Edge case: no teams exist → returns empty slice with 200 OK
 func TestGetAllTeamNames_NoTeams_Happy(t *testing.T) {
-	repo := GetSqlTeamRepository(db)
+	repo := GetSqlTeamRepository(db, nil)
 
 	// Temporarily clear teams
 	_, err := db.Exec("DELETE FROM teams")
@@ -86,7 +86,7 @@ func TestGetAllTeamNames_NoTeams_Happy(t *testing.T) {
 
 // Unhappy path: team ID does not exist → 404
 func TestGetTeamWithAllPlayersDB_Integration_TeamNotFound_Unhappy(t *testing.T) {
-	repo := GetSqlTeamRepository(db)
+	repo := GetSqlTeamRepository(db, nil)
 
 	result := repo.GetTeamWithAllPlayersDB(999999)
 

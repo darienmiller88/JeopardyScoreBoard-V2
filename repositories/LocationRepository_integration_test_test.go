@@ -13,7 +13,7 @@ import (
 //EXPECTED STATUS CODE:   200
 //EXPECTED ERROR MESSAGE: nil          
 func TestGetAllLocations_IntegrationTest_Ok(t *testing.T){
-	locationRepository := GetSqlLocationRepository(db)	
+	locationRepository := GetSqlLocationRepository(db, nil)	
 
  	result := locationRepository.GetAllLocations()
 	
@@ -29,7 +29,7 @@ func TestGetAllLocations_IntegrationTest_Ok(t *testing.T){
 //EXPECTED STATUS CODE:   200
 //EXPECTED ERROR MESSAGE: nil            
 func TestGetLocation_IntegrationTest_Ok(t *testing.T){
-	locationRepository := GetSqlLocationRepository(db)	
+	locationRepository := GetSqlLocationRepository(db, nil)	
 
 	//"Elmwood" is one of the locations 
  	result := locationRepository.GetLocation("Elmwood")
@@ -43,7 +43,7 @@ func TestGetLocation_IntegrationTest_Ok(t *testing.T){
 //EXPECTED STATUS CODE:   404
 //EXPECTED ERROR MESSAGE: No location found with name location_name            
 func TestGetLocation_IntegrationTest_NotFound(t *testing.T){
-	locationRepository := GetSqlLocationRepository(db)	
+	locationRepository := GetSqlLocationRepository(db, nil)	
 
 	locationToCheck := "FakeLocation"
  	result := locationRepository.GetLocation(locationToCheck)

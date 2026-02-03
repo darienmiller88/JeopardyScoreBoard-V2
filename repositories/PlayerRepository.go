@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/constants"
+	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/utils"
 	"database/sql"
@@ -24,11 +25,12 @@ type PlayerRepository interface {
 
 type sqlPlayerRepository struct {
 	db *sqlx.DB
+	encryptionService *encryption.EncryptionService
 }
 
 // Receive new Instance of MongoPlayerCardRepository.
-func GetSqlPlayerRepository(newDB *sqlx.DB) *sqlPlayerRepository {
-	return &sqlPlayerRepository{db: newDB}
+func GetSqlPlayerRepository(newDB *sqlx.DB, encryptionService *encryption.EncryptionService) *sqlPlayerRepository {
+	return &sqlPlayerRepository{db: newDB, encryptionService: encryptionService}
 }
 
 // Add a single player to a given location.

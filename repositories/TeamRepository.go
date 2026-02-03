@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/constants"
+	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/utils"
 	"database/sql"
@@ -21,11 +22,12 @@ type TeamRepository interface {
 
 type sqlTeamRepository struct {
 	db *sqlx.DB
+	encryptionService *encryption.EncryptionService
 }
 
 // Receive new Instance of MongoPlayerCardRepository.
-func GetSqlTeamRepository(newDB *sqlx.DB) *sqlTeamRepository {
-	return &sqlTeamRepository{db: newDB}
+func GetSqlTeamRepository(newDB *sqlx.DB, encryptionService *encryption.EncryptionService) *sqlTeamRepository {
+	return &sqlTeamRepository{db: newDB, encryptionService: encryptionService}
 }
 
 //Get a team with all of the players on that team

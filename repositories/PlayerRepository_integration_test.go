@@ -13,7 +13,7 @@ import (
 //CREATE/POST tests
 ////////////////////////
 func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
-	playerRepository := GetSqlPlayerRepository(db)
+	playerRepository := GetSqlPlayerRepository(db, nil)
 	player := models.Player{PlayerName: "Darien Miller"}
 
 	result := playerRepository.AddPlayerToLocation("Elmwood", player)
@@ -30,7 +30,7 @@ func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 }
 
 // func TestAddPlayerToLocation_IntegrationTest_InvalidLocation(t *testing.T) {
-//     playerRepository := GetSqlPlayerRepository(db)
+//     playerRepository := GetSqlPlayerRepository(db, nil)
 // 	player := models.Player{PlayerName: "Darien Miller"}
 
 // 	result := playerRepository.AddPlayerToLocation("FakeLocation", player)
@@ -49,7 +49,7 @@ func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 ////////////////////////
 
 func TestGetPlayersFromLocation_IntegrationTest_Ok(t *testing.T) {
- 	playerRepository := GetSqlPlayerRepository(db)
+ 	playerRepository := GetSqlPlayerRepository(db, nil)
 	result := playerRepository.GetPlayersFromLocation("Elmwood")
 
 	require.NoError(t, result.Err)
@@ -57,7 +57,7 @@ func TestGetPlayersFromLocation_IntegrationTest_Ok(t *testing.T) {
 }
 
 func TestGetPlayersFromLocation_IntegrationTest_InvalidLocation(t *testing.T) {
- 	playerRepository := GetSqlPlayerRepository(db)
+ 	playerRepository := GetSqlPlayerRepository(db, nil)
 	result := playerRepository.GetPlayersFromLocation("FakeLocation")
 
 	require.NoError(t, result.Err)
@@ -66,7 +66,7 @@ func TestGetPlayersFromLocation_IntegrationTest_InvalidLocation(t *testing.T) {
 }
 
 func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
- 	playerRepository := GetSqlPlayerRepository(db)
+ 	playerRepository := GetSqlPlayerRepository(db, nil)
 	result := playerRepository.GetAllPlayersFromAllLocations()
 
 	require.NoError(t, result.Err)
@@ -82,7 +82,7 @@ func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
 ////////////////////////
 
 func TestUpdatePlayerName_IntegrationTest_Happy(t *testing.T){
- 	playerRepository := GetSqlPlayerRepository(db)
+ 	playerRepository := GetSqlPlayerRepository(db, nil)
 	playerName := "player name"
 	result := playerRepository.AddPlayerToLocation("Elmwood", models.Player{ PlayerName: playerName })
 
@@ -99,7 +99,7 @@ func TestUpdatePlayerName_IntegrationTest_Happy(t *testing.T){
 }
 
 func TestUpdatePlayerName_IntegrationTest_PlayerNotFound_Happy(t *testing.T){
- 	playerRepository := GetSqlPlayerRepository(db)
+ 	playerRepository := GetSqlPlayerRepository(db, nil)
 	updateResult := playerRepository.UpdatePlayerName("fakename", "newName")
 
 	//check to see if an error was returned, and a 404 was sent as well
@@ -120,7 +120,7 @@ func TestUpdatePlayerName_IntegrationTest_PlayerNotFound_Happy(t *testing.T){
 ////////////////////////
 
 func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
-    repo := GetSqlPlayerRepository(db)
+    repo := GetSqlPlayerRepository(db, nil)
 
     // Insert a player
     _, err := db.Exec(`
@@ -146,7 +146,7 @@ func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
 }
 
 func TestRemovePlayer_IntegrationTest_PlayerNotFound(t *testing.T) {
-    repo := GetSqlPlayerRepository(db)
+    repo := GetSqlPlayerRepository(db, nil)
 
     // Make sure the table is empty
     // _, err := db.Exec(`DELETE FROM players`)

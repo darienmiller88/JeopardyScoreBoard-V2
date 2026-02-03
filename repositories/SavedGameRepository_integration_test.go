@@ -16,7 +16,7 @@ import (
 // GetAllSavedGamesDB_Integration_Happy
 // Verifies all seeded saved games are returned from the real test database.
 func TestGetAllSavedGamesDB_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 	result := repo.GetAllSavedGamesDB()
 
 	require.Nil(t, result.Err)
@@ -55,7 +55,7 @@ func TestGetAllSavedGamesDB_Integration_Happy(t *testing.T) {
 // GetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood
 // Verifies Elmwood returns the 2 seeded saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	result := repo.GetAllSavedGamesFromLocationDB("Elmwood")
 
@@ -67,7 +67,7 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood(t *testing.T) 
 // GetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence
 // Verifies Lawrence returns the 4 seeded saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 	result := repo.GetAllSavedGamesFromLocationDB("Lawrence")
 
 	require.Nil(t, result.Err)
@@ -78,7 +78,7 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence(t *testing.T)
 // GetAllSavedGamesFromLocationDB_Integration_Happy_Flushing
 // Verifies Flushing returns the 2 seeded saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Flushing(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	result := repo.GetAllSavedGamesFromLocationDB("Flushing")
 
@@ -90,7 +90,7 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Flushing(t *testing.T)
 // GetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames
 // Verifies empty slice when location exists but has no saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 	result := repo.GetAllSavedGamesFromLocationDB("Pelham Bay")
 
 	require.Nil(t, result.Err)
@@ -101,7 +101,7 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames(t *testing.T
 // GetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation
 // Verifies empty slice when location name does not exist.
 func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	result := repo.GetAllSavedGamesFromLocationDB("NotARealLocation")
 
@@ -139,7 +139,7 @@ func getAnySavedGameID(t *testing.T) string {
 }
 
 func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	// Get a real saved game id
 	id := getAnySavedGameID(t)
@@ -170,7 +170,7 @@ func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
 }
 
 func TestDeleteSavedGameDB_Integration_Unhappy_NotFound(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 	fakeID := "999"
 	result := repo.DeleteSavedGameDB(fakeID)
 
@@ -211,7 +211,7 @@ func getPlayerID(t *testing.T, name string) int {
 }
 
 func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	locationID := getLocationID(t, "Elmwood")
 	playerOneID := getPlayerID(t, "playerone")
@@ -248,7 +248,7 @@ func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 }
 
 func TestAddStandardSavedGame_Integration_RollbackOnBadPlayer(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	locationID := getLocationID(t, "Elmwood")
 	playerOneID := getPlayerID(t, "playerone")
@@ -282,7 +282,7 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadPlayer(t *testing.T) {
 }
 
 func TestAddStandardSavedGame_Integration_RollbackOnBadWinningPlayer(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	locationID := getLocationID(t, "Elmwood")
 
@@ -312,7 +312,7 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadWinningPlayer(t *testing.
 }
 
 func TestAddStandardSavedGame_Integration_RollbackOnBadLocation(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	playerOneID := getPlayerID(t, "playerone")
 
@@ -339,7 +339,7 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadLocation(t *testing.T) {
 
 // Verifies full successful transaction: saved game and junction rows inserted.
 func TestAddTeamSavedGame_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 	locationID := getLocationID(t, "Elmwood")
 
 	// Elmwood has team with id = 1 from seeding
@@ -376,7 +376,7 @@ func TestAddTeamSavedGame_Integration_Happy(t *testing.T) {
 
 // Verifies multiple teams are correctly inserted.
 func TestAddTeamSavedGame_Integration_MultipleTeams_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	locationID := getLocationID(t, "Lawrence")
 
@@ -408,7 +408,7 @@ func TestAddTeamSavedGame_Integration_MultipleTeams_Happy(t *testing.T) {
 
 // Verifies transaction rolls back if winning_team_id violates FK.
 func TestAddTeamSavedGame_Integration_RollbackOnBadWinningTeam_Unhappy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 	locationID := getLocationID(t, "Elmwood")
 
 	var before int
@@ -434,7 +434,7 @@ func TestAddTeamSavedGame_Integration_RollbackOnBadWinningTeam_Unhappy(t *testin
 
 // Verifies rollback if a team insert in the junction table fails.
 func TestAddTeamSavedGame_Integration_RollbackOnBadTeamInJunction_Unhappy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db)
+	repo := GetSqlSavedGameRepository(db, nil)
 
 	locationID := getLocationID(t, "Elmwood")
 

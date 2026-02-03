@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"JeopardyScoreBoardV2/constants"
+	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/utils"
 	"fmt"
@@ -19,11 +20,12 @@ type SavedGameRepository interface {
 
 type sqlSavedGameRepository struct {
 	db *sqlx.DB
+	encryptionService *encryption.EncryptionService
 }
 
 // Receive new Instance of MongoPlayerCardRepository.
-func GetSqlSavedGameRepository(newDB *sqlx.DB) *sqlSavedGameRepository {
-	return &sqlSavedGameRepository{db: newDB}
+func GetSqlSavedGameRepository(newDB *sqlx.DB, 	encryptionService *encryption.EncryptionService) *sqlSavedGameRepository {
+	return &sqlSavedGameRepository{db: newDB, encryptionService: encryptionService}
 }
 
 // Get all Saved games from database.
