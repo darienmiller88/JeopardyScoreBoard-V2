@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -11,6 +13,7 @@ import (
 
 	"JeopardyScoreBoardV2/controllers"
 	"JeopardyScoreBoardV2/database"
+	"JeopardyScoreBoardV2/encryption"
 )
 
 func main(){
@@ -27,9 +30,19 @@ func main(){
 	database.Init()
 	defer database.CloseSQLDB()
 
+	key := os.Getenv("ENCRYPTION_KEY")
+	keyB64, err := base64.StdEncoding.DecodeString(key)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Initialize encryption service
+	encryptionService := encryption.NewService(keyB64)
+
 	//Initialize the parent controller router, and its children
 	index := controllers.Index{}
-	index.InitControllers(database.GetDB())
+	index.InitControllers(database.GetDB(), encryptionService)
 	
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)

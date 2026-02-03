@@ -6,6 +6,7 @@ import (
 
 	"JeopardyScoreBoardV2/repositories"
 	"JeopardyScoreBoardV2/services"
+	"JeopardyScoreBoardV2/encryption"
 )
 
 type Index struct{
@@ -16,21 +17,21 @@ type Index struct{
 	savedGamesController SavedGamesController
 }
 
-func (i *Index) InitControllers(db *sqlx.DB){
+func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.EncryptionService){
 	i.Router = chi.NewRouter()
 
 	//Initialize the views controller
 	i.viewsController.Init()
 
 	//Initialize the controllers, and choose the service and repo implementation
-	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db) })
+	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })
 	i.playersController.Init(&services.PlayerServiceImpl{ 
 		PlayerRepository: repositories.GetSqlPlayerRepository(db),
-		LocationRepository: repositories.GetSqlLocationRepository(db),
+		LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
 	})
 	i.savedGamesController.Init(&services.SaveGameServiceImpl{ 
 		SavedGameRepository: repositories.GetSqlSavedGameRepository(db),
-		LocationRepository: repositories.GetSqlLocationRepository(db),
+		LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
 		TeamRepository: repositories.GetSqlTeamRepository(db),
 		PlayerRepository: repositories.GetSqlPlayerRepository(db),
 	})

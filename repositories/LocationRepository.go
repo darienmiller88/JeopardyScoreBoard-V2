@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"JeopardyScoreBoardV2/constants"
+	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/utils"
 
@@ -22,11 +23,12 @@ type LocationRepository interface{
 
 type sqlLocationRepository struct{
 	db *sqlx.DB
+	encryptionService *encryption.EncryptionService
 }
 
 //Receive a new instance of Location repository using postgres as the database. 
-func GetSqlLocationRepository(newDb *sqlx.DB) *sqlLocationRepository{
-	return &sqlLocationRepository{ db: newDb }
+func GetSqlLocationRepository(newDb *sqlx.DB, encryptionService *encryption.EncryptionService) *sqlLocationRepository{
+	return &sqlLocationRepository{ db: newDb, encryptionService: encryptionService }
 }
 
 //Retrieve all Locations from database
