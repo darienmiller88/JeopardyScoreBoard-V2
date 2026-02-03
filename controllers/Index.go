@@ -26,14 +26,14 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 	//Initialize the controllers, and choose the service and repo implementation
 	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })
 	i.playersController.Init(&services.PlayerServiceImpl{ 
-		PlayerRepository: repositories.GetSqlPlayerRepository(db),
+		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
 		LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
 	})
 	i.savedGamesController.Init(&services.SaveGameServiceImpl{ 
-		SavedGameRepository: repositories.GetSqlSavedGameRepository(db),
+		SavedGameRepository: repositories.GetSqlSavedGameRepository(db, encryptionService),
 		LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
-		TeamRepository: repositories.GetSqlTeamRepository(db),
-		PlayerRepository: repositories.GetSqlPlayerRepository(db),
+		TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
+		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
 	})
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router
