@@ -35,9 +35,15 @@ func GetSqlPlayerRepository(newDB *sqlx.DB, encryptionService *encryption.Encryp
 
 // Add a single player to a given location.
 func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
-	err := s.db.QueryRow(
+	encryptedName, err := s.encryptionService.Encrypt(player.PlayerName)
+
+	if err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
+	}
+	
+	err = s.db.QueryRow(
 		constants.InsertNewPlayerWithoutTeam,
-		player.PlayerName, 
+		encryptedName, 
 		locationName,
 	).Scan(&player.ID)
 	
@@ -45,11 +51,20 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
+	player.PlayerName = encryptedName
+
 	return utils.GetResult(nil, http.StatusCreated, player)
 }
 
 // Function to update a players name for a given location.
 func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player] {
+	//Encrypt the new name
+	// encryptedName, err := s.encryptionService.Encrypt(newPlayerName)
+
+	// if err != nil {
+	// 	return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
+	// }
+	
 	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
 
 	if err != nil {
