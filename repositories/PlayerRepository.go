@@ -24,7 +24,7 @@ type PlayerRepository interface {
 }
 
 type sqlPlayerRepository struct {
-	db *sqlx.DB
+	db                *sqlx.DB
 	encryptionService *encryption.EncryptionService
 }
 
@@ -40,13 +40,13 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
-	
+
 	err = s.db.QueryRow(
 		constants.InsertNewPlayerWithoutTeam,
-		encryptedName, 
+		encryptedName,
 		locationName,
 	).Scan(&player.ID)
-	
+
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
@@ -64,7 +64,7 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	// if err != nil {
 	// 	return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	// }
-	
+
 	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
 
 	if err != nil {
@@ -127,7 +127,7 @@ func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[
 	return utils.GetResult(nil, http.StatusOK, validPlayers)
 }
 
-func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player]{
+func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
 	player := models.Player{}
 
 	if err := s.db.Get(&player, constants.GetPlayerByName, playerName); err != nil {
