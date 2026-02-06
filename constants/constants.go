@@ -117,7 +117,7 @@ const(
 	`
 
 	GetPlayersByNames string = `
-		SELECT id, player_name FROM players WHERE player_name = ANY($1)
+		SELECT * FROM players WHERE player_name = ANY($1)
 	`
 
 	GetAllPlayersFromLocation string = `

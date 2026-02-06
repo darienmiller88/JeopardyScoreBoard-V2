@@ -45,6 +45,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 	// //Calculate the hash from the player name, and some secret salt.
 	hash := utils.NameHash(player.PlayerName)
 
+	//Use the hash and encrypted names to create a new row, with the player name there temporarily.
 	err = s.db.QueryRow(
 		constants.InsertNewPlayerWithoutTeam,
 		encryptedName,
@@ -126,7 +127,7 @@ func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]mo
 func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player] {
 	validPlayers := []models.Player{}
 
-	if err := s.db.Select(&players, constants.GetPlayersByNames, pq.Array(players)); err != nil {
+	if err := s.db.Select(&validPlayers, constants.GetPlayersByNames, pq.Array(players)); err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
 	}
 
