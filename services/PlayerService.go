@@ -49,7 +49,6 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 	if result := p.LocationRepository.GetLocation(locationName); result.Err != nil {
 		return utils.GetResult(result.Err, result.StatusCode, player)
 	}
-
 	//ensure the new name isn't taken
 
 	return p.PlayerRepository.AddPlayerToLocation(locationName, player)

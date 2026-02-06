@@ -16,23 +16,23 @@ import (
 	"JeopardyScoreBoardV2/encryption"
 )
 
-func main(){
+func main() {
 	//Load env file immediately at the start of the program
 	godotenv.Load()
-	
+
 	//Create new chi router instance to push handlers to.
 	router := chi.NewRouter()
 
 	//Middleware stack, keeping it basic for now.
 	router.Use(middleware.Logger, middleware.Recoverer)
-	
+
 	//Initiate the database connection to SQL, and defer its disconnection.
 	database.Init()
 	defer database.CloseSQLDB()
 
 	key := os.Getenv("ENCRYPTION_KEY")
 	keyB64, err := base64.StdEncoding.DecodeString(key)
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func main(){
 	//Initialize the parent controller router, and its children
 	index := controllers.Index{}
 	index.InitControllers(database.GetDB(), encryptionService)
-	
+
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
 
