@@ -35,15 +35,20 @@ func GetSqlPlayerRepository(newDB *sqlx.DB, encryptionService *encryption.Encryp
 
 // Add a single player to a given location.
 func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
+	//First, encrypt the player name the client has sent, and receive the ciphertext.
 	encryptedName, err := s.encryptionService.Encrypt(player.PlayerName)
 
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
+	//Calculate the hash from the player name, and some secret salt.
+	hash := utils.NameHash(player.PlayerName)
+
 	err = s.db.QueryRow(
 		constants.InsertNewPlayerWithoutTeam,
 		encryptedName,
+		hash,
 		locationName,
 	).Scan(&player.ID)
 

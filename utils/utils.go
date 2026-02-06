@@ -16,9 +16,9 @@ func GetResult[T any](err error, statusCode int, payload T) models.Result[T] {
 	}
 }
 
-//Returns a 32 byte hash combining the player's name, and the salt for the hashing
+//Returns a 32 byte hash combining the player's name, and the pepper for the hashing
 func NameHash(name string) []byte {
-    pepper := os.Getenv("HASH_SALT") // different from encryption key
+    pepper := os.Getenv("HASH_PEPPER") // different from encryption key
     h := sha256.Sum256([]byte(strings.ToLower(name) + pepper))
     
 	return h[:]
