@@ -1,7 +1,7 @@
 package encryption
 
 import (
-	"encoding/base64"
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -21,11 +21,11 @@ func TestEncryptionWithName_Happy(t *testing.T) {
 
 	require.NoError(t, err)
 
-	if cipher == "" {
+	if len(cipher) == 0 {
 		t.Fatal("expected ciphertext, got empty string")
 	}
 
-	//assert the name being encrypted and the encrypted name are not the same 
+	//assert the name being encrypted and the encrypted name are not the same
 	require.NotEqual(t, nameToEncrypt, cipher)
 }
 
@@ -35,7 +35,7 @@ func TestEncrypt_SamePlaintextDifferentCiphertext(t *testing.T) {
 	c1, _ := svc.Encrypt("ALICE SMITH")
 	c2, _ := svc.Encrypt("ALICE SMITH")
 
-	if c1 == c2 {
+	if bytes.Equal(c1, c2) {
 		t.Fatal("expected different ciphertexts due to random nonce")
 	}
 }
@@ -67,14 +67,11 @@ func TestDecrypt_TamperedCiphertext(t *testing.T) {
 	svc := newTestService()
 
 	cipher, _ := svc.Encrypt("CHARLIE")
-	data, _ := base64.StdEncoding.DecodeString(cipher)
 
 	// flip a byte
-	data[len(data)-1] ^= 0xFF
+	cipher[len(cipher)-1] ^= 0xFF
 
-	tampered := base64.StdEncoding.EncodeToString(data)
-
-	_, err := svc.Decrypt(tampered)
+	_, err := svc.Decrypt(cipher)
 	require.Error(t, err)
 }
 
@@ -91,9 +88,8 @@ func TestDecrypt_WrongKey(t *testing.T) {
 
 func TestDecrypt_CiphertextTooShort(t *testing.T) {
 	svc := newTestService()
-	short := base64.StdEncoding.EncodeToString([]byte("tiny"))
+	_, err := svc.Decrypt([]byte("tiny"))
 
-	_, err := svc.Decrypt(short)
 	if err == nil {
 		t.Fatal("expected error due to short ciphertext")
 	}

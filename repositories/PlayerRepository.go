@@ -58,7 +58,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	player.PlayerName = encryptedName
+	// player.PlayerName = encryptedName
 
 	return utils.GetResult(nil, http.StatusCreated, player)
 }
@@ -110,6 +110,17 @@ func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models
 	if err := s.db.Select(&players, constants.GetAllPlayersFromLocation, locationName); err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, players)
 	}
+
+	// for _, player := range players {
+	// 	decryptedName, err := s.encryptionService.Decrypt(string(player.PlayerNameEncrypted))
+
+	// 	fmt.Println("decrupted name:", decryptedName)
+	// 	if err != nil {
+	// 		return utils.GetResult(err, http.StatusInternalServerError, []models.Player{})
+	// 	}
+
+	// 	player.PlayerNameDecrypted = decryptedName
+	// }
 
 	return utils.GetResult(nil, http.StatusOK, players)
 }
