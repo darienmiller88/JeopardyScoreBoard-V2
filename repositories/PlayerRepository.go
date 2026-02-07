@@ -104,33 +104,41 @@ func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[mode
 	return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: playerName})
 }
 
+// GetPlayersFromLocation fetches all players for a given location name,
+// then decrypts their encrypted names before returning them to the caller.
+//
+// The database only stores encrypted names, so decryption must happen
+// after retrieval and before returning API data.
 func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
 	players := []models.Player{}
 
+	// Query players by location (still contains encrypted names)
 	if err := s.db.Select(&players, constants.GetAllPlayersFromLocation, locationName); err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, players)
 	}
 
-	for i := range players {
-		decryptedName, err := s.encryptionService.Decrypt(players[i].PlayerNameEncrypted)
+	// Decrypt all player names before returning
+	result := s.decryptPlayers(players)
 
-		fmt.Println("decrupted name:", decryptedName)
-		if err != nil {
-			fmt.Println("err:", err)
-			return utils.GetResult(err, http.StatusInternalServerError, []models.Player{})
-		}
-
-		players[i].PlayerNameDecrypted = decryptedName
+	if result.Err != nil {
+		return result
 	}
 
-	return utils.GetResult(nil, http.StatusOK, players)
+	return utils.GetResult(nil, http.StatusOK, result.ResultData)
 }
+
 
 func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
 	players := []models.Player{}
 
 	if err := s.db.Select(&players, constants.GetAllPlayers); err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, players)
+	}
+
+	result := s.decryptPlayers(players)
+
+	if result.Err != nil {
+		return result
 	}
 
 	return utils.GetResult(nil, http.StatusOK, players)
@@ -143,7 +151,13 @@ func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[
 		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
 	}
 
-	return utils.GetResult(nil, http.StatusOK, validPlayers)
+	result := s.decryptPlayers(validPlayers)
+
+	if result.Err != nil {
+		return result
+	}
+
+	return utils.GetResult(nil, http.StatusOK, result.ResultData)
 }
 
 func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
@@ -157,5 +171,25 @@ func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[m
 		return utils.GetResult(err, http.StatusInternalServerError, player)
 	}
 
+	result := s.decryptPlayers([]models.Player{player})
+
+	if result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, result.ResultData[0])
+	}
+
 	return utils.GetResult(nil, http.StatusOK, player)
+}
+
+func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Result[[]models.Player]{
+	for i := range players {
+		decryptedName, err := s.encryptionService.Decrypt(players[i].PlayerNameEncrypted)
+
+		if err != nil {
+			return utils.GetResult(err, http.StatusInternalServerError, []models.Player{})
+		}
+
+		players[i].PlayerNameDecrypted = decryptedName
+	}
+
+	return utils.GetResult(nil, http.StatusOK, players)
 }

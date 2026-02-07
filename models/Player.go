@@ -11,13 +11,13 @@ type Player struct {
 	ID        			int            `db:"id"`
 	CreatedAt  			time.Time      `db:"created_at"`
 	UpdatedAt           time.Time      `db:"updated_at"`
-	PlayerName          string 	       `db:"player_name"`
+	PlayerName          string 	       `json:"-" db:"player_name"`
 	PlayerNameEncrypted []byte         `db:"player_name_encrypted"`
 	PlayerNameHash      []byte         `db:"player_name_hash"`
 	LocationID          int            `db:"location_id"`
 	TeamID              sql.NullInt32  `db:"team_id"`
 	Score               int            `db:"-"`
-	PlayerNameDecrypted string         `db:"-"`
+	PlayerNameDecrypted string         `json:"-" db:"-"`
 }
 
 const (
