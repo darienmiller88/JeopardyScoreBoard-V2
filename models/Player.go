@@ -16,7 +16,7 @@ type Player struct {
 	PlayerNameHash      []byte         `db:"player_name_hash"`
 	LocationID          int            `db:"location_id"`
 	TeamID              sql.NullInt32  `db:"team_id"`
-	Score               int            `json:"score" db:"-"`
+	Score               int            `db:"-"`
 	PlayerNameDecrypted string         `db:"-"`
 }
 

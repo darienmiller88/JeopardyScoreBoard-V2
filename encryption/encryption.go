@@ -43,8 +43,8 @@ func (e *EncryptionService) Encrypt(plaintext string) ([]byte, error) {
 	return append(nonce, ciphertext...), nil
 }
 
-func (e *EncryptionService) Decrypt(data []byte) (string, error) {
-	if len(data) == 0 {
+func (e *EncryptionService) Decrypt(dataToDecrypt []byte) (string, error) {
+	if len(dataToDecrypt) == 0 {
 		return "", nil
 	}
 
@@ -56,11 +56,11 @@ func (e *EncryptionService) Decrypt(data []byte) (string, error) {
 
 	nonceSize := gcm.NonceSize()
 
-	if len(data) < nonceSize {
+	if len(dataToDecrypt) < nonceSize {
 		return "", errors.New("ciphertext too short")
 	}
 
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	nonce, ciphertext := dataToDecrypt[:nonceSize], dataToDecrypt[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	
 	if err != nil {

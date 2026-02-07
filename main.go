@@ -9,11 +9,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 
 	"JeopardyScoreBoardV2/controllers"
 	"JeopardyScoreBoardV2/database"
 	"JeopardyScoreBoardV2/encryption"
+	"JeopardyScoreBoardV2/utils"
 )
 
 func main() {
@@ -44,6 +46,8 @@ func main() {
 	index := controllers.Index{}
 	index.InitControllers(database.GetDB(), encryptionService)
 
+	// encryptNames(database.GetDB(), encryptionService)
+
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
 
@@ -54,4 +58,28 @@ func main() {
 	//Finally, listen and serve on the port in the env, which is 8080 on local machine.
 	fmt.Println("Listening on Port:", os.Getenv("PORT"))
 	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router)
+}
+
+func encryptNames(db *sqlx.DB, es *encryption.EncryptionService){
+	rows, _ := db.Query(`
+		SELECT id, player_name FROM players
+	`)
+
+	for rows.Next() {
+		var id int
+		var name string
+
+		rows.Scan(&id, &name)
+
+		encrypted, _ := es.Encrypt(name)
+		hash := utils.NameHash(name)
+
+		db.Exec(`
+			UPDATE players
+			SET player_name_encrypted = $1,
+				player_name_hash = $2
+			WHERE id = $3
+		`, encrypted, hash, id)
+	}
+
 }
