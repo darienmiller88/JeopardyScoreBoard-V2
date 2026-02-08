@@ -17,7 +17,7 @@ type PlayerRepository interface {
 	UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]
 	AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]
 	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
-	RemovePlayer(playerName string) models.Result[models.Player]
+	RemovePlayer(playerName string, locationName string) models.Result[models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 	GetPlayersByNames(players []string) models.Result[[]models.Player]
 	GetPlayerByName(playerName string) models.Result[models.Player]
@@ -88,8 +88,8 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 }
 
 // Remove a single player from a given location.
-func (s *sqlPlayerRepository) RemovePlayer(playerName string) models.Result[models.Player] {
-	result, err := s.db.Exec(constants.DeletePlayer, playerName)
+func (s *sqlPlayerRepository) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
+	result, err := s.db.Exec(constants.DeletePlayer, utils.NameHash(playerName))
 
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})

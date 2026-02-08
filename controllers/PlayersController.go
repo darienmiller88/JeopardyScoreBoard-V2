@@ -22,7 +22,7 @@ func (p *PlayersController) Init(service services.PlayerService) {
 	p.Router.Get("/", p.GetAllPlayers)
 	p.Router.Get("/{location_name}", p.GetAllPlayersFromOneLocation)
 	p.Router.Post("/{location_name}", p.AddPlayerToLocation)
-	p.Router.Delete("/{player_name}", p.RemovePlayer)
+	p.Router.Delete("/{location_name}", p.RemovePlayer)
 }
 
 func (p *PlayersController) GetAllPlayers(res http.ResponseWriter, req *http.Request) {
@@ -81,8 +81,15 @@ func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *ht
 }
 
 func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Request) {
-	playerName := chi.URLParam(req, "player_name")
-	result := p.playerService.RemovePlayer(playerName)
+	locationName := chi.URLParam(req, "location_name")
+	playerName := ""
+
+	if err := json.NewDecoder(req.Body).Decode(&playerName); err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := p.playerService.RemovePlayer(playerName, locationName)
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)

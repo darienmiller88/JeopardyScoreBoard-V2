@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS players (
 
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     team_id INT REFERENCES teams(id) ON DELETE SET NULL
+
+    UNIQUE(player_name_hash, location_id)
 );
 
 CREATE INDEX idx_players_name_hash ON players(player_name_hash);
@@ -55,6 +57,8 @@ CREATE TABLE IF NOT EXISTS savedgames (
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     winning_team_id INT REFERENCES teams(id) ON DELETE SET NULL,
     winning_player_id INT REFERENCES players(id) ON DELETE SET NULL
+
+    UNIQUE(winning_player_name_hash)
 );
 
 CREATE INDEX idx_savedgames_winner_hash ON savedgames(winning_player_name_hash);

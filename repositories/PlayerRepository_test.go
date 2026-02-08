@@ -118,7 +118,7 @@ func TestDeletePlayerName_OldNameNotFound(t *testing.T) {
 		WithArgs(name).
 		WillReturnResult(sqlmock.NewResult(0, 0))
 
-	result := repo.RemovePlayer(name)
+	result := repo.RemovePlayer(name, "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)

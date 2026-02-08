@@ -36,7 +36,7 @@ func (m *mockPlayerService) AddPlayerToLocation(locationName string, playerName 
 	return m.playerResult
 }
 
-func (m *mockPlayerService) RemovePlayer(playerName string) models.Result[models.Player] {
+func (m *mockPlayerService) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
 	return m.playerResult
 }
 

@@ -130,7 +130,7 @@ func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
     require.NoError(t, err)
 
     // Delete it
-    result := repo.RemovePlayer("DeleteMe")
+    result := repo.RemovePlayer("DeleteMe", "Elmwood")
 
     require.NoError(t, result.Err)
     assert.Equal(t, http.StatusOK, result.StatusCode)
@@ -152,7 +152,7 @@ func TestRemovePlayer_IntegrationTest_PlayerNotFound(t *testing.T) {
     // _, err := db.Exec(`DELETE FROM players`)
     // require.NoError(t, err)
 
-    result := repo.RemovePlayer("NoName")
+    result := repo.RemovePlayer("NoName", "blag")
 
     require.Error(t, result.Err)
     assert.Equal(t, http.StatusNotFound, result.StatusCode)

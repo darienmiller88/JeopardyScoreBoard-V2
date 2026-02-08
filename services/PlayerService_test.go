@@ -24,7 +24,7 @@ func (m *mockPlayerRepository) AddPlayerToLocation(locationName string, player m
 	return m.playerResult
 }
 
-func (m *mockPlayerRepository) RemovePlayer(playerName string) models.Result[models.Player] {
+func (m *mockPlayerRepository) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
 	return m.playerResult
 }
 
@@ -259,7 +259,7 @@ func TestRemovePlayer_Service_Ok(t *testing.T) {
 	}
 
 	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
-	result := service.RemovePlayer(playerDeleted)
+	result := service.RemovePlayer(playerDeleted, "Elmwood")
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
@@ -275,7 +275,7 @@ func TestRemovePlayer_Service_RepoError(t *testing.T) {
 	}
 
 	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
-	result := service.RemovePlayer("Ghost Casper") 
+	result := service.RemovePlayer("Ghost Casper", "Elmwood") 
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
