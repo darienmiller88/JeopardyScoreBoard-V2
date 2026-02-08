@@ -55,6 +55,12 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 }
 
 func (p *PlayerServiceImpl) RemovePlayer(playerName string, locationName string) models.Result[models.Player]{
+	result := p.LocationRepository.GetLocation(locationName)
+
+	if result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, models.Player{})
+	}
+
 	return  p.PlayerRepository.RemovePlayer(playerName, locationName)
 }
 

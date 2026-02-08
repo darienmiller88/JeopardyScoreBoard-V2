@@ -183,7 +183,7 @@ const(
 
 	//DELETE
 	DeletePlayer string = `
-		DELETE FROM players WHERE player_name_hash=$1
+		DELETE FROM players WHERE player_name_hash=$1 AND location_id=(SELECT id FROM locations WHERE location_name=$2)
 	`
 
 	DeleteSavedGame string = `
