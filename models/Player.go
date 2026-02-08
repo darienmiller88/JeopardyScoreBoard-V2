@@ -20,8 +20,6 @@ type Player struct {
 	PlayerNameDecrypted string         `json:"-" db:"-"`
 }
 
-// /TFUYkuZM0uedGVUeqFjZw5B+kbjLidnMKigb9Wbj1E=
-
 const (
 	minLength int = 4
 	maxLength int = 40
