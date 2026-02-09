@@ -18,8 +18,8 @@ func (p *PlayersController) Init(service services.PlayerService) {
 	p.Router = chi.NewRouter()
 	p.playerService = service
 
-	p.Router.Put("/", p.UpdatePlayerName)
 	p.Router.Get("/", p.GetAllPlayers)
+	p.Router.Put("/{location_name}", p.UpdatePlayerName)
 	p.Router.Get("/{location_name}", p.GetAllPlayersFromOneLocation)
 	p.Router.Post("/{location_name}", p.AddPlayerToLocation)
 	p.Router.Delete("/{location_name}", p.RemovePlayer)
@@ -102,6 +102,7 @@ func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Requ
 }
 
 func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.Request) {
+	locationName := chi.URLParam(req, "location_name")
 	names := struct {
 		OldPlayerName string `json:"old_player_name"`
 		NewPlayerName string `json:"new_player_name"`
@@ -112,7 +113,7 @@ func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.
 		return
 	}
 
-	result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName)
+	result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName, locationName)
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)

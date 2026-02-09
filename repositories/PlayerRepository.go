@@ -66,13 +66,24 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 // Function to update a players name for a given location.
 func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player] {
 	//Encrypt the new name
-	// encryptedName, err := s.encryptionService.Encrypt(newPlayerName)
+	encryptedName, err := s.encryptionService.Encrypt(newPlayerName)
 
-	// if err != nil {
-	// 	return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
-	// }
+	if err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
+	}
 
-	result, err := s.db.Exec(constants.UpdatePlayerName, newPlayerName, oldPlayerName)
+	//Find the column of the old name by its hash
+	olderPlayerNameHash := utils.NameHash(oldPlayerName)
+	newPlayerNameHash   := utils.NameHash(newPlayerName)
+
+	result, err := s.db.Exec(
+		constants.UpdatePlayerName,
+		newPlayerName, //$1`
+		encryptedName, //$2
+		olderPlayerNameHash,//$3
+		newPlayerNameHash,
+		
+	)
 
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})

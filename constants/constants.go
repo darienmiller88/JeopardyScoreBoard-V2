@@ -178,8 +178,22 @@ const(
 
 	//Update a players name
 	UpdatePlayerName string = `
-		UPDATE players SET player_name=$1 WHERE player_name=$2
+		UPDATE players
+		SET
+			player_name = $1,
+			player_name_encrypted = $2,
+			player_name_hash = $3
+		WHERE
+			player_name_hash = $4
+			AND location_id = (
+				SELECT id FROM locations WHERE location_name = $5
+			);
 	`
+
+
+	//==========================
+	// DELETE 
+	//==========================
 
 	//DELETE
 	DeletePlayer string = `

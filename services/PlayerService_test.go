@@ -180,7 +180,7 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 	}
 
 	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
-	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez")
+	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez", "Elmwood")
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
@@ -191,7 +191,7 @@ func TestUpdatePlayerName_Service_InvalidNewName(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 
-	result := service.UpdatePlayerName("Alice Twilight", "Bob") // too short (3 chars)
+	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Elmwood") // too short (3 chars)
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
@@ -201,7 +201,7 @@ func TestUpdatePlayerName_Service_NameMustHaveTwoParts(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{PlayerRepository: mockRepo}
 
-	result := service.UpdatePlayerName("Alice Twilight", "Margaret")
+	result := service.UpdatePlayerName("Alice Twilight", "Margaret", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
@@ -211,7 +211,7 @@ func TestUpdatePlayerName_Service_SameName(t *testing.T) {
 	mockRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
 
-	result := service.UpdatePlayerName("Jane Doe", "Jane Doe")
+	result := service.UpdatePlayerName("Jane Doe", "Jane Doe", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
@@ -227,7 +227,7 @@ func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
 	}
 
 	service := &PlayerServiceImpl{ PlayerRepository: mockRepo }
-	result := service.UpdatePlayerName("Alice", "Bob Melendez")
+	result := service.UpdatePlayerName("Alice", "Bob Melendez",  "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)

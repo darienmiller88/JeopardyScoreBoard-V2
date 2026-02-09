@@ -28,7 +28,7 @@ type mockPlayerService struct {
 	playerResult  models.Result[models.Player]
 }
 
-func (m *mockPlayerService) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player] {
+func (m *mockPlayerService) UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player] {
 	return m.playerResult
 }
 
