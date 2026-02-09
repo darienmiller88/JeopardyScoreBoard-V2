@@ -35,7 +35,7 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName
 
 	//ensure the new name isn't taken
 	
-	return p.PlayerRepository.UpdatePlayerName(oldPlayerName, newPlayerName)
+	return p.PlayerRepository.UpdatePlayerName(oldPlayerName, newPlayerName, locationName)
 }
 
 func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {

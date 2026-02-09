@@ -90,7 +90,7 @@ func TestUpdatePlayerName_IntegrationTest_Happy(t *testing.T){
 	assert.Equal(t, http.StatusCreated, result.StatusCode)
 
 	newName := "new name"
-	updateResult := playerRepository.UpdatePlayerName(playerName, newName)
+	updateResult := playerRepository.UpdatePlayerName(playerName, newName, "Elmwood")
 
 	//Check ti see if the player's name was updated correctly
 	require.NoError(t, updateResult.Err)
@@ -100,7 +100,7 @@ func TestUpdatePlayerName_IntegrationTest_Happy(t *testing.T){
 
 func TestUpdatePlayerName_IntegrationTest_PlayerNotFound_Happy(t *testing.T){
  	playerRepository := GetSqlPlayerRepository(db, nil)
-	updateResult := playerRepository.UpdatePlayerName("fakename", "newName")
+	updateResult := playerRepository.UpdatePlayerName("fakename", "newName", "Elmwood")
 
 	//check to see if an error was returned, and a 404 was sent as well
 	require.Error(t, updateResult.Err)

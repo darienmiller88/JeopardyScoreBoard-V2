@@ -16,7 +16,7 @@ type mockPlayerRepository struct{
 	playersResult models.Result[[]models.Player]
 }
 
-func (m *mockPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string) models.Result[models.Player]{
+func (m *mockPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player]{
 	return m.playerResult
 }
 	

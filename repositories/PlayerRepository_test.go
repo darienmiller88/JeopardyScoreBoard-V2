@@ -66,7 +66,7 @@ func TestUpdatePlayerName_Happy(t *testing.T) {
 		WithArgs(newName, oldName).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
-	result := repo.UpdatePlayerName(oldName, newName)
+	result := repo.UpdatePlayerName(oldName, newName, "Elmwood")
 
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 	assert.Equal(t, nil, result.Err)
@@ -83,7 +83,7 @@ func TestUpdatePlayerName_PlayerNotFound_Unhappy(t *testing.T) {
 		WithArgs(newName, oldName).
 		WillReturnResult(sqlmock.NewResult(0, 0))
 
-	result := repo.UpdatePlayerName(oldName, newName)
+	result := repo.UpdatePlayerName(oldName, newName, "Elmwood")
 
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
 	assert.NotNil(t, result.Err)
@@ -99,7 +99,7 @@ func TestUpdatePlayerName_ExecError_Unhappy(t *testing.T) {
 		WithArgs(newName, oldName).
 		WillReturnError(fmt.Errorf("database exec error"))
 
-	result := repo.UpdatePlayerName(oldName, newName)
+	result := repo.UpdatePlayerName(oldName, newName, "Elmwood")
 
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 	assert.NotNil(t, result.Err)
