@@ -180,6 +180,7 @@ const(
 	UpdatePlayerName string = `
 		UPDATE players
 		SET
+			updated_at=NOW(),
 			player_name = $1,
 			player_name_encrypted = $2,
 			player_name_hash = $3

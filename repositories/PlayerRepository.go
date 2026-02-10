@@ -72,17 +72,18 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	//Find the column of the old name by its hash
+	//Find the column of the old name by its hash, and create a new hash for the new name
 	olderPlayerNameHash := utils.NameHash(oldPlayerName)
 	newPlayerNameHash   := utils.NameHash(newPlayerName)
 
+	//Use all of the following to updated the players name, encrypted name, and new hash.
 	result, err := s.db.Exec(
 		constants.UpdatePlayerName,
-		newPlayerName, //$1`
+		newPlayerName, //$1 -> To be removed soon! 
 		encryptedName, //$2
+		newPlayerNameHash, //$3
 		olderPlayerNameHash,//$3
-		newPlayerNameHash,
-
+		locationName, //$5
 	)
 
 	if err != nil {
@@ -95,7 +96,13 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 		return utils.GetResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
 	}
 
-	return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: newPlayerName})
+	updateResult :=  models.Player{
+		PlayerName: newPlayerName,
+		PlayerNameEncrypted: encryptedName,
+		PlayerNameHash: newPlayerNameHash,
+	}
+
+	return utils.GetResult(nil, http.StatusOK, updateResult)
 }
 
 // Remove a single player from a given location.

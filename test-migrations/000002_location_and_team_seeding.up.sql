@@ -13,10 +13,36 @@ VALUES
     ('Port Richmond')
 ON CONFLICT (location_name) DO NOTHING;
 
-INSERT INTO players (player_name, location_id) VALUES('playerone', (SELECT id FROM locations WHERE location_name='Pelham Bay'));
-INSERT INTO players (player_name, location_id) VALUES('playertwo', (SELECT id FROM locations WHERE location_name='Pelham Bay'));
-INSERT INTO players (player_name, location_id) VALUES('playerthree', (SELECT id FROM locations WHERE location_name='Elmwood'));
-INSERT INTO players (player_name, location_id) VALUES('playerfour', (SELECT id FROM locations WHERE location_name='Elmwood'));
+
+-- ============================
+-- Seed Players
+-- ============================
+INSERT INTO players (
+    location_id
+    player_name_encrypted,
+    player_name_hash
+) 
+VALUES
+(
+    (SELECT id FROM locations WHERE location_name='Pelham Bay')
+    decode('Ex5oYOXNL5Y8m0f7YIqRUA+ZWgjDRZhPV8tOPCGXFtPgE1u75Thp9i0=', 'base64'),-- goofer boofer
+    decode('xbdAEiZPI8Bk4uKdBwqswauh25BBd3F5RXJ0AGMivqE=', 'base64'),
+),
+(
+    (SELECT id FROM locations WHERE location_name='Elmwood')
+    decode('VrjKjrSWIAAnsA0k1m/e9ItWb8Txm8VtX9MeEULtAAemufa62t8=', 'base64'),-- new player
+    decode('UAA5Do+JyUCUuFexLz2aQgiJPcDudRCURW+U0k9S9nE=', 'base64'),
+),
+(
+    (SELECT id FROM locations WHERE location_name='Lawrence')
+    decode('Tl5Y+RZYaH16CePouN3Y8sy9s/+QBCvr4x2MJGtIvBk8TtEauLc=', 'base64'),--player one
+    decode('wVwk5c+ad0t3B5YbaKY3FsrVpO/PWm7vZFDBlLW/j50=', 'base64'),
+),
+(
+    (SELECT id FROM locations WHERE location_name='Lawrence')
+    decode('o/y9bLs16Ta+s/JE2/6f3M1+cuCXFfgoSrEBF8wvxR0lcaFQ1xA=', 'base64'),--player mah
+    decode('wVwk5c+ad0t3B5YbaKY3FsrVpO/PWm7vZFDBlLW/j50=', 'base64'),  
+);
 
 -- ============================
 -- Create one Team per Location

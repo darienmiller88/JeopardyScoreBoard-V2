@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS teams (
 -- ============================
 CREATE TABLE IF NOT EXISTS players (
     id SERIAL PRIMARY KEY,
-    player_name VARCHAR(60) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
@@ -33,12 +32,10 @@ CREATE TABLE IF NOT EXISTS players (
     player_name_hash BYTEA NOT NULL,
 
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
-    team_id INT REFERENCES teams(id) ON DELETE SET NULL
+    team_id INT REFERENCES teams(id) ON DELETE SET NULL,
 
     UNIQUE(player_name_hash, location_id)
 );
-
-CREATE INDEX idx_players_name_hash ON players(player_name_hash);
 
 -- ============================
 -- Saved Games
@@ -50,18 +47,15 @@ CREATE TABLE IF NOT EXISTS savedgames (
     total_score INT NOT NULL,
     average_score DOUBLE PRECISION NOT NULL,
     
-    winning_player_name VARCHAR(60),
     winning_player_name_encrypted BYTEA,
     winning_player_name_hash BYTEA,
 
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     winning_team_id INT REFERENCES teams(id) ON DELETE SET NULL,
-    winning_player_id INT REFERENCES players(id) ON DELETE SET NULL
+    winning_player_id INT REFERENCES players(id) ON DELETE SET NULL,
 
     UNIQUE(winning_player_name_hash)
 );
-
-CREATE INDEX idx_savedgames_winner_hash ON savedgames(winning_player_name_hash);
 
 
 -- ============================
@@ -96,4 +90,3 @@ CREATE TABLE IF NOT EXISTS savedgamesplayers (
     UNIQUE (saved_game_id, player_id)
 );
 
-CREATE INDEX idx_savedgamesplayers_name_hash ON savedgamesplayers(player_name_hash);
