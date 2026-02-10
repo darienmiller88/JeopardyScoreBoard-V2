@@ -36,12 +36,12 @@ VALUES
 (
     (SELECT id FROM locations WHERE location_name='Lawrence')
     decode('Tl5Y+RZYaH16CePouN3Y8sy9s/+QBCvr4x2MJGtIvBk8TtEauLc=', 'base64'),--player one
-    decode('wVwk5c+ad0t3B5YbaKY3FsrVpO/PWm7vZFDBlLW/j50=', 'base64'),
+    decode('s9XALDA7x7nATlrx/hMCYW2gjfoBdFXeitf+EOgULfI=', 'base64'),
 ),
 (
     (SELECT id FROM locations WHERE location_name='Lawrence')
     decode('o/y9bLs16Ta+s/JE2/6f3M1+cuCXFfgoSrEBF8wvxR0lcaFQ1xA=', 'base64'),--player mah
-    decode('wVwk5c+ad0t3B5YbaKY3FsrVpO/PWm7vZFDBlLW/j50=', 'base64'),  
+    decode('s/+tK2VVjdvan2ryG33pA8cEpYwrscbJMdF1SY8dWXI=', 'base64'),  
 );
 
 -- ============================
@@ -63,36 +63,36 @@ INSERT INTO teams (location_id) VALUES((SELECT id FROM locations WHERE location_
 INSERT INTO savedgames (
     location_id,
     winning_player_id,
-    winning_player_name,
+    winning_player_name_encrypted,
     total_score,
     average_score
 )
 VALUES
 (
     (SELECT id FROM locations WHERE location_name = 'Elmwood'),
-    (SELECT id FROM players WHERE player_name = 'playerone'),
-    'playerone',
+    (SELECT id FROM players WHERE player_name_hash = decode('xbdAEiZPI8Bk4uKdBwqswauh25BBd3F5RXJ0AGMivqE=', 'base64')),
+    decode('Ex5oYOXNL5Y8m0f7YIqRUA+ZWgjDRZhPV8tOPCGXFtPgE1u75Thp9i0=', 'base64'),-- goofer boofer
     1200,
     400.0
 ),
 (
     (SELECT id FROM locations WHERE location_name = 'Lawrence'),
-    (SELECT id FROM players WHERE player_name = 'playerone'),
-    'playerone',
+    (SELECT id FROM players WHERE player_name_hash = decode('UAA5Do+JyUCUuFexLz2aQgiJPcDudRCURW+U0k9S9nE=', 'base64')),
+    decode('VrjKjrSWIAAnsA0k1m/e9ItWb8Txm8VtX9MeEULtAAemufa62t8=', 'base64'), -- new player
     2200,
     600.25
 ),
 (
     (SELECT id FROM locations WHERE location_name = 'Flushing'),
-    (SELECT id FROM players WHERE player_name = 'playertwo'),
-    'playertwo',
+    (SELECT id FROM players WHERE player_name_hash = decode('s9XALDA7x7nATlrx/hMCYW2gjfoBdFXeitf+EOgULfI=', 'base64')),
+    decode('Tl5Y+RZYaH16CePouN3Y8sy9s/+QBCvr4x2MJGtIvBk8TtEauLc=', 'base64'), --player one
     2200,
     600.25
 ),
 (
     (SELECT id FROM locations WHERE location_name = 'Lawrence'),
-    (SELECT id FROM players WHERE player_name = 'playerthree'),
-    'playerthree',
+    (SELECT id FROM players WHERE player_name_hash = decode('s/+tK2VVjdvan2ryG33pA8cEpYwrscbJMdF1SY8dWXI=', 'base64')),
+    decode('o/y9bLs16Ta+s/JE2/6f3M1+cuCXFfgoSrEBF8wvxR0lcaFQ1xA=', 'base64'),--player mah  
     2200,
     600.25
 );
