@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"JeopardyScoreBoardV2/encryption"
+	"encoding/base64"
 	"log"
 	"os"
 	"testing"
@@ -13,6 +15,7 @@ import (
 )
 
 var db *sqlx.DB
+var es *encryption.EncryptionService
 
 func TestMain(m *testing.M) {
 	godotenv.Load("../.env")
@@ -29,6 +32,14 @@ func TestMain(m *testing.M) {
         log.Fatal(err)
     }
 
+	key := os.Getenv("ENCRYPTION_KEY")
+	keyB64, err := base64.StdEncoding.DecodeString(key)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	es = encryption.NewService(keyB64)
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 
 	if err != nil {

@@ -13,12 +13,11 @@ const(
 	`
 
 	InsertNewPlayerWithoutTeam string = `
-		INSERT INTO players (player_name_encrypted, player_name_hash, player_name, location_id)
+		INSERT INTO players (player_name_encrypted, player_name_hash, location_id)
 		VALUES(
 			$1,
 			$2,
-			$3,
-			(SELECT id FROM locations WHERE location_name=$4)
+			(SELECT id FROM locations WHERE location_name=$3)
 		) RETURNING id, created_at, updated_at, location_id
 	`
 

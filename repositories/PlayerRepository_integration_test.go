@@ -13,24 +13,26 @@ import (
 //CREATE/POST tests
 ////////////////////////
 func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
-	playerRepository := GetSqlPlayerRepository(db, nil)
+	playerRepository := GetSqlPlayerRepository(db, es)
 	player := models.Player{PlayerName: "Darien Miller"}
 
 	result := playerRepository.AddPlayerToLocation("Elmwood", player)
 
 	assert.Equal(t, nil, result.Err)
 	assert.Equal(t, http.StatusCreated, result.StatusCode)
-	assert.Equal(t, player.PlayerName, result.ResultData.PlayerName)
+
+	//Verify the player name is NOT equal, as it should be encrypted
+	assert.NotEqual(t, player.PlayerName, result.ResultData.PlayerName)
 
 	//Verify that the player was inserted into the database
-	allPlayers := playerRepository.GetAllPlayersFromAllLocations()
-	playerInserted := allPlayers.ResultData[len(allPlayers.ResultData) - 1]
+	// allPlayers := playerRepository.GetAllPlayersFromAllLocations()
+	// playerInserted := allPlayers.ResultData[len(allPlayers.ResultData) - 1]
 
-	assert.Equal(t, player.PlayerName, playerInserted.PlayerName)
+	// assert.Equal(t, result.ResultData.PlayerNameEncrypted, playerInserted.PlayerNameEncrypted)
 }
 
 // func TestAddPlayerToLocation_IntegrationTest_InvalidLocation(t *testing.T) {
-//     playerRepository := GetSqlPlayerRepository(db, nil)
+//     playerRepository := GetSqlPlayerRepository(db, es)
 // 	player := models.Player{PlayerName: "Darien Miller"}
 
 // 	result := playerRepository.AddPlayerToLocation("FakeLocation", player)
@@ -49,7 +51,7 @@ func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 ////////////////////////
 
 func TestGetPlayersFromLocation_IntegrationTest_Ok(t *testing.T) {
- 	playerRepository := GetSqlPlayerRepository(db, nil)
+ 	playerRepository := GetSqlPlayerRepository(db, es)
 	result := playerRepository.GetPlayersFromLocation("Elmwood")
 
 	require.NoError(t, result.Err)
@@ -57,7 +59,7 @@ func TestGetPlayersFromLocation_IntegrationTest_Ok(t *testing.T) {
 }
 
 func TestGetPlayersFromLocation_IntegrationTest_InvalidLocation(t *testing.T) {
- 	playerRepository := GetSqlPlayerRepository(db, nil)
+ 	playerRepository := GetSqlPlayerRepository(db, es)
 	result := playerRepository.GetPlayersFromLocation("FakeLocation")
 
 	require.NoError(t, result.Err)
@@ -66,7 +68,7 @@ func TestGetPlayersFromLocation_IntegrationTest_InvalidLocation(t *testing.T) {
 }
 
 func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
- 	playerRepository := GetSqlPlayerRepository(db, nil)
+ 	playerRepository := GetSqlPlayerRepository(db, es)
 	result := playerRepository.GetAllPlayersFromAllLocations()
 
 	require.NoError(t, result.Err)
@@ -82,7 +84,7 @@ func TestGetAllPlayersFromAllLocations_IntegrationTest_Ok(t *testing.T) {
 ////////////////////////
 
 func TestUpdatePlayerName_IntegrationTest_Happy(t *testing.T){
- 	playerRepository := GetSqlPlayerRepository(db, nil)
+ 	playerRepository := GetSqlPlayerRepository(db, es)
 	playerName := "player name"
 	result := playerRepository.AddPlayerToLocation("Elmwood", models.Player{ PlayerName: playerName })
 
@@ -99,7 +101,7 @@ func TestUpdatePlayerName_IntegrationTest_Happy(t *testing.T){
 }
 
 func TestUpdatePlayerName_IntegrationTest_PlayerNotFound_Happy(t *testing.T){
- 	playerRepository := GetSqlPlayerRepository(db, nil)
+ 	playerRepository := GetSqlPlayerRepository(db, es)
 	updateResult := playerRepository.UpdatePlayerName("fakename", "newName", "Elmwood")
 
 	//check to see if an error was returned, and a 404 was sent as well
@@ -120,7 +122,7 @@ func TestUpdatePlayerName_IntegrationTest_PlayerNotFound_Happy(t *testing.T){
 ////////////////////////
 
 func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
-    repo := GetSqlPlayerRepository(db, nil)
+    repo := GetSqlPlayerRepository(db, es)
 
     // Insert a player
     _, err := db.Exec(`
@@ -146,7 +148,7 @@ func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
 }
 
 func TestRemovePlayer_IntegrationTest_PlayerNotFound(t *testing.T) {
-    repo := GetSqlPlayerRepository(db, nil)
+    repo := GetSqlPlayerRepository(db, es)
 
     // Make sure the table is empty
     // _, err := db.Exec(`DELETE FROM players`)

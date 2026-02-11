@@ -50,7 +50,6 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 		constants.InsertNewPlayerWithoutTeam,
 		encryptedName,
 		hash,
-		player.PlayerName,
 		locationName,
 	).Scan(&player.ID, &player.CreatedAt, &player.UpdatedAt, &player.LocationID)
 
