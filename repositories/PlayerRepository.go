@@ -20,7 +20,7 @@ type PlayerRepository interface {
 	RemovePlayer(playerName string, locationName string) models.Result[models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 	GetPlayersByNames(players []string) models.Result[[]models.Player]
-	GetPlayerByName(playerName string) models.Result[models.Player]
+	GetPlayerByName(playerNameHash []byte) models.Result[models.Player]
 }
 
 type sqlPlayerRepository struct {
