@@ -48,12 +48,12 @@ func (s *SavedGame) validateParticipation() error{
 
 	//If a player game is being played, players MUST be filled with at least one player
 	if s.IsPlayerGame && len(s.Players) == 0{
-		return errors.New("players cannot be empty when winning player id is supplied")
+		return errors.New("players cannot be empty when a player game is being played")
 	}
 
 	//If a team game is being played, teams MUST be filled with at least one team
 	if !s.IsPlayerGame && len(s.Teams) == 0{
-		return errors.New("teams cannot be empty when winning team id is supplied")
+		return errors.New("teams cannot be empty when a team game is being played")
 	}
 
 	return nil

@@ -82,7 +82,7 @@ func (s *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) mode
 
 func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	// Start transaction
-	tx, err := s.db.Beginx()
+	tx, err := s.db.Beginx() 
 
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
@@ -90,12 +90,26 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 
 	defer tx.Rollback()
 
+	// Encrypt and hash the winning player name if it exists
+	var encryptedWinnerName []byte
+	var winnerNameHash []byte
+
+	if savedGame.WinningPlayerName.Valid && savedGame.WinningPlayerName.String != "" {
+		encryptedWinnerName, err = s.encryptionService.Encrypt(savedGame.WinningPlayerName.String)
+		if err != nil {
+			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
+		}
+
+		winnerNameHash = utils.NameHash(savedGame.WinningPlayerName.String)
+	}
+
 	// Insert saved game
 	err = tx.QueryRow(
 		constants.InsertNewPlayerSavedGame,
 		savedGame.TotalPoints,
 		savedGame.AveragePoints,
-		savedGame.WinningPlayerName,
+		encryptedWinnerName, // $3 - encrypted winning player name
+		winnerNameHash,      // $4 - hashed winning player name
 		savedGame.WinningPlayerId,
 		savedGame.LocationId,
 	).Scan(&savedGame.ID)
@@ -106,12 +120,21 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 
 	// Loop over and add each player to the junction table "savedgameplayers"
 	for _, player := range savedGame.Players {
-		_, err := tx.Exec(
+		// Encrypt and hash each player's name
+		encryptedPlayerName, err := s.encryptionService.Encrypt(player.PlayerName)
+		if err != nil {
+			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
+		}
+
+		playerNameHash := utils.NameHash(player.PlayerName)
+
+		_, err = tx.Exec(
 			constants.InsertPlayersForSavedGame,
-			player.ID,         // $1
-			savedGame.ID,      // $2
-			player.Score,      // $3
-			player.PlayerName, // $4
+			player.ID,            // $1
+			savedGame.ID,         // $2
+			player.Score,         // $3
+			encryptedPlayerName,  // $4 - encrypted player name
+			playerNameHash,       // $5 - hashed player name
 		)
 
 		if err != nil {
@@ -137,7 +160,7 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 
 	defer tx.Rollback()
 
-	// Insert saved game
+	// Insert saved game (team games don't have winning player names)
 	err = tx.QueryRow(
 		constants.InsertNewTeamSavedGame,
 		savedGame.TotalPoints,
@@ -162,6 +185,7 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 		if err != nil {
 			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 		}
+		
 	}
 
 	// Commit transaction

@@ -34,7 +34,7 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 
 /*
 - location id must exist in the locations table
-- game type must be a player game or team game, but not both.
+- game type must be a player game or team game, but not both (set by saved game model).
 - player game must have at least one player
 - player game cannot have any teams added
 - players must actually exist
