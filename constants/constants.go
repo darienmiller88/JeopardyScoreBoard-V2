@@ -112,7 +112,7 @@ const(
 	`
 
 	GetPlayerByName string = `
-		SELECT * FROM players WHERE player_name=$1
+		SELECT * FROM players WHERE player_name_hash=$1
 	`
 
 	GetPlayersByNames string = `
@@ -180,13 +180,12 @@ const(
 		UPDATE players
 		SET
 			updated_at=NOW(),
-			player_name = $1,
-			player_name_encrypted = $2,
-			player_name_hash = $3
+			player_name_encrypted = $1,
+			player_name_hash = $2
 		WHERE
-			player_name_hash = $4
+			player_name_hash = $3
 			AND location_id = (
-				SELECT id FROM locations WHERE location_name = $5
+				SELECT id FROM locations WHERE location_name = $4
 			);
 	`
 

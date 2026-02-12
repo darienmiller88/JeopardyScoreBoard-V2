@@ -57,7 +57,8 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	player.PlayerName = string(encryptedName)
+	player.PlayerNameEncrypted = encryptedName
+	player.PlayerNameHash = hash
 
 	return utils.GetResult(nil, http.StatusCreated, player)
 }
@@ -78,11 +79,10 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	//Use all of the following to updated the players name, encrypted name, and new hash.
 	result, err := s.db.Exec(
 		constants.UpdatePlayerName,
-		newPlayerName, //$1 -> To be removed soon! 
-		encryptedName, //$2
-		newPlayerNameHash, //$3
+		encryptedName, //$1
+		newPlayerNameHash, //$2
 		olderPlayerNameHash,//$3
-		locationName, //$5
+		locationName, //$4
 	)
 
 	if err != nil {
@@ -189,11 +189,11 @@ func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[
 // GetPlayerByName retrieves a single player by plaintext name.
 // The lookup is performed via hash in SQL, then the encrypted
 // name is decrypted before returning.
-func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
+func (s *sqlPlayerRepository) GetPlayerByName(playerNameHash []byte) models.Result[models.Player] {
 	player := models.Player{}
 
 	// Fetch the row (contains encrypted name)
-	if err := s.db.Get(&player, constants.GetPlayerByName, playerName); err != nil {
+	if err := s.db.Get(&player, constants.GetPlayerByName, playerNameHash); err != nil {
 		if err == sql.ErrNoRows {
 			return utils.GetResult(err, http.StatusNotFound, player)
 		}
