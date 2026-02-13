@@ -30,7 +30,8 @@ const(
 		INSERT INTO SavedGames (
 			total_score,
 			average_score,
-			winning_player_name,
+			winning_player_name_encrypted,
+			winning_player_name_hash,
 			winning_player_id,
 			location_id
 		)
@@ -39,8 +40,9 @@ const(
 			$2,
 			$3,
 			$4,
-			$5
-		) RETURNING id
+			$5,
+			$6
+		) RETURNING id, created_at, updated_at
 	`
 
 	InsertNewTeamSavedGame string = `
@@ -58,13 +60,15 @@ const(
 			player_id,
 			saved_game_id,
 			player_score,
-			player_name
+			player_name_encrypted,
+			player_name_hash
 		)
 		VALUES (
 			$1,
 			$2,
 			$3,
-			$4
+			$4,
+			$5
 		)
 	`
 

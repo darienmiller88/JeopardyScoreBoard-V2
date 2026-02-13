@@ -33,13 +33,16 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 //Business rules for a saved game:
 
 /*
-- location id must exist in the locations table
-- game type must be a player game or team game, but not both (set by saved game model).
-- player game must have at least one player
+(set by saved game model)
+- game type must be a player game or team game, but not both.
+- player game must have at least one player 
 - player game cannot have any teams added
-- players must actually exist
 - team game must have at least one team
 - team game cannot have any players added
+
+(set by saved game service)
+- location id must exist in the locations table
+- players must actually exist
 - teams must actually exist (id must be real)
 
 Winners for each type of game, and the total score will be calculated server side.
@@ -86,6 +89,8 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 }
 
 func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId string) models.Result[string]{
+	//check to see if saved game id exists first
+
 	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
 }
 

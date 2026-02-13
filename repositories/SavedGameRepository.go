@@ -43,6 +43,16 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
 func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame] {
 	savedGames := []models.SavedGame{}
 
+	for i := range savedGames {
+		decryptedName, err := s.encryptionService.Decrypt(savedGames[i].WinningPlayerNameEncrypted)
+
+		if err != nil{
+			return utils.GetResult(err, http.StatusInternalServerError, []models.SavedGame{})
+		}
+
+		savedGames[i].WinningPlayerName = 
+	}
+
 	if err := s.db.Select(&savedGames, constants.GetAllSavedGamesFromLocation, locationName); err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
@@ -94,34 +104,36 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 	var encryptedWinnerName []byte
 	var winnerNameHash []byte
 
-	if savedGame.WinningPlayerName.Valid && savedGame.WinningPlayerName.String != "" {
-		encryptedWinnerName, err = s.encryptionService.Encrypt(savedGame.WinningPlayerName.String)
-		if err != nil {
-			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
-		}
-
-		winnerNameHash = utils.NameHash(savedGame.WinningPlayerName.String)
+	//Encrypt the winning players name.
+	encryptedWinnerName, err = s.encryptionService.Encrypt(savedGame.WinningPlayerName.String)
+	
+	if err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
+
+	//Also get the hash of the winning player name for lookup
+	winnerNameHash = utils.NameHash(savedGame.WinningPlayerName.String)
 
 	// Insert saved game
 	err = tx.QueryRow(
 		constants.InsertNewPlayerSavedGame,
-		savedGame.TotalPoints,
-		savedGame.AveragePoints,
+		savedGame.TotalPoints,//$1
+		savedGame.AveragePoints,//$2
 		encryptedWinnerName, // $3 - encrypted winning player name
 		winnerNameHash,      // $4 - hashed winning player name
-		savedGame.WinningPlayerId,
-		savedGame.LocationId,
-	).Scan(&savedGame.ID)
+		savedGame.WinningPlayerId,//$5
+		savedGame.LocationId,//$6
+	).Scan(&savedGame.ID, &savedGame.CreatedAt, &savedGame.UpdatedAt)
 
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
-	// Loop over and add each player to the junction table "savedgameplayers"
+	// Loop over and add each player to the junction table "savedgamesplayers"
 	for _, player := range savedGame.Players {
 		// Encrypt and hash each player's name
 		encryptedPlayerName, err := s.encryptionService.Encrypt(player.PlayerName)
+
 		if err != nil {
 			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 		}

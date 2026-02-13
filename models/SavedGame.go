@@ -1,30 +1,37 @@
 package models
 
 import (
+	"JeopardyScoreBoardV2/encryption"
 	"database/sql"
 	"errors"
 	"time"
 )
 
 type SavedGame struct {
-	ID                int            `db:"id"` 
-	CreatedAt         time.Time      `db:"created_at"`
-	UpdatedAt         time.Time      `db:"updated_at"`
-	TotalPoints       int 		     `db:"total_score"`
-	AveragePoints     float64        `db:"average_score"`
-	WinningPlayerName sql.NullString `db:"winning_player_name"`
-	WinningTeamId     sql.NullInt32  `db:"winning_team_id"`
-	WinningPlayerId   sql.NullInt32  `db:"winning_player_id"`
-	LocationId        int            `json:"location_id" db:"location_id"`
+	ID                         int            `db:"id"` 
+	CreatedAt                  time.Time      `db:"created_at"`
+	UpdatedAt                  time.Time      `db:"updated_at"`
+	TotalPoints       		   int 		      `db:"total_score"`
+	AveragePoints    		   float64        `db:"average_score"`
+	WinningPlayerNameEncrypted sql.NullString `db:"winning_player_name_encrypted"`
+	WinningPlayerNameHash      sql.NullByte   `db:"winning_player_name_hash"`
+	WinningTeamId              sql.NullInt32  `db:"winning_team_id"`
+	WinningPlayerId            sql.NullInt32  `db:"winning_player_id"`
+	LocationId                 int            `json:"location_id" db:"location_id"`
 
 	//This will be used to determine which array gets filled: Teams or Players
 	IsPlayerGame      bool		     `json:"is_player_game" db:"-"`
+	
+	WinningPlayerName		   sql.NullString `db:"winning_player_name"`
 	
 	//These fields will be used to fill WinningPlayerId, WinningTeamId, and WinningPlayerName. The less
 	//I depend on the client for correct information, the better. Therefore, these will be the only
 	//fields to be validated.
 	Players           []Player       `json:"players" db:"-"`
 	Teams             []Team         `json:"teams"   db:"-"`
+
+	//encryption service to encrypt winning player name
+	encryptionService *encryption.EncryptionService
 }
 
 func (s *SavedGame) Validate() error{
@@ -88,9 +95,15 @@ func (s *SavedGame) CalculateAveragePoints(){
 //Calculate the winning team or player. If there is only one team or player, just set them as the 
 //winning team or player. Otherwise, loop through and find the winner manually.
 //At this point, it is assumed that the .Validate() method has been called first.
-func (s *SavedGame) CalculateWinner(){
+func (s *SavedGame) CalculateWinner() error{
 	if len(s.Players) == 1 {
-		s.WinningPlayerName = newNullString(s.Players[0].PlayerName)
+		encryptedName, err := s.encryptionService.Encrypt(s.Players[0].PlayerName)
+
+		if err != nil {
+			return err
+		}
+
+		s.WinningPlayerName = newNullString()
 		s.WinningPlayerId = newNullInt32(s.Players[0].ID)
 	} else if len(s.Teams) == 1{
 		s.WinningTeamId = newNullInt32(s.Teams[0].ID)
@@ -101,9 +114,11 @@ func (s *SavedGame) CalculateWinner(){
 			s.calcWinnerForTeams()
 		}
 	}
+
+	return nil
 }
 
-func (s *SavedGame) calcWinnerForPlayers(){
+func (s *SavedGame) calcWinnerForPlayers() error{
 	winningPlayer := s.Players[0]
 	
 	for _, player := range s.Players[1:] {
@@ -114,6 +129,8 @@ func (s *SavedGame) calcWinnerForPlayers(){
 
 	s.WinningPlayerName = newNullString(winningPlayer.PlayerName)
 	s.WinningPlayerId = newNullInt32(winningPlayer.ID)
+
+	return nil
 }
 
 func (s *SavedGame) calcWinnerForTeams(){
