@@ -8,27 +8,28 @@ import (
 )
 
 type SavedGame struct {
-	ID                         int            `db:"id"` 
-	CreatedAt                  time.Time      `db:"created_at"`
-	UpdatedAt                  time.Time      `db:"updated_at"`
-	TotalPoints       		   int 		      `db:"total_score"`
-	AveragePoints    		   float64        `db:"average_score"`
-	WinningPlayerNameEncrypted sql.NullString `db:"winning_player_name_encrypted"`
-	WinningPlayerNameHash      sql.NullByte   `db:"winning_player_name_hash"`
-	WinningTeamId              sql.NullInt32  `db:"winning_team_id"`
-	WinningPlayerId            sql.NullInt32  `db:"winning_player_id"`
-	LocationId                 int            `json:"location_id" db:"location_id"`
+	ID                         int           `db:"id"` 
+	CreatedAt                  time.Time     `db:"created_at"`
+	UpdatedAt                  time.Time     `db:"updated_at"`
+	TotalPoints       		   int 		     `db:"total_score"`
+	AveragePoints    		   float64       `db:"average_score"`
+	WinningPlayerNameEncrypted []byte        `db:"winning_player_name_encrypted"`
+	WinningPlayerNameHash      []byte        `db:"winning_player_name_hash"`
+	WinningTeamId              sql.NullInt32 `db:"winning_team_id"`
+	WinningPlayerId            sql.NullInt32 `db:"winning_player_id"`
+	LocationId                 int           `json:"location_id" db:"location_id"`
 
 	//This will be used to determine which array gets filled: Teams or Players
-	IsPlayerGame      bool		     `json:"is_player_game" db:"-"`
+	IsPlayerGame      bool	  `json:"is_player_game" db:"-"`
 	
-	WinningPlayerName		   sql.NullString `db:"winning_player_name"`
+	//Will contained the decrypted winning player name
+	WinningPlayerName string  `json:"winning_player_name"`
 	
 	//These fields will be used to fill WinningPlayerId, WinningTeamId, and WinningPlayerName. The less
 	//I depend on the client for correct information, the better. Therefore, these will be the only
 	//fields to be validated.
-	Players           []Player       `json:"players" db:"-"`
-	Teams             []Team         `json:"teams"   db:"-"`
+	Players           []Player `json:"players" db:"-"`
+	Teams             []Team   `json:"teams"   db:"-"`
 
 	//encryption service to encrypt winning player name
 	encryptionService *encryption.EncryptionService
@@ -103,13 +104,15 @@ func (s *SavedGame) CalculateWinner() error{
 			return err
 		}
 
-		s.WinningPlayerName = newNullString()
+		s.WinningPlayerNameEncrypted = encryptedName
 		s.WinningPlayerId = newNullInt32(s.Players[0].ID)
 	} else if len(s.Teams) == 1{
 		s.WinningTeamId = newNullInt32(s.Teams[0].ID)
 	} else{
 		if s.IsPlayerGame {
-			s.calcWinnerForPlayers()
+			if err := s.calcWinnerForPlayers(); err != nil{
+				return err
+			}
 		} else{
 			s.calcWinnerForTeams()
 		}
@@ -127,7 +130,15 @@ func (s *SavedGame) calcWinnerForPlayers() error{
 		}
 	}
 
-	s.WinningPlayerName = newNullString(winningPlayer.PlayerName)
+	playerNameDecrypted, err := s.encryptionService.Decrypt(winningPlayer.PlayerNameEncrypted)
+
+	if err != nil {
+		return err
+	}
+
+	s.WinningPlayerNameEncrypted = winningPlayer.PlayerNameEncrypted
+	s.WinningPlayerNameHash = s.WinningPlayerNameHash
+	s.WinningPlayerName = playerNameDecrypted
 	s.WinningPlayerId = newNullInt32(winningPlayer.ID)
 
 	return nil

@@ -67,6 +67,7 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 			return utils.GetResult(result.Err, result.StatusCode, savedGame)
 		}
 
+		//Assign the players from the DB to the saved game
 		savedGame.Players = result.ResultData
 	} else{
 		//check if teams the client added actually exist
@@ -79,10 +80,14 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 		savedGame.Teams = result.ResultData
 	}
 		
-	//Perform the following calculations on the saved game
+	//Find the average point total and total score on the saved game
 	savedGame.CalculateTotalPoints()
 	savedGame.CalculateAveragePoints()
-	savedGame.CalculateWinner()
+	
+	//Finally, calculate the winner
+	if err := savedGame.CalculateWinner(); err != nil{
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
+	}
 
 	//Finaly, after validating for all edge cases, pass the saved game to repository to be inserted.
 	return s.SavedGameRepository.AddSavedGameDB(savedGame)

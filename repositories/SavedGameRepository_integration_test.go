@@ -1,13 +1,25 @@
 package repositories
 
 import (
+	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
+	"JeopardyScoreBoardV2/utils"
 	"database/sql"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+// Helper to create encryption service for tests
+func getTestEncryptionService(t *testing.T) *encryption.EncryptionService {
+	key := os.Getenv("ENCRYPTION_KEY")
+	if key == "" {
+		t.Skip("ENCRYPTION_KEY not set, skipping encryption tests")
+	}
+	return encryption.NewService([]byte(key))
+}
 
 //=======================================
 // GET / tests retrieving saved games
@@ -16,7 +28,8 @@ import (
 // GetAllSavedGamesDB_Integration_Happy
 // Verifies all seeded saved games are returned from the real test database.
 func TestGetAllSavedGamesDB_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 	result := repo.GetAllSavedGamesDB()
 
 	require.Nil(t, result.Err)
@@ -30,44 +43,44 @@ func TestGetAllSavedGamesDB_Integration_Happy(t *testing.T) {
 	for _, sg := range result.ResultData {
 		if sg.TotalPoints == 1200 {
 			found = true
+			// Verify decryption worked for player games
+			if sg.WinningPlayerId.Valid {
+				require.NotEmpty(t, sg.WinningPlayerName, "winning player name should be decrypted")
+			}
 			break
 		}
 	}
 	require.True(t, found, "expected seeded saved game not found")
 }
 
-// GetAllSavedGamesDB_Integration_Unhappy_DBClosed
-// Verifies error is returned when the DB connection is closed.
-// func TestGetAllSavedGamesDB_Integration_Unhappy_DBClosed(t *testing.T) {
-// 	badDB := db
-// 	badDB.Close() // simulate catastrophic failure
-
-// 	repo := GetSqlSavedGameRepository(badDB)
-
-// 	result := repo.GetAllSavedGamesDB()
-
-// 	require.NotNil(t, result.Err)
-// 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
-// 	require.Empty(t, result.ResultData)
-// }
-
-
 // GetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood
 // Verifies Elmwood returns the 2 seeded saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	result := repo.GetAllSavedGamesFromLocationDB("Elmwood")
 
 	require.Nil(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)
 	require.Len(t, result.ResultData, 2)
+
+	// Verify at least one has decrypted winning player name
+	hasDecryptedName := false
+	for _, sg := range result.ResultData {
+		if sg.WinningPlayerName != "" {
+			hasDecryptedName = true
+			break
+		}
+	}
+	require.True(t, hasDecryptedName, "at least one game should have decrypted winning player name")
 }
 
 // GetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence
 // Verifies Lawrence returns the 4 seeded saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 	result := repo.GetAllSavedGamesFromLocationDB("Lawrence")
 
 	require.Nil(t, result.Err)
@@ -78,7 +91,8 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Lawrence(t *testing.T)
 // GetAllSavedGamesFromLocationDB_Integration_Happy_Flushing
 // Verifies Flushing returns the 2 seeded saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Flushing(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	result := repo.GetAllSavedGamesFromLocationDB("Flushing")
 
@@ -90,7 +104,8 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Happy_Flushing(t *testing.T)
 // GetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames
 // Verifies empty slice when location exists but has no saved games.
 func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 	result := repo.GetAllSavedGamesFromLocationDB("Pelham Bay")
 
 	require.Nil(t, result.Err)
@@ -101,7 +116,8 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_NoGames(t *testing.T
 // GetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation
 // Verifies empty slice when location name does not exist.
 func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	result := repo.GetAllSavedGamesFromLocationDB("NotARealLocation")
 
@@ -109,23 +125,6 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation(t *testi
 	require.Equal(t, http.StatusOK, result.StatusCode)
 	require.Empty(t, result.ResultData)
 }
-
-// GetAllSavedGamesFromLocationDB_Integration_Unhappy_DBClosed
-// Verifies error when DB connection is closed.
-// func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_DBClosed(t *testing.T) {
-// 	badDB := db
-// 	badDB.Close()
-
-// 	repo := GetSqlSavedGameRepository(badDB)
-// 	result := repo.GetAllSavedGamesFromLocationDB("Elmwood")
-
-// 	require.NotNil(t, result.Err)
-// 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
-// 	require.Empty(t, result.ResultData)
-// }
-
-
-
 
 //======================================
 // DELETE / tests deleting saved games
@@ -139,7 +138,8 @@ func getAnySavedGameID(t *testing.T) string {
 }
 
 func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	// Get a real saved game id
 	id := getAnySavedGameID(t)
@@ -170,27 +170,14 @@ func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
 }
 
 func TestDeleteSavedGameDB_Integration_Unhappy_NotFound(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 	fakeID := "999"
 	result := repo.DeleteSavedGameDB(fakeID)
 
 	require.NotNil(t, result.Err)
 	require.Equal(t, http.StatusNotFound, result.StatusCode)
 }
-
-// func TestDeleteSavedGameDB_Integration_Unhappy_DBClosed(t *testing.T) {
-// 	badDB := db
-// 	badDB.Close()
-
-// 	repo := GetSqlSavedGameRepository(badDB)
-// 	result := repo.DeleteSavedGameDB("9999")
-
-// 	require.NotNil(t, result.Err)
-// 	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
-// }
-
-
-
 
 //=======================================
 // INSERT - tests inserting saved games
@@ -203,29 +190,43 @@ func getLocationID(t *testing.T, name string) int {
 	return id
 }
 
-func getPlayerID(t *testing.T, name string) int {
+func getPlayerIDByHash(t *testing.T, playerName string) int {
+	hash := utils.NameHash(playerName)
 	var id int
-	err := db.Get(&id, "SELECT id FROM players WHERE player_name=$1", name)
+	err := db.Get(&id, "SELECT id FROM players WHERE player_name_hash=$1", hash)
 	require.NoError(t, err)
 	return id
 }
 
 func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	locationID := getLocationID(t, "Elmwood")
-	playerOneID := getPlayerID(t, "playerone")
-	playerTwoID := getPlayerID(t, "playertwo")
+	
+	// Use actual player names from seed data
+	winnerName := "goofer boofer"
+	playerOneName := "goofer boofer"
+	playerTwoName := "new player"
+	
+	playerOneID := getPlayerIDByHash(t, playerOneName)
+	playerTwoID := getPlayerIDByHash(t, playerTwoName)
+
+	// Encrypt the winning player name
+	encryptedWinnerName, err := encService.Encrypt(winnerName)
+	require.NoError(t, err)
+	winnerHash := utils.NameHash(winnerName)
 
 	savedGame := models.SavedGame{
-		TotalPoints:       900,
-		AveragePoints:     300,
-		WinningPlayerName: sql.NullString{String: "playerone"},
-		WinningPlayerId:   sql.NullInt32{Int32: int32(playerOneID), Valid: true },
-		LocationId:        locationID,
+		TotalPoints:                900,
+		AveragePoints:              300,
+		WinningPlayerNameEncrypted: encryptedWinnerName,
+		WinningPlayerNameHash:      winnerHash,
+		WinningPlayerId:            sql.NullInt32{Int32: int32(playerOneID), Valid: true},
+		LocationId:                 locationID,
 		Players: []models.Player{
-			{ID: playerOneID, PlayerName: "playerone", Score: 500},
-			{ID: playerTwoID, PlayerName: "playertwo", Score: 400},
+			{ID: playerOneID, PlayerName: playerOneName, Score: 500},
+			{ID: playerTwoID, PlayerName: playerTwoName, Score: 400},
 		},
 	}
 
@@ -235,33 +236,64 @@ func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 	require.Equal(t, http.StatusCreated, result.StatusCode)
 	require.NotZero(t, result.ResultData.ID)
 
-	// Verify savedgames row exists
+	// Verify savedgames row exists with encrypted data
 	var count int
-	err := db.Get(&count, "SELECT COUNT(*) FROM savedgames WHERE id=$1", result.ResultData.ID)
+	err = db.Get(&count, "SELECT COUNT(*) FROM savedgames WHERE id=$1", result.ResultData.ID)
 	require.NoError(t, err)
 	require.Equal(t, 1, count)
 
-	// Verify junction rows exist
+	// Verify the encrypted name and hash were stored
+	var storedGame struct {
+		WinningPlayerNameEncrypted []byte
+		WinningPlayerNameHash      []byte
+	}
+	err = db.Get(&storedGame, 
+		"SELECT winning_player_name_encrypted, winning_player_name_hash FROM savedgames WHERE id=$1",
+		result.ResultData.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, storedGame.WinningPlayerNameEncrypted)
+	require.NotEmpty(t, storedGame.WinningPlayerNameHash)
+
+	// Verify junction rows exist with encrypted player names
 	err = db.Get(&count, "SELECT COUNT(*) FROM savedgamesplayers WHERE saved_game_id=$1", result.ResultData.ID)
 	require.NoError(t, err)
 	require.Equal(t, 2, count)
+
+	// Verify player names are encrypted in junction table
+	var junctionPlayer struct {
+		PlayerNameEncrypted []byte
+		PlayerNameHash      []byte
+	}
+	err = db.Get(&junctionPlayer,
+		"SELECT player_name_encrypted, player_name_hash FROM savedgamesplayers WHERE saved_game_id=$1 LIMIT 1",
+		result.ResultData.ID)
+	require.NoError(t, err)
+	require.NotEmpty(t, junctionPlayer.PlayerNameEncrypted)
+	require.NotEmpty(t, junctionPlayer.PlayerNameHash)
 }
 
 func TestAddStandardSavedGame_Integration_RollbackOnBadPlayer(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	locationID := getLocationID(t, "Elmwood")
-	playerOneID := getPlayerID(t, "playerone")
+	playerOneName := "goofer boofer"
+	playerOneID := getPlayerIDByHash(t, playerOneName)
 	badPlayerID := 564523 // does not exist → FK violation
 
+	winnerName := "goofer boofer"
+	encryptedWinnerName, _ := encService.Encrypt(winnerName)
+	winnerHash := utils.NameHash(winnerName)
+
 	savedGame := models.SavedGame{
-		TotalPoints:       900,
-		AveragePoints:     300,
-		WinningPlayerName: sql.NullString{String: "playerone"},
-		WinningPlayerId:   sql.NullInt32{Int32: int32(playerOneID), Valid: true},
-		LocationId:        locationID,
+		TotalPoints:                900,
+		AveragePoints:              300,
+		WinningPlayerNameEncrypted: encryptedWinnerName,
+		WinningPlayerNameHash:      winnerHash,
+		WinningPlayerId:            sql.NullInt32{Int32: int32(playerOneID), Valid: true},
+		LocationId:                 locationID,
 		Players: []models.Player{
-			{ID: playerOneID, PlayerName: "playerone", Score: 500},
+			{ID: playerOneID, PlayerName: playerOneName, Score: 500},
 			{ID: badPlayerID, PlayerName: "ghost", Score: 400},
 		},
 	}
@@ -282,20 +314,23 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadPlayer(t *testing.T) {
 }
 
 func TestAddStandardSavedGame_Integration_RollbackOnBadWinningPlayer(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	locationID := getLocationID(t, "Elmwood")
 
+	winnerName := "ghost"
+	encryptedWinnerName, _ := encService.Encrypt(winnerName)
+	winnerHash := utils.NameHash(winnerName)
+
 	savedGame := models.SavedGame{
-		TotalPoints:       900,
-		AveragePoints:     300,
-		WinningPlayerName: sql.NullString{String: "ghost"},
-		WinningPlayerId:   sql.NullInt32{Int32: 8765439, Valid: true}, // invalid FK
-		LocationId:        locationID,
-		Players:           []models.Player{
-			{ID: 1, PlayerName: "playerone", Score: 500},
-			{ID: 2, PlayerName: "ghost", Score: 400},
-		},
+		TotalPoints:                900,
+		AveragePoints:              300,
+		WinningPlayerNameEncrypted: encryptedWinnerName,
+		WinningPlayerNameHash:      winnerHash,
+		WinningPlayerId:            sql.NullInt32{Int32: 8765439, Valid: true}, // invalid FK
+		LocationId:                 locationID,
+		Players:                    []models.Player{},
 	}
 
 	var before int
@@ -312,17 +347,24 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadWinningPlayer(t *testing.
 }
 
 func TestAddStandardSavedGame_Integration_RollbackOnBadLocation(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
-	playerOneID := getPlayerID(t, "playerone")
+	playerOneName := "goofer boofer"
+	playerOneID := getPlayerIDByHash(t, playerOneName)
+
+	winnerName := "goofer boofer"
+	encryptedWinnerName, _ := encService.Encrypt(winnerName)
+	winnerHash := utils.NameHash(winnerName)
 
 	savedGame := models.SavedGame{
-		TotalPoints:       900,
-		AveragePoints:     300,
-		WinningPlayerName: sql.NullString{String: "playerone"},
-		WinningPlayerId:   sql.NullInt32{Int32: int32(playerOneID), Valid: true},
-		LocationId:        999999, // invalid
-		Players:           []models.Player{},
+		TotalPoints:                900,
+		AveragePoints:              300,
+		WinningPlayerNameEncrypted: encryptedWinnerName,
+		WinningPlayerNameHash:      winnerHash,
+		WinningPlayerId:            sql.NullInt32{Int32: int32(playerOneID), Valid: true},
+		LocationId:                 999999, // invalid
+		Players:                    []models.Player{},
 	}
 
 	var before int
@@ -337,9 +379,36 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadLocation(t *testing.T) {
 	require.Equal(t, before, after)
 }
 
+func TestAddStandardSavedGame_Integration_EncryptionError(t *testing.T) {
+	// Create repo with bad encryption key
+	badService := encryption.NewService([]byte("short")) // Too short, will fail
+	repo := GetSqlSavedGameRepository(db, badService)
+
+	locationID := getLocationID(t, "Elmwood")
+	playerOneName := "goofer boofer"
+	playerOneID := getPlayerIDByHash(t, playerOneName)
+
+	// This will fail during encryption
+	savedGame := models.SavedGame{
+		TotalPoints:     900,
+		AveragePoints:   300,
+		WinningPlayerId: sql.NullInt32{Int32: int32(playerOneID), Valid: true},
+		LocationId:      locationID,
+		Players: []models.Player{
+			{ID: playerOneID, PlayerName: playerOneName, Score: 500},
+		},
+	}
+
+	result := repo.addStandardSavedGame(savedGame)
+
+	require.NotNil(t, result.Err)
+	require.Equal(t, http.StatusInternalServerError, result.StatusCode)
+}
+
 // Verifies full successful transaction: saved game and junction rows inserted.
 func TestAddTeamSavedGame_Integration_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 	locationID := getLocationID(t, "Elmwood")
 
 	// Elmwood has team with id = 1 from seeding
@@ -376,7 +445,8 @@ func TestAddTeamSavedGame_Integration_Happy(t *testing.T) {
 
 // Verifies multiple teams are correctly inserted.
 func TestAddTeamSavedGame_Integration_MultipleTeams_Happy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	locationID := getLocationID(t, "Lawrence")
 
@@ -405,10 +475,10 @@ func TestAddTeamSavedGame_Integration_MultipleTeams_Happy(t *testing.T) {
 	require.Equal(t, 3, count)
 }
 
-
 // Verifies transaction rolls back if winning_team_id violates FK.
 func TestAddTeamSavedGame_Integration_RollbackOnBadWinningTeam_Unhappy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 	locationID := getLocationID(t, "Elmwood")
 
 	var before int
@@ -434,7 +504,8 @@ func TestAddTeamSavedGame_Integration_RollbackOnBadWinningTeam_Unhappy(t *testin
 
 // Verifies rollback if a team insert in the junction table fails.
 func TestAddTeamSavedGame_Integration_RollbackOnBadTeamInJunction_Unhappy(t *testing.T) {
-	repo := GetSqlSavedGameRepository(db, nil)
+	encService := getTestEncryptionService(t)
+	repo := GetSqlSavedGameRepository(db, encService)
 
 	locationID := getLocationID(t, "Elmwood")
 
