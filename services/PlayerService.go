@@ -76,10 +76,16 @@ func (p *PlayerServiceImpl) GetPlayersFromLocation(locationName string) models.R
 func (p *PlayerServiceImpl) isPlayerNameTaken(playerName string) models.Result[models.Player] {
 	result := p.PlayerRepository.GetPlayerByName(playerName)
 
-	//If the repo returned a row, it means a name is taken
-	if result.ResultData.PlayerName != "" {
-
+	//Handle all 500 errors.
+	if result.StatusCode == http.StatusInternalServerError {
+		return utils.GetResult(result.Err, result.StatusCode, result.ResultData)
 	}
 
-	return utils.GetResult(nil, http.StatusOK, models.Player{})
+	//If the repo returned a 404, it means the name is not taken. Re
+	if result.StatusCode == http.StatusNotFound {
+		return utils.GetResult(nil, http.StatusOK, models.Player{})
+	}
+
+	//Otherwise, return a 409 signaling the player name is taken.
+	return utils.GetResult(fmt.Errorf("player name %s is taken", playerName), http.StatusConflict, models.Player{})
 }

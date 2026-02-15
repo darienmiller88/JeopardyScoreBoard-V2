@@ -192,7 +192,7 @@ func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[
 func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
 	player := models.Player{}
 
-	// Fetch the row (contains encrypted name)
+	// Fetch the row by player hash (contains encrypted name)
 	if err := s.db.Get(&player, constants.GetPlayerByName, encryption.NameHash(playerName)); err != nil {
 		if err == sql.ErrNoRows {
 			return utils.GetResult(err, http.StatusNotFound, player)
@@ -222,6 +222,7 @@ func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Res
 
 		// Decrypt the stored ciphertext from the DB
 		decryptedName, err := s.encryptionService.Decrypt(players[i].PlayerNameEncrypted)
+		
 		if err != nil {
 			return utils.GetResult(err, http.StatusInternalServerError, []models.Player{})
 		}
