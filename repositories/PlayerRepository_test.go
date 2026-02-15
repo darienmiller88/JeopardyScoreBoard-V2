@@ -429,7 +429,7 @@ func TestGetPlayerByName_Success(t *testing.T) {
 
 	playerName := "John Doe"
 	encryptedName, _ := encryptionService.Encrypt(playerName)
-	playerHash := []byte("somehash")
+	playerHash := encryption.NameHash(playerName)
 
 	rows := sqlmock.NewRows([]string{
 		"id",
@@ -446,7 +446,7 @@ func TestGetPlayerByName_Success(t *testing.T) {
 		WithArgs(playerHash).
 		WillReturnRows(rows)
 
-	result := repo.GetPlayerByName(playerHash)
+	result := repo.GetPlayerByName(playerName)
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
@@ -456,13 +456,14 @@ func TestGetPlayerByName_Success(t *testing.T) {
 func TestGetPlayerByName_NotFound(t *testing.T) {
 	_, mock, repo, _ := setupPlayerRepo(t)
 
-	playerHash := []byte("nonexistenthash")
+	playerName := "nonexistent"
+	playerHash := encryption.NameHash(playerName)
 
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetPlayerByName)).
 		WithArgs(playerHash).
 		WillReturnError(sql.ErrNoRows)
 
-	result := repo.GetPlayerByName(playerHash)
+	result := repo.GetPlayerByName(playerName)
 
 	assert.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
@@ -471,13 +472,14 @@ func TestGetPlayerByName_NotFound(t *testing.T) {
 func TestGetPlayerByName_DatabaseError(t *testing.T) {
 	_, mock, repo, _ := setupPlayerRepo(t)
 
-	playerHash := []byte("somehash")
+	playerName := "name ish"
+	playerHash := encryption.NameHash(playerName)
 
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetPlayerByName)).
 		WithArgs(playerHash).
 		WillReturnError(fmt.Errorf("database error"))
 
-	result := repo.GetPlayerByName(playerHash)
+	result := repo.GetPlayerByName(playerName)
 
 	assert.Error(t, result.Err)
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)

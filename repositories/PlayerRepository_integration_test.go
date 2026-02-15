@@ -114,7 +114,7 @@ func TestRemovePlayer_IntegrationTest_Ok(t *testing.T) {
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 
 	//Check to see if the player was found.
-	result = repo.GetPlayerByName(player.PlayerNameHash)
+	result = repo.GetPlayerByName(player.PlayerName)
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)

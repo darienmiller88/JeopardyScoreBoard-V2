@@ -20,7 +20,7 @@ type PlayerRepository interface {
 	RemovePlayer(playerName string, locationName string) models.Result[models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 	GetPlayersByNames(players []string) models.Result[[]models.Player]
-	GetPlayerByName(playerNameHash []byte) models.Result[models.Player]
+	GetPlayerByName(playerName string) models.Result[models.Player]
 }
 
 type sqlPlayerRepository struct {
@@ -189,11 +189,11 @@ func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[
 // GetPlayerByName retrieves a single player by plaintext name.
 // The lookup is performed via hash in SQL, then the encrypted
 // name is decrypted before returning.
-func (s *sqlPlayerRepository) GetPlayerByName(playerNameHash []byte) models.Result[models.Player] {
+func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
 	player := models.Player{}
 
 	// Fetch the row (contains encrypted name)
-	if err := s.db.Get(&player, constants.GetPlayerByName, playerNameHash); err != nil {
+	if err := s.db.Get(&player, constants.GetPlayerByName, encryption.NameHash(playerName)); err != nil {
 		if err == sql.ErrNoRows {
 			return utils.GetResult(err, http.StatusNotFound, player)
 		}
