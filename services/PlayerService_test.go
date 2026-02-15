@@ -15,6 +15,7 @@ import (
 type mockPlayerRepository struct {
 	playerResult  models.Result[models.Player]
 	playersResult models.Result[[]models.Player]
+	getPlayerByNameFunc func(string) models.Result[models.Player] // Add this function field
 }
 
 func (m *mockPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player] {
@@ -42,6 +43,11 @@ func (m *mockPlayerRepository) GetPlayersByNames(players []string) models.Result
 }
 
 func (m *mockPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
+	// Use the function field if provided, otherwise use default behavior
+	if m.getPlayerByNameFunc != nil {
+		return m.getPlayerByNameFunc(playerName)
+	}
+
 	return m.playerResult
 }
 
@@ -70,11 +76,20 @@ func (m *mockLocationRepositoryForPlayer) GetAllLocations() models.Result[[]stri
 func TestAddPlayer_Ok(t *testing.T) {
 	validPlayerName := "Jane Doe"
 	mockPlayerRepo := &mockPlayerRepository{
+		getPlayerByNameFunc: func(playerName string) models.Result[models.Player] {
+			// First call from isPlayerNameTaken - name not found (good)
+			return utils.GetResult(
+				fmt.Errorf("player not found"),
+				http.StatusNotFound,
+				models.Player{},
+			)
+		},
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{PlayerName: validPlayerName},
-			StatusCode: http.StatusCreated,
+			StatusCode: http.StatusCreated, // ← Change this to 201
 		},
 	}
+	
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
 		locationResult: models.Result[string]{
 			ResultData: "Elmwood",
@@ -149,7 +164,7 @@ func TestAddPlayer_NameMustHaveTwoParts(t *testing.T) {
 func TestAddPlayer_LocationNotFound(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
+		locationResult: models.Result[string]{
 			Err:        fmt.Errorf("location not found"),
 			StatusCode: http.StatusNotFound,
 		},
@@ -174,8 +189,8 @@ func TestAddPlayer_NameAlreadyTaken(t *testing.T) {
 		},
 	}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
-			ResultData: models.Location{LocationName: "Elmwood"},
+		locationResult: models.Result[string]{
+			ResultData: "Elmwood",
 			StatusCode: http.StatusOK,
 		},
 	}
@@ -200,8 +215,8 @@ func TestAddPlayer_DatabaseError(t *testing.T) {
 		},
 	}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
-			ResultData: models.Location{LocationName: "Elmwood"},
+		locationResult: models.Result[string]{
+			ResultData: "Elmwood",
 			StatusCode: http.StatusOK,
 		},
 	}
@@ -325,21 +340,38 @@ func TestGetPlayersFromLocation_RepoError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 }
 
+
+
+
 ////////////////////
 // UPDATE/PUT tests
 ////////////////////
 
 // TestUpdatePlayerName_Service_Ok verifies successful player name update
 func TestUpdatePlayerName_Service_Ok(t *testing.T) {
+	count := 0
+
 	mockPlayerRepo := &mockPlayerRepository{
+		getPlayerByNameFunc: func(playerName string) models.Result[models.Player] {
+			count++
+
+			// First call from doesPlayerExist - name found (good)
+			if count == 1 {
+				return utils.GetResult(nil, http.StatusOK, models.Player{})
+			}
+
+			//Second call from isPlayerTaken - new name not found (good)
+			return utils.GetResult(nil, int(http.StatusNotFound), models.Player{})
+		},
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{PlayerName: "Bob Melendez"},
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusOK, 
 		},
 	}
+	
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
-			ResultData: models.Location{LocationName: "Elmwood"},
+		locationResult: models.Result[string]{
+			ResultData: "Elmwood",
 			StatusCode: http.StatusOK,
 		},
 	}
@@ -425,22 +457,27 @@ func TestUpdatePlayerName_Service_OldNameDoesNotExist(t *testing.T) {
 // TestUpdatePlayerName_Service_NewNameAlreadyTaken verifies error when new name is taken
 func TestUpdatePlayerName_Service_NewNameAlreadyTaken(t *testing.T) {
 	callCount := 0
-	mockPlayerRepo := &mockPlayerRepository{}
 
-	// Override GetPlayerByName to return different results on subsequent calls
-	mockPlayerRepo.GetPlayerByName = func(playerNameHash []byte) models.Result[models.Player] {
-		callCount++
-		if callCount == 1 {
-			// First call: old name exists (OK)
-			return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: "Alice Twilight"})
-		}
-		// Second call: new name already taken (Conflict)
-		return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: "Bob Melendez"})
+	//UpdatePlayerName calls GetPlayerByName(playerName string) twice: once to verify if the old name exists,
+	//and another to verify if the new name is taken. If the second call returns a 200, the name is taken
+	//and the update cannot happen.
+	mockPlayerRepo := &mockPlayerRepository{
+		getPlayerByNameFunc: func(playerName string) models.Result[models.Player] {
+			callCount++
+
+			if callCount == 1 {
+				// First call: old name exists (OK)
+				return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: "Alice Twilight"})
+			}
+
+			// Second call: new name already taken (Conflict)
+			return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: "Bob Melendez"})
+		},
 	}
 
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
-			ResultData: models.Location{LocationName: "Elmwood"},
+		locationResult: models.Result[string]{
+			ResultData: "Elmwood",
 			StatusCode: http.StatusOK,
 		},
 	}
@@ -449,6 +486,7 @@ func TestUpdatePlayerName_Service_NewNameAlreadyTaken(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
+
 	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez", "Elmwood")
 
 	require.Error(t, result.Err)
@@ -461,11 +499,13 @@ func TestUpdatePlayerName_Service_LocationNotFound(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{PlayerName: "Alice Twilight"},
-			StatusCode: http.StatusOK,
+
+			//to update the name, a 404 must be thrown to signal is isn't there.
+			StatusCode: http.StatusNotFound,
 		},
 	}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
+		locationResult: models.Result[string]{
 			Err:        fmt.Errorf("location not found"),
 			StatusCode: http.StatusNotFound,
 		},
@@ -515,8 +555,8 @@ func TestRemovePlayer_Service_Ok(t *testing.T) {
 		},
 	}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
-			ResultData: models.Location{LocationName: "Elmwood"},
+		locationResult: models.Result[string]{
+			ResultData: "Elmwood",
 			StatusCode: http.StatusOK,
 		},
 	}
@@ -525,6 +565,7 @@ func TestRemovePlayer_Service_Ok(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
+
 	result := service.RemovePlayer(playerDeleted, "Elmwood")
 
 	require.NoError(t, result.Err)
@@ -541,8 +582,8 @@ func TestRemovePlayer_Service_PlayerNotFound(t *testing.T) {
 		},
 	}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
-			ResultData: models.Location{LocationName: "Elmwood"},
+		locationResult: models.Result[string]{
+			ResultData: "Elmwood",
 			StatusCode: http.StatusOK,
 		},
 	}
@@ -561,7 +602,7 @@ func TestRemovePlayer_Service_PlayerNotFound(t *testing.T) {
 func TestRemovePlayer_Service_LocationNotFound(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
+		locationResult: models.Result[string]{
 			Err:        fmt.Errorf("location not found"),
 			StatusCode: http.StatusNotFound,
 		},
@@ -586,8 +627,8 @@ func TestRemovePlayer_Service_DatabaseError(t *testing.T) {
 		},
 	}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[models.Location]{
-			ResultData: models.Location{LocationName: "Elmwood"},
+		locationResult: models.Result[string]{
+			ResultData: "Elmwood",
 			StatusCode: http.StatusOK,
 		},
 	}
