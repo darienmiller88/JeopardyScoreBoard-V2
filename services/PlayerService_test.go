@@ -40,7 +40,7 @@ func (m *mockPlayerRepository) GetPlayersByNames(players []string) models.Result
 	return m.playersResult
 }
 
-func (m *mockPlayerRepository) GetPlayerByName(playerNameHash []byte) models.Result[models.Player]{
+func (m *mockPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player]{
 	return m.playerResult
 }
 
