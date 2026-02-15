@@ -41,6 +41,7 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName
 func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {
 	player := models.Player{PlayerName: playerName}
 
+	//Ensure the player name passes all validation.
 	if err := player.Validate(); err != nil {
 		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
@@ -51,7 +52,12 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 	}
 
 	//ensure the new name isn't taken
+	if result := p.isPlayerNameTaken(playerName); result.Err != nil{
+		return utils.GetResult(result.Err, result.StatusCode, player)
+	}
 
+	//After validating to ensure the location exists, the name isn't taken, and it's properly
+	//formatted, safely pass it to the repository to be inserted.
 	return p.PlayerRepository.AddPlayerToLocation(locationName, player)
 }
 
@@ -81,7 +87,7 @@ func (p *PlayerServiceImpl) isPlayerNameTaken(playerName string) models.Result[m
 		return utils.GetResult(result.Err, result.StatusCode, result.ResultData)
 	}
 
-	//If the repo returned a 404, it means the name is not taken. Re
+	//If the repo returned a 404, it means the name is not taken. Return a 200 to allow name insertion.
 	if result.StatusCode == http.StatusNotFound {
 		return utils.GetResult(nil, http.StatusOK, models.Player{})
 	}
