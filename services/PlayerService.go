@@ -22,19 +22,42 @@ type PlayerServiceImpl struct {
 	LocationRepository repositories.LocationRepository
 }
 
+//Update a players old name to be a new name.
 func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player] {
 	player := models.Player{PlayerName: newPlayerName}
 
+	//Ensure the new name passes validation/is properly formatted
 	if err := player.Validate(); err != nil {
 		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
 
+	//Ensure the new name and old name are different.
 	if oldPlayerName == newPlayerName {
 		return utils.GetResult(fmt.Errorf("old and new names must be different"), http.StatusUnprocessableEntity, player)
 	}
 
-	//ensure the new name isn't taken
+	//ensure the old name exists.
+	if result := p.doesPlayerExist(oldPlayerName); result.Err != nil{
+		return utils.GetResult(result.Err, result.StatusCode, player)
+	}
 
+	//ensure the new name isn't taken
+	if result := p.isPlayerNameTaken(newPlayerName); result.Err != nil{
+		return utils.GetResult(result.Err, result.StatusCode, player)
+	}
+
+	//ensure location exists
+	if result := p.LocationRepository.GetLocation(locationName); result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, player)
+	}
+
+	//After confirming the following:
+	//1. The location exists
+	//2. The new name isn't taken
+	//3. The new name is properly formatted
+	//4. The old name actually exists
+	//5. The old and new names are different
+	//Update the players old name to be the new name.
 	return p.PlayerRepository.UpdatePlayerName(oldPlayerName, newPlayerName, locationName)
 }
 
@@ -51,16 +74,20 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 		return utils.GetResult(result.Err, result.StatusCode, player)
 	}
 
-	//ensure the new name isn't taken
+	//ensure the name isn't taken
 	if result := p.isPlayerNameTaken(playerName); result.Err != nil{
 		return utils.GetResult(result.Err, result.StatusCode, player)
 	}
 
-	//After validating to ensure the location exists, the name isn't taken, and it's properly
-	//formatted, safely pass it to the repository to be inserted.
+	//After confirming the following:
+	//1. The location exists
+	//2. The new name isn't taken
+	//3. The new name is properly formatted (validated)
+	//Add the new player to be database.
 	return p.PlayerRepository.AddPlayerToLocation(locationName, player)
 }
 
+//Remove a player belonging to a certain location by using their name and location.
 func (p *PlayerServiceImpl) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
 	result := p.LocationRepository.GetLocation(locationName)
 
@@ -68,6 +95,15 @@ func (p *PlayerServiceImpl) RemovePlayer(playerName string, locationName string)
 		return utils.GetResult(result.Err, result.StatusCode, models.Player{})
 	}
 
+	//ensure the name to be deleted actually exists
+	if result := p.doesPlayerExist(playerName); result.Err != nil{
+		return utils.GetResult(result.Err, result.StatusCode, models.Player{})
+	}
+
+	//After confirming the following:
+	//1. The location exists
+	//2. The name actually exists
+	//Remove the player from the database.
 	return p.PlayerRepository.RemovePlayer(playerName, locationName)
 }
 
@@ -79,6 +115,24 @@ func (p *PlayerServiceImpl) GetPlayersFromLocation(locationName string) models.R
 	return p.PlayerRepository.GetPlayersFromLocation(locationName)
 }
 
+//Check to see if a player exists, which is necessary for changing the name of an existing player.
+func (p *PlayerServiceImpl) doesPlayerExist(playerName string) models.Result[models.Player] {
+	result := p.PlayerRepository.GetPlayerByName(playerName)
+
+	//Handle all 500 errors.
+	if result.StatusCode == http.StatusInternalServerError {
+		return utils.GetResult(result.Err, result.StatusCode, result.ResultData)
+	}
+
+	//If the repo returned a 404, it means the name is doesn't exist.
+	if result.StatusCode == http.StatusNotFound {
+		return utils.GetResult(result.Err, result.StatusCode, models.Player{})
+	}
+
+	return utils.GetResult(nil, http.StatusOK, models.Player{})
+}
+
+//Check to see if a name is taken (exists), which is needed for adding more players.
 func (p *PlayerServiceImpl) isPlayerNameTaken(playerName string) models.Result[models.Player] {
 	result := p.PlayerRepository.GetPlayerByName(playerName)
 
