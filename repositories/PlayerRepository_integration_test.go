@@ -27,22 +27,13 @@ func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 	//Verify the player name hash 
 	assert.Equal(t, nameHash, result.ResultData.PlayerNameHash)
 
-	//Verify that the player was inserted into the database
-	// allPlayers := playerRepository.GetAllPlayersFromAllLocations()
-	// playerInserted := allPlayers.ResultData[len(allPlayers.ResultData) - 1]
+	//Verify that the player was added to the database.
+	hash := []byte{}
+	db.Get(&hash, "SELECT player_name_hash FROM players WHERE id=$1", result.ResultData.ID)
 
-	// assert.Equal(t, result.ResultData.PlayerNameEncrypted, playerInserted.PlayerNameEncrypted)
+	assert.Equal(t, nameHash, hash)
 }
 
-// func TestAddPlayerToLocation_IntegrationTest_InvalidLocation(t *testing.T) {
-//     playerRepository := GetSqlPlayerRepository(db, es)
-// 	player := models.Player{PlayerName: "Darien Miller"}
-
-// 	result := playerRepository.AddPlayerToLocation("FakeLocation", player)
-
-// 	require.Error(t, result.Err)
-// 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
-// }
 
 /////////////////////////
 //READ/GET tests

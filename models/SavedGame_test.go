@@ -193,6 +193,19 @@ func TestSavedGame_CalculateTotalPoints(t *testing.T) {
 			expectedTotal: 300,
 		},
 		{
+			name: "Team game multiple teams and negative scores - happy",
+			savedGame: SavedGame{
+				IsPlayerGame: false,
+				Teams: []Team{
+					{ID: 1, Score: -100},
+					{ID: 2, Score: 120},
+					{ID: 3, Score: -80},
+				},
+				encryptionService: encService,
+			},
+			expectedTotal: -60,
+		},
+		{
 			name: "Player game empty - happy",
 			savedGame: SavedGame{
 				IsPlayerGame:      true,

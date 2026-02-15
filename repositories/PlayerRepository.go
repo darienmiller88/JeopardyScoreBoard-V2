@@ -95,13 +95,11 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 		return utils.GetResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
 	}
 
-	updateResult :=  models.Player{
+	return utils.GetResult(nil, http.StatusOK, models.Player{
 		PlayerName: newPlayerName,
 		PlayerNameEncrypted: encryptedName,
 		PlayerNameHash: newPlayerNameHash,
-	}
-
-	return utils.GetResult(nil, http.StatusOK, updateResult)
+	})
 }
 
 // Remove a single player from a given location.
