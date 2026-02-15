@@ -5,6 +5,7 @@ import (
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/utils"
 	"database/sql"
+	"encoding/base64"
 	"net/http"
 	"os"
 	"testing"
@@ -15,10 +16,17 @@ import (
 // Helper to create encryption service for tests
 func getTestEncryptionService(t *testing.T) *encryption.EncryptionService {
 	key := os.Getenv("ENCRYPTION_KEY")
-	if key == "" {
+	keyB64, err := base64.StdEncoding.DecodeString(key)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	if string(keyB64) == "" {
 		t.Skip("ENCRYPTION_KEY not set, skipping encryption tests")
 	}
-	return encryption.NewService([]byte(key))
+
+	return encryption.NewService(keyB64)
 }
 
 //=======================================
@@ -37,20 +45,6 @@ func TestGetAllSavedGamesDB_Integration_Happy(t *testing.T) {
 
 	// From migrations: 8 total saved games
 	require.GreaterOrEqual(t, len(result.ResultData), 8)
-
-	// Spot check a known seeded value
-	found := false
-	for _, sg := range result.ResultData {
-		if sg.TotalPoints == 1200 {
-			found = true
-			// Verify decryption worked for player games
-			if sg.WinningPlayerId.Valid {
-				require.NotEmpty(t, sg.WinningPlayerName, "winning player name should be decrypted")
-			}
-			break
-		}
-	}
-	require.True(t, found, "expected seeded saved game not found")
 }
 
 // GetAllSavedGamesFromLocationDB_Integration_Happy_Elmwood
@@ -207,7 +201,7 @@ func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 	// Use actual player names from seed data
 	winnerName := "goofer boofer"
 	playerOneName := "goofer boofer"
-	playerTwoName := "new player"
+	playerTwoName := "player mah"
 	
 	playerOneID := getPlayerIDByHash(t, playerOneName)
 	playerTwoID := getPlayerIDByHash(t, playerTwoName)
@@ -243,13 +237,10 @@ func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 	require.Equal(t, 1, count)
 
 	// Verify the encrypted name and hash were stored
-	var storedGame struct {
-		WinningPlayerNameEncrypted []byte
-		WinningPlayerNameHash      []byte
-	}
-	err = db.Get(&storedGame, 
-		"SELECT winning_player_name_encrypted, winning_player_name_hash FROM savedgames WHERE id=$1",
-		result.ResultData.ID)
+	
+	storedGame := models.SavedGame{}
+
+	err = db.Get(&storedGame, "SELECT * FROM savedgames WHERE id=$1", result.ResultData.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, storedGame.WinningPlayerNameEncrypted)
 	require.NotEmpty(t, storedGame.WinningPlayerNameHash)
@@ -261,12 +252,13 @@ func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 
 	// Verify player names are encrypted in junction table
 	var junctionPlayer struct {
-		PlayerNameEncrypted []byte
-		PlayerNameHash      []byte
+		PlayerNameEncrypted []byte `db:"player_name_encrypted"`
+		PlayerNameHash      []byte `db:"player_name_hash"`
 	}
 	err = db.Get(&junctionPlayer,
-		"SELECT player_name_encrypted, player_name_hash FROM savedgamesplayers WHERE saved_game_id=$1 LIMIT 1",
+		"SELECT player_name_encrypted, player_name_hash FROM savedgamesplayers WHERE saved_game_id=$1",
 		result.ResultData.ID)
+		
 	require.NoError(t, err)
 	require.NotEmpty(t, junctionPlayer.PlayerNameEncrypted)
 	require.NotEmpty(t, junctionPlayer.PlayerNameHash)

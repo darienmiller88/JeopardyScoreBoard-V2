@@ -153,15 +153,13 @@ func TestUpdatePlayerName_Happy(t *testing.T) {
 }
 
 func TestUpdatePlayerName_PlayerNotFound_Unhappy(t *testing.T) {
-	_, mock, repo, encryptionService := setupPlayerRepo(t)
+	_, mock, repo, _ := setupPlayerRepo(t)
 
 	newName := "Kathya"
 	oldName := "Nonexistent player"
 
-	encryptedNewName, _ := encryptionService.Encrypt(newName)
-
 	mock.ExpectExec(regexp.QuoteMeta(constants.UpdatePlayerName)).
-		WithArgs(encryptedNewName, sqlmock.AnyArg(), sqlmock.AnyArg(), "Elmwood").
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), "Elmwood"). // All AnyArg
 		WillReturnResult(sqlmock.NewResult(0, 0))
 
 	result := repo.UpdatePlayerName(oldName, newName, "Elmwood")

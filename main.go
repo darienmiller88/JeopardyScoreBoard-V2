@@ -71,15 +71,19 @@ func encryptNames(db *sqlx.DB, es *encryption.EncryptionService){
 
 		rows.Scan(&id, &name)
 
-		encrypted, _ := es.Encrypt(name)
-		hash := utils.NameHash(name)
+		if id == 10 || id == 12 {
+			fmt.Println("encrypting", name)
 
-		db.Exec(`
-			UPDATE players
-			SET player_name_encrypted = $1,
-				player_name_hash = $2
-			WHERE id = $3
-		`, encrypted, hash, id)
+			encrypted, _ := es.Encrypt(name)
+			hash := utils.NameHash(name)
+	
+			db.Exec(`
+				UPDATE savedgames
+				SET winning_player_name_encrypted = $1,
+					winning_player_name_hash = $2
+				WHERE winning_player_id = $3
+			`, encrypted, hash, id)
+		}
 	}
 
 }

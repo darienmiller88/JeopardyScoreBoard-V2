@@ -52,9 +52,7 @@ CREATE TABLE IF NOT EXISTS savedgames (
 
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     winning_team_id INT REFERENCES teams(id) ON DELETE SET NULL,
-    winning_player_id INT REFERENCES players(id) ON DELETE SET NULL,
-
-    UNIQUE(winning_player_name_hash)
+    winning_player_id INT REFERENCES players(id) ON DELETE SET NULL
 );
 
 
@@ -80,7 +78,6 @@ CREATE TABLE IF NOT EXISTS savedgamesplayers (
     id SERIAL PRIMARY KEY,
     player_score INT NOT NULL,
 
-    player_name VARCHAR(60) NOT NULL,
     player_name_encrypted BYTEA NOT NULL,
     player_name_hash BYTEA NOT NULL,
 
