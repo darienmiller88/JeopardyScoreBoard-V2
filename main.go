@@ -15,7 +15,6 @@ import (
 	"JeopardyScoreBoardV2/controllers"
 	"JeopardyScoreBoardV2/database"
 	"JeopardyScoreBoardV2/encryption"
-	"JeopardyScoreBoardV2/utils"
 )
 
 func main() {
@@ -75,7 +74,7 @@ func encryptNames(db *sqlx.DB, es *encryption.EncryptionService){
 			fmt.Println("encrypting", name)
 
 			encrypted, _ := es.Encrypt(name)
-			hash := utils.NameHash(name)
+			hash := encryption.NameHash(name)
 	
 			db.Exec(`
 				UPDATE savedgames

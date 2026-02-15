@@ -43,7 +43,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 	}
 
 	// //Calculate the hash from the player name, and some secret salt.
-	hash := utils.NameHash(player.PlayerName)
+	hash := encryption.NameHash(player.PlayerName)
 
 	//Use the hash and encrypted names to create a new row, with the player name there temporarily.
 	err = s.db.QueryRow(
@@ -73,8 +73,8 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	}
 
 	//Find the column of the old name by its hash, and create a new hash for the new name
-	olderPlayerNameHash := utils.NameHash(oldPlayerName)
-	newPlayerNameHash   := utils.NameHash(newPlayerName)
+	olderPlayerNameHash := encryption.NameHash(oldPlayerName)
+	newPlayerNameHash   := encryption.NameHash(newPlayerName)
 
 	//Use all of the following to updated the players name, encrypted name, and new hash.
 	result, err := s.db.Exec(
@@ -106,7 +106,9 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 
 // Remove a single player from a given location.
 func (s *sqlPlayerRepository) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
-	result, err := s.db.Exec(constants.DeletePlayer, utils.NameHash(playerName), locationName)
+	
+	//Search for a player by their hash rather than their actual name
+	result, err := s.db.Exec(constants.DeletePlayer, encryption.NameHash(playerName), locationName)
 
 	if err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})

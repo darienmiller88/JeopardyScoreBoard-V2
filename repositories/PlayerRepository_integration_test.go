@@ -1,8 +1,8 @@
 package repositories
 
 import (
+	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
-	"JeopardyScoreBoardV2/utils"
 	"net/http"
 	"testing"
 
@@ -22,9 +22,9 @@ func TestAddValidPlayer_IntegrationTest_Ok(t *testing.T) {
 	assert.Equal(t, nil, result.Err)
 	assert.Equal(t, http.StatusCreated, result.StatusCode)
 
-	nameHash := utils.NameHash(player.PlayerName)
+	nameHash := encryption.NameHash(player.PlayerName)
 
-	//Verify the player name hash
+	//Verify the player name hash 
 	assert.Equal(t, nameHash, result.ResultData.PlayerNameHash)
 
 	//Verify that the player was inserted into the database

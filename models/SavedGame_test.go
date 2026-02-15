@@ -1,16 +1,57 @@
 package models
 
 import (
+	"JeopardyScoreBoardV2/encryption"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+// Helper to create test encryption service
+func getTestEncryptionService() *encryption.EncryptionService {
+	testKey := []byte("12345678901234567890123456789012") // 32 bytes for AES-256
+	return encryption.NewService(testKey)
+}
+
+// Helper to create test players with encrypted names
+func createTestPlayers(encService *encryption.EncryptionService) []Player {
+	player1Encrypted, _ := encService.Encrypt("Player1")
+	player2Encrypted, _ := encService.Encrypt("Player2")
+	player3Encrypted, _ := encService.Encrypt("Player3")
+
+	return []Player{
+		{
+			ID:                  1,
+			PlayerName:          "Player1",
+			PlayerNameEncrypted: player1Encrypted,
+			PlayerNameHash:      encryption.NameHash("Player1"),
+			Score:               50,
+		},
+		{
+			ID:                  2,
+			PlayerName:          "Player2",
+			PlayerNameEncrypted: player2Encrypted,
+			PlayerNameHash:      encryption.NameHash("Player2"),
+			Score:               60,
+		},
+		{
+			ID:                  3,
+			PlayerName:          "Player3",
+			PlayerNameEncrypted: player3Encrypted,
+			PlayerNameHash:      encryption.NameHash("Player3"),
+			Score:               40,
+		},
+	}
+}
 
 // ============================================================================
 // Validate() Tests - Table Driven
 // ============================================================================
 
 func TestSavedGame_Validate(t *testing.T) {
+	encService := getTestEncryptionService()
+
 	tests := []struct {
 		name          string
 		savedGame     SavedGame
@@ -19,12 +60,10 @@ func TestSavedGame_Validate(t *testing.T) {
 		{
 			name: "Player game valid - happy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 60},
-				},
-				Teams: []Team{},
+				IsPlayerGame:      true,
+				Players:           createTestPlayers(encService)[:2],
+				Teams:             []Team{},
+				encryptionService: encService,
 			},
 			expectedError: "",
 		},
@@ -34,9 +73,10 @@ func TestSavedGame_Validate(t *testing.T) {
 				IsPlayerGame: false,
 				Players:      []Player{},
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
-					{ID: 2, TeamName: "Team2", Score: 120},
+					{ID: 1, Score: 100},
+					{ID: 2, Score: 120},
 				},
+				encryptionService: encService,
 			},
 			expectedError: "",
 		},
@@ -44,12 +84,11 @@ func TestSavedGame_Validate(t *testing.T) {
 			name: "Player game with teams - unhappy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
-				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-				},
+				Players:      createTestPlayers(encService)[:1],
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
+					{ID: 1, Score: 100},
 				},
+				encryptionService: encService,
 			},
 			expectedError: "a player game cannot have any teams added",
 		},
@@ -57,48 +96,51 @@ func TestSavedGame_Validate(t *testing.T) {
 			name: "Team game with players - unhappy",
 			savedGame: SavedGame{
 				IsPlayerGame: false,
-				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-				},
+				Players:      createTestPlayers(encService)[:1],
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
+					{ID: 1, Score: 100},
 				},
+				encryptionService: encService,
 			},
 			expectedError: "a team game cannot have any players added",
 		},
 		{
 			name: "Player game empty players - unhappy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				Players:      []Player{},
-				Teams:        []Team{},
+				IsPlayerGame:      true,
+				Players:           []Player{},
+				Teams:             []Team{},
+				encryptionService: encService,
 			},
-			expectedError: "players cannot be empty when winning player id is supplied",
+			expectedError: "players cannot be empty when a player game is being played",
 		},
 		{
 			name: "Team game empty teams - unhappy",
 			savedGame: SavedGame{
-				IsPlayerGame: false,
-				Players:      []Player{},
-				Teams:        []Team{},
+				IsPlayerGame:      false,
+				Players:           []Player{},
+				Teams:             []Team{},
+				encryptionService: encService,
 			},
-			expectedError: "teams cannot be empty when winning team id is supplied",
+			expectedError: "teams cannot be empty when a team game is being played",
 		},
 		{
 			name: "Player game nil players - unhappy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				Players:      nil,
+				IsPlayerGame:      true,
+				Players:           nil,
+				encryptionService: encService,
 			},
-			expectedError: "players cannot be empty when winning player id is supplied",
+			expectedError: "players cannot be empty when a player game is being played",
 		},
 		{
 			name: "Team game nil teams - unhappy",
 			savedGame: SavedGame{
-				IsPlayerGame: false,
-				Teams:        nil,
+				IsPlayerGame:      false,
+				Teams:             nil,
+				encryptionService: encService,
 			},
-			expectedError: "teams cannot be empty when winning team id is supplied",
+			expectedError: "teams cannot be empty when a team game is being played",
 		},
 	}
 
@@ -121,6 +163,8 @@ func TestSavedGame_Validate(t *testing.T) {
 // ============================================================================
 
 func TestSavedGame_CalculateTotalPoints(t *testing.T) {
+	encService := getTestEncryptionService()
+
 	tests := []struct {
 		name          string
 		savedGame     SavedGame
@@ -129,12 +173,9 @@ func TestSavedGame_CalculateTotalPoints(t *testing.T) {
 		{
 			name: "Player game multiple players - happy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 60},
-					{ID: 3, PlayerName: "Player3", Score: 40},
-				},
+				IsPlayerGame:      true,
+				Players:           createTestPlayers(encService),
+				encryptionService: encService,
 			},
 			expectedTotal: 150,
 		},
@@ -143,46 +184,49 @@ func TestSavedGame_CalculateTotalPoints(t *testing.T) {
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
-					{ID: 2, TeamName: "Team2", Score: 120},
-					{ID: 3, TeamName: "Team3", Score: 80},
+					{ID: 1, Score: 100},
+					{ID: 2, Score: 120},
+					{ID: 3, Score: 80},
 				},
+				encryptionService: encService,
 			},
 			expectedTotal: 300,
 		},
 		{
 			name: "Player game empty - happy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				Players:      []Player{},
+				IsPlayerGame:      true,
+				Players:           []Player{},
+				encryptionService: encService,
 			},
 			expectedTotal: 0,
 		},
 		{
 			name: "Team game empty - happy",
 			savedGame: SavedGame{
-				IsPlayerGame: false,
-				Teams:        []Team{},
+				IsPlayerGame:      false,
+				Teams:             []Team{},
+				encryptionService: encService,
 			},
 			expectedTotal: 0,
 		},
 		{
 			name: "Player game single player - happy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 75},
-				},
+				IsPlayerGame:      true,
+				Players:           createTestPlayers(encService)[:1],
+				encryptionService: encService,
 			},
-			expectedTotal: 75,
+			expectedTotal: 50,
 		},
 		{
 			name: "Team game single team - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 150},
+					{ID: 1, Score: 150},
 				},
+				encryptionService: encService,
 			},
 			expectedTotal: 150,
 		},
@@ -191,21 +235,20 @@ func TestSavedGame_CalculateTotalPoints(t *testing.T) {
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 0},
-					{ID: 2, PlayerName: "Player2", Score: 0},
+					{ID: 1, Score: 0, PlayerNameEncrypted: []byte("encrypted1")},
+					{ID: 2, Score: 0, PlayerNameEncrypted: []byte("encrypted2")},
 				},
+				encryptionService: encService,
 			},
 			expectedTotal: 0,
 		},
 		{
 			name: "Resets existing total - happy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				TotalPoints:  999,
-				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 60},
-				},
+				IsPlayerGame:      true,
+				TotalPoints:       999,
+				Players:           createTestPlayers(encService)[:2],
+				encryptionService: encService,
 			},
 			expectedTotal: 110,
 		},
@@ -224,6 +267,8 @@ func TestSavedGame_CalculateTotalPoints(t *testing.T) {
 // ============================================================================
 
 func TestSavedGame_CalculateAveragePoints(t *testing.T) {
+	encService := getTestEncryptionService()
+
 	tests := []struct {
 		name            string
 		savedGame       SavedGame
@@ -233,12 +278,9 @@ func TestSavedGame_CalculateAveragePoints(t *testing.T) {
 		{
 			name: "Player game even division - happy",
 			savedGame: SavedGame{
-				IsPlayerGame: true,
-				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 60},
-					{ID: 3, PlayerName: "Player3", Score: 40},
-				},
+				IsPlayerGame:      true,
+				Players:           createTestPlayers(encService),
+				encryptionService: encService,
 			},
 			expectedAverage: 50.0,
 			expectedTotal:   150,
@@ -248,9 +290,10 @@ func TestSavedGame_CalculateAveragePoints(t *testing.T) {
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
-					{ID: 2, TeamName: "Team2", Score: 120},
+					{ID: 1, Score: 100},
+					{ID: 2, Score: 120},
 				},
+				encryptionService: encService,
 			},
 			expectedAverage: 110.0,
 			expectedTotal:   220,
@@ -260,8 +303,13 @@ func TestSavedGame_CalculateAveragePoints(t *testing.T) {
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 75},
+					{
+						ID:                  1,
+						Score:               75,
+						PlayerNameEncrypted: []byte("encrypted"),
+					},
 				},
+				encryptionService: encService,
 			},
 			expectedAverage: 75.0,
 			expectedTotal:   75,
@@ -271,10 +319,11 @@ func TestSavedGame_CalculateAveragePoints(t *testing.T) {
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 60},
-					{ID: 3, PlayerName: "Player3", Score: 45},
+					{ID: 1, Score: 50, PlayerNameEncrypted: []byte("enc1")},
+					{ID: 2, Score: 60, PlayerNameEncrypted: []byte("enc2")},
+					{ID: 3, Score: 45, PlayerNameEncrypted: []byte("enc3")},
 				},
+				encryptionService: encService,
 			},
 			expectedAverage: 51.666666,
 			expectedTotal:   155,
@@ -284,10 +333,11 @@ func TestSavedGame_CalculateAveragePoints(t *testing.T) {
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
-					{ID: 2, TeamName: "Team2", Score: 110},
-					{ID: 3, TeamName: "Team3", Score: 105},
+					{ID: 1, Score: 100},
+					{ID: 2, Score: 110},
+					{ID: 3, Score: 105},
 				},
+				encryptionService: encService,
 			},
 			expectedAverage: 105.0,
 			expectedTotal:   315,
@@ -308,190 +358,212 @@ func TestSavedGame_CalculateAveragePoints(t *testing.T) {
 // ============================================================================
 
 func TestSavedGame_CalculateWinner(t *testing.T) {
+	encService := getTestEncryptionService()
+
 	tests := []struct {
-		name                  string
-		savedGame             SavedGame
-		expectedPlayerName    string
-		expectedPlayerId      int32
-		expectedTeamId        int32
-		shouldHavePlayerName  bool
-		shouldHavePlayerId    bool
-		shouldHaveTeamId      bool
+		name                     string
+		savedGame                SavedGame
+		expectedPlayerName       string
+		expectedPlayerId         int32
+		expectedTeamId           int32
+		shouldHaveEncryptedName  bool
+		shouldHavePlayerId       bool
+		shouldHaveTeamId         bool
 	}{
 		{
 			name: "Player game single player - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 75},
+					{
+						ID:                  1,
+						PlayerName:          "Player1",
+						PlayerNameEncrypted: mustEncrypt(encService, "Player1"),
+						Score:               75,
+					},
 				},
+				encryptionService: encService,
 			},
-			expectedPlayerName:   "Player1",
-			expectedPlayerId:     1,
-			shouldHavePlayerName: true,
-			shouldHavePlayerId:   true,
-			shouldHaveTeamId:     false,
+			expectedPlayerName:      "Player1",
+			expectedPlayerId:        1,
+			shouldHaveEncryptedName: true,
+			shouldHavePlayerId:      true,
+			shouldHaveTeamId:        false,
 		},
 		{
 			name: "Team game single team - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 150},
+					{ID: 1, Score: 150},
 				},
+				encryptionService: encService,
 			},
-			expectedTeamId:       1,
-			shouldHavePlayerName: false,
-			shouldHavePlayerId:   false,
-			shouldHaveTeamId:     true,
+			expectedTeamId:          1,
+			shouldHaveEncryptedName: false,
+			shouldHavePlayerId:      false,
+			shouldHaveTeamId:        true,
 		},
 		{
 			name: "Player game multiple players - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 75},
-					{ID: 3, PlayerName: "Player3", Score: 60},
+					{ID: 1, PlayerName: "Player1", PlayerNameEncrypted: mustEncrypt(encService, "Player1"), Score: 50},
+					{ID: 2, PlayerName: "Player2", PlayerNameEncrypted: mustEncrypt(encService, "Player2"), Score: 75},
+					{ID: 3, PlayerName: "Player3", PlayerNameEncrypted: mustEncrypt(encService, "Player3"), Score: 60},
 				},
+				encryptionService: encService,
 			},
-			expectedPlayerName:   "Player2",
-			expectedPlayerId:     2,
-			shouldHavePlayerName: true,
-			shouldHavePlayerId:   true,
-			shouldHaveTeamId:     false,
+			expectedPlayerName:      "Player2",
+			expectedPlayerId:        2,
+			shouldHaveEncryptedName: true,
+			shouldHavePlayerId:      true,
+			shouldHaveTeamId:        false,
 		},
 		{
 			name: "Team game multiple teams - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
-					{ID: 2, TeamName: "Team2", Score: 150},
-					{ID: 3, TeamName: "Team3", Score: 120},
+					{ID: 1, Score: 100},
+					{ID: 2, Score: 150},
+					{ID: 3, Score: 120},
 				},
+				encryptionService: encService,
 			},
-			expectedTeamId:       2,
-			shouldHavePlayerName: false,
-			shouldHavePlayerId:   false,
-			shouldHaveTeamId:     true,
+			expectedTeamId:          2,
+			shouldHaveEncryptedName: false,
+			shouldHavePlayerId:      false,
+			shouldHaveTeamId:        true,
 		},
 		{
 			name: "Player game tied scores - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 75},
-					{ID: 2, PlayerName: "Player2", Score: 75},
-					{ID: 3, PlayerName: "Player3", Score: 60},
+					{ID: 1, PlayerName: "Player1", PlayerNameEncrypted: mustEncrypt(encService, "Player1"), Score: 75},
+					{ID: 2, PlayerName: "Player2", PlayerNameEncrypted: mustEncrypt(encService, "Player2"), Score: 75},
+					{ID: 3, PlayerName: "Player3", PlayerNameEncrypted: mustEncrypt(encService, "Player3"), Score: 60},
 				},
+				encryptionService: encService,
 			},
-			expectedPlayerName:   "Player1",
-			expectedPlayerId:     1,
-			shouldHavePlayerName: true,
-			shouldHavePlayerId:   true,
-			shouldHaveTeamId:     false,
+			expectedPlayerName:      "Player1",
+			expectedPlayerId:        1,
+			shouldHaveEncryptedName: true,
+			shouldHavePlayerId:      true,
+			shouldHaveTeamId:        false,
 		},
 		{
 			name: "Team game tied scores - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 150},
-					{ID: 2, TeamName: "Team2", Score: 150},
-					{ID: 3, TeamName: "Team3", Score: 120},
+					{ID: 1, Score: 150},
+					{ID: 2, Score: 150},
+					{ID: 3, Score: 120},
 				},
+				encryptionService: encService,
 			},
-			expectedTeamId:       1,
-			shouldHavePlayerName: false,
-			shouldHavePlayerId:   false,
-			shouldHaveTeamId:     true,
+			expectedTeamId:          1,
+			shouldHaveEncryptedName: false,
+			shouldHavePlayerId:      false,
+			shouldHaveTeamId:        true,
 		},
 		{
 			name: "Player game two players - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 75},
+					{ID: 1, PlayerName: "Player1", PlayerNameEncrypted: mustEncrypt(encService, "Player1"), Score: 50},
+					{ID: 2, PlayerName: "Player2", PlayerNameEncrypted: mustEncrypt(encService, "Player2"), Score: 75},
 				},
+				encryptionService: encService,
 			},
-			expectedPlayerName:   "Player2",
-			expectedPlayerId:     2,
-			shouldHavePlayerName: true,
-			shouldHavePlayerId:   true,
-			shouldHaveTeamId:     false,
+			expectedPlayerName:      "Player2",
+			expectedPlayerId:        2,
+			shouldHaveEncryptedName: true,
+			shouldHavePlayerId:      true,
+			shouldHaveTeamId:        false,
 		},
 		{
 			name: "Team game two teams - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: false,
 				Teams: []Team{
-					{ID: 1, TeamName: "Team1", Score: 100},
-					{ID: 2, TeamName: "Team2", Score: 150},
+					{ID: 1, Score: 100},
+					{ID: 2, Score: 150},
 				},
+				encryptionService: encService,
 			},
-			expectedTeamId:       2,
-			shouldHavePlayerName: false,
-			shouldHavePlayerId:   false,
-			shouldHaveTeamId:     true,
+			expectedTeamId:          2,
+			shouldHaveEncryptedName: false,
+			shouldHavePlayerId:      false,
+			shouldHaveTeamId:        true,
 		},
 		{
 			name: "Player game winner is first - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 100},
-					{ID: 2, PlayerName: "Player2", Score: 75},
-					{ID: 3, PlayerName: "Player3", Score: 60},
+					{ID: 1, PlayerName: "Player1", PlayerNameEncrypted: mustEncrypt(encService, "Player1"), Score: 100},
+					{ID: 2, PlayerName: "Player2", PlayerNameEncrypted: mustEncrypt(encService, "Player2"), Score: 75},
+					{ID: 3, PlayerName: "Player3", PlayerNameEncrypted: mustEncrypt(encService, "Player3"), Score: 60},
 				},
+				encryptionService: encService,
 			},
-			expectedPlayerName:   "Player1",
-			expectedPlayerId:     1,
-			shouldHavePlayerName: true,
-			shouldHavePlayerId:   true,
-			shouldHaveTeamId:     false,
+			expectedPlayerName:      "Player1",
+			expectedPlayerId:        1,
+			shouldHaveEncryptedName: true,
+			shouldHavePlayerId:      true,
+			shouldHaveTeamId:        false,
 		},
 		{
 			name: "Player game winner is last - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 50},
-					{ID: 2, PlayerName: "Player2", Score: 60},
-					{ID: 3, PlayerName: "Player3", Score: 100},
+					{ID: 1, PlayerName: "Player1", PlayerNameEncrypted: mustEncrypt(encService, "Player1"), Score: 50},
+					{ID: 2, PlayerName: "Player2", PlayerNameEncrypted: mustEncrypt(encService, "Player2"), Score: 60},
+					{ID: 3, PlayerName: "Player3", PlayerNameEncrypted: mustEncrypt(encService, "Player3"), Score: 100},
 				},
+				encryptionService: encService,
 			},
-			expectedPlayerName:   "Player3",
-			expectedPlayerId:     3,
-			shouldHavePlayerName: true,
-			shouldHavePlayerId:   true,
-			shouldHaveTeamId:     false,
+			expectedPlayerName:      "Player3",
+			expectedPlayerId:        3,
+			shouldHaveEncryptedName: true,
+			shouldHavePlayerId:      true,
+			shouldHaveTeamId:        false,
 		},
 		{
 			name: "Player game zero scores - happy",
 			savedGame: SavedGame{
 				IsPlayerGame: true,
 				Players: []Player{
-					{ID: 1, PlayerName: "Player1", Score: 0},
-					{ID: 2, PlayerName: "Player2", Score: 0},
+					{ID: 1, PlayerName: "Player1", PlayerNameEncrypted: mustEncrypt(encService, "Player1"), Score: 0},
+					{ID: 2, PlayerName: "Player2", PlayerNameEncrypted: mustEncrypt(encService, "Player2"), Score: 0},
 				},
+				encryptionService: encService,
 			},
-			expectedPlayerName:   "Player1",
-			expectedPlayerId:     1,
-			shouldHavePlayerName: true,
-			shouldHavePlayerId:   true,
-			shouldHaveTeamId:     false,
+			expectedPlayerName:      "Player1",
+			expectedPlayerId:        1,
+			shouldHaveEncryptedName: true,
+			shouldHavePlayerId:      true,
+			shouldHaveTeamId:        false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.savedGame.CalculateWinner()
+			err := tt.savedGame.CalculateWinner()
+			require.NoError(t, err)
 
-			if tt.shouldHavePlayerName {
-				assert.True(t, tt.savedGame.WinningPlayerName.Valid)
-				assert.Equal(t, tt.expectedPlayerName, tt.savedGame.WinningPlayerName.String)
+			if tt.shouldHaveEncryptedName {
+				assert.NotEmpty(t, tt.savedGame.WinningPlayerNameEncrypted)
+				// Decrypt and verify
+				decrypted, err := encService.Decrypt(tt.savedGame.WinningPlayerNameEncrypted)
+				require.NoError(t, err)
+				assert.Equal(t, tt.expectedPlayerName, decrypted)
 			}
 
 			if tt.shouldHavePlayerId {
@@ -505,6 +577,15 @@ func TestSavedGame_CalculateWinner(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Helper function to encrypt or panic (for test setup only)
+func mustEncrypt(encService *encryption.EncryptionService, plaintext string) []byte {
+	encrypted, err := encService.Encrypt(plaintext)
+	if err != nil {
+		panic(err)
+	}
+	return encrypted
 }
 
 // ============================================================================

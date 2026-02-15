@@ -127,7 +127,7 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 			return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 		}
 
-		playerNameHash := utils.NameHash(player.PlayerName)
+		playerNameHash := encryption.NameHash(player.PlayerName)
 
 		_, err = tx.Exec(
 			constants.InsertPlayersForSavedGame,

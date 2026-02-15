@@ -136,8 +136,9 @@ func (s *SavedGame) calcWinnerForPlayers() error{
 		return err
 	}
 
+	//Encrypt and hash the winning player name
 	s.WinningPlayerNameEncrypted = winningPlayer.PlayerNameEncrypted
-	s.WinningPlayerNameHash = s.WinningPlayerNameHash
+	s.WinningPlayerNameHash =  encryption.NameHash(winningPlayer.PlayerName)
 	s.WinningPlayerName = playerNameDecrypted
 	s.WinningPlayerId = newNullInt32(winningPlayer.ID)
 

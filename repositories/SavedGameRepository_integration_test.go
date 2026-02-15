@@ -3,7 +3,6 @@ package repositories
 import (
 	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
-	"JeopardyScoreBoardV2/utils"
 	"database/sql"
 	"encoding/base64"
 	"net/http"
@@ -185,7 +184,7 @@ func getLocationID(t *testing.T, name string) int {
 }
 
 func getPlayerIDByHash(t *testing.T, playerName string) int {
-	hash := utils.NameHash(playerName)
+	hash := encryption.NameHash(playerName)
 	var id int
 	err := db.Get(&id, "SELECT id FROM players WHERE player_name_hash=$1", hash)
 	require.NoError(t, err)
@@ -209,7 +208,7 @@ func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 	// Encrypt the winning player name
 	encryptedWinnerName, err := encService.Encrypt(winnerName)
 	require.NoError(t, err)
-	winnerHash := utils.NameHash(winnerName)
+	winnerHash := encryption.NameHash(winnerName)
 
 	savedGame := models.SavedGame{
 		TotalPoints:                900,
@@ -258,7 +257,7 @@ func TestAddStandardSavedGame_Integration_Happy(t *testing.T) {
 	err = db.Get(&junctionPlayer,
 		"SELECT player_name_encrypted, player_name_hash FROM savedgamesplayers WHERE saved_game_id=$1",
 		result.ResultData.ID)
-		
+
 	require.NoError(t, err)
 	require.NotEmpty(t, junctionPlayer.PlayerNameEncrypted)
 	require.NotEmpty(t, junctionPlayer.PlayerNameHash)
@@ -275,7 +274,7 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadPlayer(t *testing.T) {
 
 	winnerName := "goofer boofer"
 	encryptedWinnerName, _ := encService.Encrypt(winnerName)
-	winnerHash := utils.NameHash(winnerName)
+	winnerHash := encryption.NameHash(winnerName)
 
 	savedGame := models.SavedGame{
 		TotalPoints:                900,
@@ -313,7 +312,7 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadWinningPlayer(t *testing.
 
 	winnerName := "ghost"
 	encryptedWinnerName, _ := encService.Encrypt(winnerName)
-	winnerHash := utils.NameHash(winnerName)
+	winnerHash := encryption.NameHash(winnerName)
 
 	savedGame := models.SavedGame{
 		TotalPoints:                900,
@@ -347,7 +346,7 @@ func TestAddStandardSavedGame_Integration_RollbackOnBadLocation(t *testing.T) {
 
 	winnerName := "goofer boofer"
 	encryptedWinnerName, _ := encService.Encrypt(winnerName)
-	winnerHash := utils.NameHash(winnerName)
+	winnerHash := encryption.NameHash(winnerName)
 
 	savedGame := models.SavedGame{
 		TotalPoints:                900,
