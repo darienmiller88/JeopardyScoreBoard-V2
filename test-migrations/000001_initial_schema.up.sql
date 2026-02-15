@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS teams (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
 
+    -- Ensure that there can only be as many teams as locations, as a team represents the location.
     UNIQUE (location_id)
 );
 
@@ -34,6 +35,8 @@ CREATE TABLE IF NOT EXISTS players (
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     team_id INT REFERENCES teams(id) ON DELETE SET NULL,
 
+    -- Ensure that the same site does not have players with the same exact name. The same name can exist 
+    -- as long as they are at different sites, i.e. Jane L. Doe at Elmwood, and Lawrence
     UNIQUE(player_name_hash, location_id)
 );
 
@@ -68,6 +71,7 @@ CREATE TABLE IF NOT EXISTS savedgamesteams (
     team_id INT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
     saved_game_id INT NOT NULL REFERENCES savedgames(id) ON DELETE CASCADE,
 
+    -- Ensure a team can't be saved for the same game twice
     UNIQUE (saved_game_id, team_id)
 );
 
@@ -84,6 +88,6 @@ CREATE TABLE IF NOT EXISTS savedgamesplayers (
     saved_game_id INT NOT NULL REFERENCES savedgames(id) ON DELETE CASCADE,
     player_id INT REFERENCES players(id) ON DELETE SET NULL,
 
+    -- Ensure that a player can't be saved for the same game twice
     UNIQUE (saved_game_id, player_id)
 );
-
