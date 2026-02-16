@@ -34,6 +34,7 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 		LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
 		TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
 		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
+		EncryptionService: encryptionService,
 	})
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router

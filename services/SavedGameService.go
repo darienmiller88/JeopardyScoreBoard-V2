@@ -1,6 +1,7 @@
 package services
 
 import (
+	"JeopardyScoreBoardV2/encryption"
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/repositories"
 	"JeopardyScoreBoardV2/utils"
@@ -20,6 +21,7 @@ type SaveGameServiceImpl struct{
 	LocationRepository  repositories.LocationRepository
 	PlayerRepository    repositories.PlayerRepository
 	TeamRepository      repositories.TeamRepository
+	EncryptionService   *encryption.EncryptionService 
 }
 
 func (s *SaveGameServiceImpl) GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]{
@@ -94,11 +96,6 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 }
 
 func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId int) models.Result[string]{
-	//check to see if saved game id exists first
-	if result := s.SavedGameRepository.GetSavedGameById(savedGameId); result.Err != nil{
-		return utils.GetResult(result.Err, result.StatusCode, "")
-	}
-
 	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
 }
 
