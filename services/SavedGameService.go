@@ -81,6 +81,9 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 
 		savedGame.Teams = result.ResultData
 	}
+
+	// Inject encryption service into saved game before calculations
+	savedGame.EncryptionService = s.EncryptionService
 		
 	//Find the average point total and total score on the saved game
 	savedGame.CalculateTotalPoints()

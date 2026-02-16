@@ -23,7 +23,7 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 	//Initialize the views controller
 	i.viewsController.Init()
 
-	//Initialize the controllers, and choose the service and repo implementation
+	//Initialize the controllers, and inject the service and repo implementation
 	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })
 	i.playersController.Init(&services.PlayerServiceImpl{ 
 		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),

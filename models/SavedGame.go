@@ -32,7 +32,7 @@ type SavedGame struct {
 	Teams             []Team   `json:"teams"   db:"-"`
 
 	//encryption service to encrypt winning player name
-	encryptionService *encryption.EncryptionService
+	EncryptionService *encryption.EncryptionService
 }
 
 func (s *SavedGame) Validate() error{
@@ -98,7 +98,7 @@ func (s *SavedGame) CalculateAveragePoints(){
 //At this point, it is assumed that the .Validate() method has been called first.
 func (s *SavedGame) CalculateWinner() error{
 	if len(s.Players) == 1 {
-		encryptedName, err := s.encryptionService.Encrypt(s.Players[0].PlayerName)
+		encryptedName, err := s.EncryptionService.Encrypt(s.Players[0].PlayerName)
 
 		if err != nil {
 			return err
@@ -130,7 +130,7 @@ func (s *SavedGame) calcWinnerForPlayers() error{
 		}
 	}
 
-	playerNameDecrypted, err := s.encryptionService.Decrypt(winningPlayer.PlayerNameEncrypted)
+	playerNameDecrypted, err := s.EncryptionService.Decrypt(winningPlayer.PlayerNameEncrypted)
 
 	if err != nil {
 		return err

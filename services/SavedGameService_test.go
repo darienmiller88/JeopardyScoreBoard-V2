@@ -246,6 +246,7 @@ func TestAddSavedGame_PlayerGame_Success(t *testing.T) {
 		SavedGameRepository: mockSavedGameRepo,
 		LocationRepository:  mockLocationRepo,
 		PlayerRepository:    mockPlayerRepo,
+		EncryptionService:   encService,
 	}
 
 	savedGame := models.SavedGame{
@@ -430,6 +431,7 @@ func TestAddSavedGame_PlayerGame_CalculatesScoresCorrectly(t *testing.T) {
 		SavedGameRepository: mockSavedGameRepo,
 		LocationRepository:  mockLocationRepo,
 		PlayerRepository:    mockPlayerRepo,
+		EncryptionService:   encService,
 	}
 
 	savedGame := models.SavedGame{
