@@ -9,6 +9,7 @@ import (
 	"JeopardyScoreBoardV2/services"
 )
 
+//Will serve as HTMX end points to Add players, Delete players and Update their names
 type PlayersController struct {
 	Router        *chi.Mux
 	playerService services.PlayerService
@@ -18,9 +19,12 @@ func (p *PlayersController) Init(service services.PlayerService) {
 	p.Router = chi.NewRouter()
 	p.playerService = service
 
+	//Will be moved to views controller
 	p.Router.Get("/", p.GetAllPlayers)
-	p.Router.Put("/{location_name}", p.UpdatePlayerName)
 	p.Router.Get("/{location_name}", p.GetAllPlayersFromOneLocation)
+
+	//These will stay as HTMX end points.
+	p.Router.Put("/{location_name}", p.UpdatePlayerName)
 	p.Router.Post("/{location_name}", p.AddPlayerToLocation)
 	p.Router.Delete("/{location_name}", p.RemovePlayer)
 }

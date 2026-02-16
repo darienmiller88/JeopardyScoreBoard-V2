@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -32,18 +33,30 @@ func (v *ViewsController) Init(){
 }
 
 func (v *ViewsController) InitTemplateMap(){
+	// Get all partial files
+	partialFiles, err := filepath.Glob("./templates/partials/*.html")
+
+	if err != nil {
+		panic(fmt.Sprintf("Error loading partials: %v", err))
+	}
+
+	//Get all pages
 	entries, err := os.ReadDir("./templates/pages")
 
 	if err != nil {
 		panic(err)
-	}else{
-		for _, entry := range entries{
-			name, _ := strings.CutSuffix(entry.Name(), ".html")
-			v.templates[name] = template.Must(
-				template.ParseFiles("templates/Base.html", fmt.Sprintf("templates/pages/%s.html", name)),
-			)
-		}
 	}
+
+	for _, entry := range entries{
+		name, _ := strings.CutSuffix(entry.Name(), ".html")
+		
+		//For each page, build the following file stack: Base html, all partials, Page.html
+		files := []string{"templates/Base.html"}
+		files = append(files, partialFiles...)
+		files = append(files, fmt.Sprintf("templates/pages/%s.html", name))
+		
+		v.templates[name] = template.Must(template.ParseFiles(files...))
+	}	
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){

@@ -2,38 +2,158 @@ Jeopardy ScoreKeeper checklist
 
 Backend
 [x] - Complete Location Model
-[x] - Complete Location Model Tests
 [x] - Complete Location Repository
-[x] - Complete Location Repository tests
+[x] - Complete Location Repository Unit tests
+[x] - Complete Location Repository Integration tests
 [x] - Complete Location Service
 [x] - Complete Location Service tests
 [x] - Complete Location Controller
 [x] - Complete Location Controller tests
+
+
 [x] - Complete Player Model
 [x] - Complete Player Model Tests
 [x] - Complete Player Repository
-[x] - Complete Player Repository tests
+[x] - Complete Player Repository Unit tests
+[x] - Complete Player Repository Integration tests
 [x] - Complete Player Service
 [x] - Complete Player Service tests
 [x] - Complete Player Controller
 [x] - Complete Player Controller tests
+
+
 [x] - Complete Saved Game Repository
-[x] - Complete Saved Game Repository tests
+[x] - Complete Saved Game Repository Unit tests
 [x] - Complete Saved Game Repository Integration tests
-[ ] - Complete Saved Game Service
-[] - Complete Saved Game Service tests
+[x] - Complete Saved Game Service
+[x] - Complete Saved Game Service tests
 [x] - Complete Saved Game Model 
 [x] - Complete Saved Game Model tests
 [x] - Complete Saved Game Controller 
 [] - Complete Saved Game Controller Tests
 
+
 [x] - Complete Team Repository
 [x] - Complete Team Repository tests
-[] - Complete Team Service
-[] - Complete Team Service tests
+[x] - Complete Team Service
+[x] - Complete Team Service tests
 [x] - Complete Team Model 
-[] - Complete Team Model tests
 [] - Complete Team Controller 
 [] - Complete Team Controller Tests
 
+
+[] - user log in
+
 Frontend
+
+📦 Setup & Dependencies
+
+[x] - Remove all Vue.js dependencies from package.json
+[x] - Install HTMX via CDN or npm (<script src="https://unpkg.com/htmx.org@1.9.10"></script>)
+[x] - Install Alpine.js via CDN or npm (<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>)
+[] - Set up SCSS compilation pipeline (consider using esbuild, vite, or simple sass CLI)
+[] - Create SCSS folder structure (styles/base/, styles/components/, styles/layout/, styles/utilities/)
+[] - Add CSS reset/normalize to base style
+
+
+🎨 Base Template & Styling
+
+[x] - Update templates/Base.html to include HTMX and Alpine.js scripts
+[] - Create main SCSS entry point that imports all partials
+[] - Define design system variables (colors, spacing, typography) in _variables.scss
+[] - Create component styles for buttons, forms, cards, tables
+[] - Implement responsive breakpoint mixins
+[] - Add loading spinner/skeleton styles for HTMX requests
+
+
+📄 Page Templates - CreateGame (Player Mode)
+
+[] - Build form with HTMX hx-post="/players/game" for game submission
+[] - Add Alpine.js component for player row management (x-data="playerForm()")
+[] - "Add Player" button (client-side, adds input row)
+[] - "Remove Player" button for each row
+[] - Score input validation (Alpine.js)
+[] - Add HTMX attribute hx-target="#result" to show success/error messages
+[] - Display player name autocomplete dropdown (HTMX hx-get="/players/search?q={value}")
+[] - Location selector dropdown (HTMX to fetch from /locations)
+[] - Submit button with loading state (hx-indicator="#spinner")
+
+
+📄 Page Templates - TeamMode
+
+[] - Build form with HTMX hx-post="/savedgames/team" for team game submission
+[] - Add Alpine.js component for team row management
+[] - "Add Team" button (client-side)
+[] - Team score inputs with validation
+[] - Team selector dropdown (HTMX to fetch from /teams)
+[] - Location selector dropdown
+[] - Submit button with loading indicator
+
+
+
+📄 Page Templates - AddPlayer
+
+[] Build form with HTMX hx-post="/players"
+[] - Player name input with validation (Alpine.js for client-side, HTMX for server validation)
+[] - Location selector dropdown
+[] - Success/error message display area (hx-target="#feedback")
+[] - Option: Auto-dismiss success message after 3s (Alpine.js setTimeout)
+
+
+
+📄 Page Templates - ViewGames
+
+[] - Create games table/card layout
+[] - Add HTMX hx-get="/savedgames?location={selected}" for filtering by location
+[] - Location filter dropdown with hx-get trigger
+[] - Display game details (winner, score, date, participants)
+[] - "Delete Game" button with hx-delete="/savedgames/{id}" and confirmation modal
+[] - Pagination controls (HTMX hx-get="/savedgames?page={n}")
+[] - Search/filter by date range (Alpine.js date picker + HTMX submit)
+
+
+📄 Page Templates - LogIn (if authentication needed)
+
+[] - Build login form with HTMX hx-post="/auth/login"
+[] - Username/password inputs
+[] - Error message display
+[] - "Remember me" checkbox (Alpine.js state)
+[] - Redirect on success using HTMX response headers
+
+
+🎭 User Experience Enhancements
+
+[] - Add HTMX loading indicators (htmx:beforeRequest / htmx:afterRequest events)
+[] - Implement optimistic UI updates where appropriate
+[] - Add form validation feedback (Alpine.js + HTMX server validation)
+[] - Create toast notifications for success/error messages
+[] - Add confirmation dialogs for destructive actions (delete game)
+[] - Implement keyboard shortcuts (Enter to submit, Esc to close modals)
+
+
+🧪 Testing & Quality
+
+[] - Test all HTMX requests work correctly (POST, GET, DELETE)
+[] - Verify Alpine.js state management doesn't conflict with HTMX
+[] - Test form validation (client-side and server-side)
+[] - Test on multiple browsers (Chrome, Firefox, Safari)
+[] - Test responsive design on mobile/tablet
+[] - Verify accessibility (keyboard navigation, screen readers)
+[] - Load test: Ensure HTMX partial updates are faster than full page reloads
+
+
+📝 Documentation
+
+[] - Document HTMX endpoint patterns (request/response examples)
+[] - Document Alpine.js components and their props
+[] - Create SCSS architecture documentation
+[] - Update README with new tech stack (remove Vue, add HTMX/Alpine)
+
+
+🚀 Optional Enhancements
+
+[] - Add WebSocket support for real-time game updates (HTMX supports hx-ws)
+[] - Implement dark mode toggle (Alpine.js + SCSS variables)
+[] - Add animations/transitions (SCSS + HTMX hx-swap transitions)
+[] - Create print stylesheet for game score sheets
+[] - Add PWA support (service worker for offline mode)
