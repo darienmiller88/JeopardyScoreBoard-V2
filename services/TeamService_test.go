@@ -8,33 +8,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type MockTeamRepository struct {
+type mockTeamRepository struct {
 	GetTeamWithAllPlayersDBFunc func(teamId int) models.Result[models.Team]
 	GetAllTeamNamesDBFunc       func() models.Result[[]string]
 	GetAllTeamsDBFunc           func() models.Result[[]models.Team]
 	GetAllTeamsByIdsDBFunc      func(teamIds []int) models.Result[[]models.Team]
 }
 
-func (m *MockTeamRepository) GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team] {
+func (m *mockTeamRepository) GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team] {
 	return m.GetTeamWithAllPlayersDBFunc(teamId)
 }
 
-func (m *MockTeamRepository) GetAllTeamNamesDB() models.Result[[]string] {
+func (m *mockTeamRepository) GetAllTeamNamesDB() models.Result[[]string] {
 	return m.GetAllTeamNamesDBFunc()
 }
 
-func (m *MockTeamRepository) GetAllTeamsDB() models.Result[[]models.Team] {
+func (m *mockTeamRepository) GetAllTeamsDB() models.Result[[]models.Team] {
 	return m.GetAllTeamsDBFunc()
 }
 
-func (m *MockTeamRepository) GetAllTeamsByIds(teamIds []int) models.Result[[]models.Team] {
+func (m *mockTeamRepository) GetAllTeamsByIds(teamIds []int) models.Result[[]models.Team] {
 	return m.GetAllTeamsByIdsDBFunc(teamIds)
 }
 
 
 func TestGetTeamWithAllPlayers_Happy(t *testing.T) {
 	id := 1
-	mockRepo := &MockTeamRepository{
+	mockRepo := &mockTeamRepository{
 		GetTeamWithAllPlayersDBFunc: func(teamId int) models.Result[models.Team] {
 			return models.Result[models.Team]{
 				ResultData: models.Team{ID: id},
@@ -51,7 +51,7 @@ func TestGetTeamWithAllPlayers_Happy(t *testing.T) {
 
 func TestGetTeamWithAllPlayers_TeamNotFound_Unhappy(t *testing.T) {
 	id := 765//id does not exist in DB
-	mockRepo := &MockTeamRepository{
+	mockRepo := &mockTeamRepository{
 		GetTeamWithAllPlayersDBFunc: func(teamId int) models.Result[models.Team] {
 			return models.Result[models.Team]{
 				ResultData: models.Team{ID: id},
@@ -68,7 +68,7 @@ func TestGetTeamWithAllPlayers_TeamNotFound_Unhappy(t *testing.T) {
 
 func TestGetAllTeamNames_Happy(t *testing.T) {
 	teams := []string{"Team A", "Team B"}
-	mockRepo := &MockTeamRepository{
+	mockRepo := &mockTeamRepository{
 		GetAllTeamNamesDBFunc: func() models.Result[[]string] {
 			return models.Result[[]string]{
 				ResultData: teams,
@@ -84,7 +84,7 @@ func TestGetAllTeamNames_Happy(t *testing.T) {
 }
 
 func TestGetAllTeams_Happy(t *testing.T) {
-	mockRepo := &MockTeamRepository{
+	mockRepo := &mockTeamRepository{
 		GetAllTeamsDBFunc: func() models.Result[[]models.Team] {
 			return models.Result[[]models.Team]{
 				ResultData: []models.Team{{ID: 1}, {ID: 2}},
