@@ -175,6 +175,10 @@ const(
 		SELECT * FROM savedgames WHERE location_id=(SELECT id FROM locations WHERE location_name=$1)
 	`
 
+	GetSavedGameById string = `
+		SELECT * FROM savedgames WHERE id=$1
+	`
+
 	/////////////////////////////
 	//UPDATE
 	/////////////////////////////

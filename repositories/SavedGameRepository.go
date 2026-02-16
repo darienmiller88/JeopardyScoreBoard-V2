@@ -16,6 +16,7 @@ type SavedGameRepository interface {
 	AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame]
 	DeleteSavedGameDB(savedGameId string) models.Result[string]
 	GetAllSavedGamesDB() models.Result[[]models.SavedGame]
+	GetSavedGameById(savedGameId int) models.Result[models.SavedGame]
 }
 
 type sqlSavedGameRepository struct {
@@ -43,6 +44,23 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
 	}
 
 	return utils.GetResult(nil, http.StatusOK, savedGames)
+}
+
+//Get a saved game with a particular id
+func (s *sqlSavedGameRepository) GetSavedGameById(savedGameId int) models.Result[models.SavedGame]{
+	savedGame := models.SavedGame{}
+
+	if err := s.db.Get(&savedGame, constants.GetSavedGameById, savedGame); err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
+	}
+
+	result := s.getSavedGamesWithDecryptedWinningPlayerName([]models.SavedGame{savedGame})
+
+	if result.Err != nil {
+		return utils.GetResult(result.Err, result.StatusCode, models.SavedGame{})
+	}
+
+	return utils.GetResult(nil, http.StatusOK, result.ResultData[0])
 }
 
 // Get all saved games played at a specific location.
