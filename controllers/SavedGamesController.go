@@ -5,6 +5,7 @@ import (
 	"JeopardyScoreBoardV2/services"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -73,7 +74,14 @@ func (s *SavedGamesController) AddSavedGame(res http.ResponseWriter, req *http.R
 
 func (s *SavedGamesController) DeleteSavedGame(res http.ResponseWriter, req *http.Request){
 	id := chi.URLParam(req, "id")
-	result := s.savedGameService.DeleteSavedGame(id)
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := s.savedGameService.DeleteSavedGame(idInt)
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)

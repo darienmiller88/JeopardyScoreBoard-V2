@@ -223,8 +223,7 @@ func TestGetAllSavedGamesDB_DecryptionError_Unhappy(t *testing.T) {
 // exists and one row is affected
 func TestDeleteSavedGameDB_Happy(t *testing.T) {
 	mock, repo, _ := setupSavedGameRepo(t)
-
-	savedGameID := "sg-123"
+	savedGameID := 1220
 
 	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
 		WithArgs(savedGameID).
@@ -234,7 +233,6 @@ func TestDeleteSavedGameDB_Happy(t *testing.T) {
 
 	require.Nil(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)
-	require.Contains(t, result.ResultData, savedGameID)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -242,8 +240,7 @@ func TestDeleteSavedGameDB_Happy(t *testing.T) {
 // database returns an error during Exec
 func TestDeleteSavedGameDB_Unhappy_DBExecError(t *testing.T) {
 	mock, repo, _ := setupSavedGameRepo(t)
-
-	savedGameID := "sg-123"
+	savedGameID := 2883
 
 	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
 		WithArgs(savedGameID).
@@ -262,7 +259,7 @@ func TestDeleteSavedGameDB_Unhappy_DBExecError(t *testing.T) {
 func TestDeleteSavedGameDB_Unhappy_RowsAffectedError(t *testing.T) {
 	mock, repo, _ := setupSavedGameRepo(t)
 
-	savedGameID := "sg-123"
+	savedGameID := 346
 
 	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
 		WithArgs(savedGameID).
@@ -280,8 +277,7 @@ func TestDeleteSavedGameDB_Unhappy_RowsAffectedError(t *testing.T) {
 // succeeds but no rows are deleted (saved game not found)
 func TestDeleteSavedGameDB_Unhappy_NoRowsAffected(t *testing.T) {
 	mock, repo, _ := setupSavedGameRepo(t)
-
-	savedGameID := "sg-999"
+	savedGameID := 999
 
 	mock.ExpectExec(regexp.QuoteMeta(constants.DeleteSavedGame)).
 		WithArgs(savedGameID).

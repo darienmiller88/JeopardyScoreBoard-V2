@@ -14,7 +14,7 @@ import (
 type SavedGameRepository interface {
 	GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame]
 	AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame]
-	DeleteSavedGameDB(savedGameId string) models.Result[string]
+	DeleteSavedGameDB(savedGameId int) models.Result[string]
 	GetAllSavedGamesDB() models.Result[[]models.SavedGame]
 	GetSavedGameById(savedGameId int) models.Result[models.SavedGame]
 }
@@ -50,7 +50,7 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
 func (s *sqlSavedGameRepository) GetSavedGameById(savedGameId int) models.Result[models.SavedGame]{
 	savedGame := models.SavedGame{}
 
-	if err := s.db.Get(&savedGame, constants.GetSavedGameById, savedGame); err != nil {
+	if err := s.db.Get(&savedGame, constants.GetSavedGameById, savedGameId); err != nil {
 		return utils.GetResult(err, http.StatusInternalServerError, models.SavedGame{})
 	}
 
@@ -81,7 +81,7 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName str
 }
 
 // Delete a saved game
-func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Result[string] {
+func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId int) models.Result[string] {
 	result, err := s.db.Exec(constants.DeleteSavedGame, savedGameId)
 
 	if err != nil {
@@ -95,10 +95,10 @@ func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId string) models.Re
 	}
 
 	if rowsAffected == 0 {
-		return utils.GetResult(fmt.Errorf("saved game not found by id: %s", savedGameId), http.StatusNotFound, "")
+		return utils.GetResult(fmt.Errorf("saved game not found by id: %d", savedGameId), http.StatusNotFound, "")
 	}
 
-	return utils.GetResult(nil, http.StatusOK, fmt.Sprintf("Saved game %s deleted successfully", savedGameId))
+	return utils.GetResult(nil, http.StatusOK, fmt.Sprintf("Saved game %d deleted successfully", savedGameId))
 }
 
 // Add a new saved game

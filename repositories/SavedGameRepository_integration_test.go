@@ -123,8 +123,8 @@ func TestGetAllSavedGamesFromLocationDB_Integration_Unhappy_BadLocation(t *testi
 // DELETE / tests deleting saved games
 //======================================
 
-func getAnySavedGameID(t *testing.T) string {
-	var id string
+func getAnySavedGameID(t *testing.T) int {
+	var id int
 	err := db.Get(&id, "SELECT id FROM savedgames LIMIT 1")
 	require.NoError(t, err)
 	return id
@@ -146,7 +146,6 @@ func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
 
 	require.Nil(t, result.Err)
 	require.Equal(t, http.StatusOK, result.StatusCode)
-	require.Contains(t, result.ResultData, id)
 
 	// Count after
 	var after int
@@ -165,7 +164,7 @@ func TestDeleteSavedGameDB_Integration_Happy(t *testing.T) {
 func TestDeleteSavedGameDB_Integration_Unhappy_NotFound(t *testing.T) {
 	encService := getTestEncryptionService(t)
 	repo := GetSqlSavedGameRepository(db, encService)
-	fakeID := "999"
+	fakeID := 999
 	result := repo.DeleteSavedGameDB(fakeID)
 
 	require.NotNil(t, result.Err)

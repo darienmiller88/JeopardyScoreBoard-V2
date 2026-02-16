@@ -11,7 +11,7 @@ import (
 type SaveGameService interface{
 	GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]
 	AddSavedGame(savedGame models.SavedGame)          models.Result[models.SavedGame]
-	DeleteSavedGame(savedGameId string)               models.Result[string]
+	DeleteSavedGame(savedGameId int)                  models.Result[string]
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
 }
 
@@ -93,8 +93,11 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 	return s.SavedGameRepository.AddSavedGameDB(savedGame)
 }
 
-func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId string) models.Result[string]{
+func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId int) models.Result[string]{
 	//check to see if saved game id exists first
+	if result := s.SavedGameRepository.GetSavedGameById(savedGameId); result.Err != nil{
+		return utils.GetResult(result.Err, result.StatusCode, "")
+	}
 
 	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
 }
