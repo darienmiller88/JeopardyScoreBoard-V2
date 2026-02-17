@@ -6,7 +6,7 @@
 
 {{ define "content" }}
 <div class="add-player-container">
-    <div class="glass">
+    <div class="glass form-container">
         <h1 class="gradient-text add-player-header">Add New Player</h1>
         
         <form class="add-player-form" hx-post="/players/add" hx-target="#player-list">
@@ -24,13 +24,28 @@
 
             <button class="btn btn-primary">+ Add Player to Location</button>
         </form>
+    </div>
 
-        <div class="player-list-section">
-            <h3 class="player-list-header">
-                👥 Players at Pelham Bay
-            </h3>
-            <div id="player-list" class="glass player-list-empty">
-                No players added yet
+    <div class="player-list-section">
+        <h3 class="player-list-header">
+            👥 Players at Pelham Bay
+        </h3>
+        <div id="player-list">
+            <div class="player-card">
+                <div class="player-avatar">PP</div>
+                <span class="player-name">Peter Parker</span>
+                <div class="player-card-actions">
+                    <button class="btn-card btn-edit">✏️ Edit</button>
+                    <button class="btn-card btn-delete">🗑️ Delete</button>
+                </div>
+            </div>
+            <div class="player-card">
+                <div class="player-avatar">CK</div>
+                <span class="player-name">Clark Kent</span>
+                <div class="player-card-actions">
+                    <button class="btn-card btn-edit">✏️ Edit</button>
+                    <button class="btn-card btn-delete">🗑️ Delete</button>
+                </div>
             </div>
         </div>
     </div>

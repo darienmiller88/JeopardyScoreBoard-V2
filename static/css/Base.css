@@ -28,6 +28,9 @@ body {
     font-family: 'Inter', system-ui, sans-serif;
     color: var(--text-white);
     min-height: 100vh;
+}
+
+.container {
     padding: 1rem;
 }
 
