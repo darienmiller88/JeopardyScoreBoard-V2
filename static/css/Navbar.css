@@ -54,7 +54,7 @@
 }
 
 .nav-menu a:hover {
-    color: var(--primary-cyan);
+    color: var(--primary-glow);
 }
 
 .sign-out-btn {
@@ -64,7 +64,6 @@
     border: 1px solid var(--nav-border);
 }
 
-/* Mobile Hamburger Logic */
 .nav-toggle { 
     display: none;
  }

@@ -5,31 +5,31 @@
 {{ end }}
 
 {{ define "content" }}
-<div style="max-width: 40rem; margin: 0 auto;">
+<div class="add-player-container">
     <div class="glass">
-        <h1 class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 2rem;">Add New Player</h1>
+        <h1 class="gradient-text add-player-header">Add New Player</h1>
         
-        <form hx-post="/players/add" hx-target="#player-list">
-            <label style="color: var(--primary); font-size: 0.875rem;">LOCATION</label>
+        <form class="add-player-form" hx-post="/players/add" hx-target="#player-list">
+            <label>Location</label>
             <select name="location">
                 <option>Pelham Bay</option>
                 <option>Lawrence</option>
             </select>
 
-            <label style="color: var(--primary); font-size: 0.875rem;">FIRST NAME</label>
+            <label>First Name</label>
             <input type="text" name="first" placeholder="e.g., Peter">
 
-            <label style="color: var(--primary); font-size: 0.875rem;">LAST NAME</label>
+            <label>Last Name</label>
             <input type="text" name="last" placeholder="e.g., Parker">
 
-            <button class="btn btn-primary" style="width: 100%;">+ Add Player to Location</button>
+            <button class="btn btn-primary">+ Add Player to Location</button>
         </form>
 
-        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border);">
-            <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <div class="player-list-section">
+            <h3 class="player-list-header">
                 👥 Players at Pelham Bay
             </h3>
-            <div id="player-list" class="glass" style="background: rgba(0,0,0,0.2); text-align: center; color: var(--text-dim);">
+            <div id="player-list" class="glass player-list-empty">
                 No players added yet
             </div>
         </div>

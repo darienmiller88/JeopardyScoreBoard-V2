@@ -1,3 +1,49 @@
-h1{
-    color: chartreuse;
+/* Add Player Page Styles */
+
+.add-player-container {
+    max-width: 40rem;
+    margin: 0 auto;
+    margin-top: 2rem;
+}
+
+.add-player-header {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.add-player-form label {
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem; /* Space between label and input */
+}
+
+.add-player-form input,
+.add-player-form select {
+    margin-bottom: 1.5rem; /* Space between input and next label */
+}
+
+.add-player-form .btn-primary {
+    width: 100%;
+}
+
+.player-list-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.player-list-header {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.player-list-empty {
+    background: rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: var(--text-dim);
 }

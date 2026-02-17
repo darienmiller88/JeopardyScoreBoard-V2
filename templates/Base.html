@@ -4,17 +4,17 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="../static/img/trophy.png" type="image/x-icon">
+        {{ template "css" .}}
         <link rel="stylesheet" href="../static/css/Base.css">
         <link rel="stylesheet" href="../static/css/Navbar.css">
         
         <title>{{ template "title" . }}</title>
-        {{ template "css" .}}
     </head>
     <body>
         <!-- Include navbar partial -->
         {{template "navbar" .}}
         
-        <main class="container">
+        <main id="main-content" class="container">
             <!-- Pages will insert their content here -->
             {{template "content" .}}
         </main>

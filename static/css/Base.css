@@ -2,19 +2,19 @@
     --bg-dark: #0f172a;
     --glass-bg: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.15);
-    --primary: #22d3ee; /* cyan-400 */
-    --primary-glow: #0ea5e9; /* blue-500 */
+    --primary: #22d3ee; 
+    --primary-glow: #0ea5e9;
     --purple-glow: #a855f7;
     --text-white: #ffffff;
     --text-dim: #94a3b8;
     --danger: #ef4444;
     --success: #10b981;
 
-    /* For the navbar */
     --nav-bg: rgba(255, 255, 255, 0.1);
     --nav-border: rgba(255, 255, 255, 0.2);
-    --primary-cyan: #22d3ee;
+    --primary-cyan: #22c3ee;
 }
+
 
 * { 
     box-sizing: border-box; 
@@ -31,7 +31,6 @@ body {
     padding: 1rem;
 }
 
-/* Glassmorphism Effect */
 .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
@@ -42,7 +41,6 @@ body {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* Buttons & Inputs */
 .btn {
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
@@ -77,7 +75,6 @@ input, select {
     margin-bottom: 1.25rem;
 }
 
-/* Typography */
 .gradient-text {
     background: linear-gradient(to right, var(--primary), var(--primary-glow));
     -webkit-background-clip: text;
