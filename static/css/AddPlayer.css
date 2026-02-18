@@ -34,10 +34,6 @@
 
 /* Player List Section */
 
-.player-list-section {
-    /* margin-top: 2rem; */
-}
-
 .player-list-header {
     margin: 1.5rem;
     display: flex;
@@ -51,6 +47,10 @@
 #player-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    width: fit-content;
+    /* max-width: 80%; */
+    margin: auto;
+    /* border: 2px solid red; */
     gap: 1rem;
 }
 
@@ -71,6 +71,7 @@
     border: 1px solid var(--glass-border);
     border-radius: 1.25rem;
     padding: .75rem;
+    width: fit-content;
     transition: 0.2s ease, border-color 0.2s ease;
 }
 
@@ -146,5 +147,10 @@
 @media (max-width: 480px) {
     #player-list {
         grid-template-columns: 1fr;
+    }
+
+    .player-card{
+        /* padding: .75rem; */
+        width: 90vw;
     }
 }
