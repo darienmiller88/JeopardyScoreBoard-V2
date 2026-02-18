@@ -47,10 +47,12 @@
 #player-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    
     width: fit-content;
-    /* max-width: 80%; */
+    max-height: 70vh;
+    overflow-y: scroll;
     margin: auto;
-    /* border: 2px solid red; */
+    padding: 0rem 0.8rem;
     gap: 1.5rem;
 }
 
