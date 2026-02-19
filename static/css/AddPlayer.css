@@ -96,7 +96,7 @@
 }
 
 .player-name {
-    font-size: 1rem;
+    font-size: clamp(1rem, 2vw + 1rem, 1.75rem);
     font-weight: 600;
     color: var(--text-white);
     text-align: center;
