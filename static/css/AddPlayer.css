@@ -125,7 +125,7 @@
 }
 
 .btn-edit:hover {
-    /* background-color: rgba(34, 211, 238, 0.12); */
+    background-color: rgba(34, 211, 238, 0.12);
     border-color: var(--primary);
 }
 
@@ -133,10 +133,10 @@
     background-color: var(--danger);
 }
 
-/* .btn-delete:hover {
+.btn-delete:hover {
     background: rgba(239, 68, 68, 0.12);
     border-color: var(--danger);
-} */
+}
 
 /* Responsive */
 
