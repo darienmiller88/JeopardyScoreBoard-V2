@@ -1,0 +1,2 @@
+ALTER TABLE players
+ADD COLUMN player_name VARCHAR(60) NOT NULL DEFAULT ''

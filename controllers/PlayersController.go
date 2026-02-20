@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -25,7 +26,7 @@ func (p *PlayersController) Init(service services.PlayerService) {
 
 	//These will stay as HTMX end points.
 	p.Router.Put("/{location_name}", p.UpdatePlayerName)
-	p.Router.Post("/{location_name}", p.AddPlayerToLocation)
+	p.Router.Post("/", p.AddPlayerToLocation)
 	p.Router.Delete("/{location_name}", p.RemovePlayer)
 }
 
@@ -57,20 +58,25 @@ func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter
 }
 
 func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *http.Request) {
-	locationName := chi.URLParam(req, "location_name")
-	playerName := ""
-
-	if err := json.NewDecoder(req.Body).Decode(&playerName); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
-		return
+	if err := req.ParseForm(); err != nil{
+		http.Error(res,err.Error(), http.StatusInternalServerError)
 	}
 
+	locationName := req.FormValue("location")
+	firstName    := req.FormValue("first")
+	lastName     := req.FormValue("last")
+	playerName   := firstName + " " + lastName
+
 	result := p.playerService.AddPlayerToLocation(locationName, playerName)
+
+	fmt.Println("playername:", playerName, "location:", locationName)
+	fmt.Println("err:", result.Err)
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)
 		return
 	}
+
 
 	data, err := json.Marshal(&result)
 
