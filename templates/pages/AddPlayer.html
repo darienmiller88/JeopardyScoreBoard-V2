@@ -11,16 +11,17 @@
         
         <form class="add-player-form" hx-post="/players/add" hx-target="#player-list">
             <label>Location</label>
+            
             <select name="location">
-                <option>Pelham Bay</option>
-                <option>Lawrence</option>
+                {{range .Locations}}
+                <option>{{.}}</option>
+                {{ end }}
             </select>
-
             <label>First Name</label>
-            <input type="text" name="first" placeholder="e.g., Peter">
+            <input type="text" name="first" minlength="3" maxlength="20" placeholder="e.g., Peter" required>
 
             <label>Last Name</label>
-            <input type="text" name="last" placeholder="e.g., Parker">
+            <input type="text" name="last"  minlength="3" maxlength="20" placeholder="e.g., Parker" required>
 
             <button class="btn btn-primary">+ Add Player to Location</button>
         </form>

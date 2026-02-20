@@ -73,8 +73,13 @@ input, select {
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid var(--glass-border);
     border-radius: 0.75rem;
-    color: white;
+    color:white;
     margin-bottom: 1.25rem;
+}
+
+select option{
+   background: rgba(255, 255, 255, 0.05);
+   color: #000;
 }
 
 .gradient-text {

@@ -20,8 +20,8 @@ type Index struct{
 func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.EncryptionService){
 	i.Router = chi.NewRouter()
 
-	//Initialize the views controller
-	i.viewsController.Init()
+	//Initialize the views controller, and inject the following services
+	i.viewsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })
 
 	//Initialize the controllers, and inject the service and repo implementation
 	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })

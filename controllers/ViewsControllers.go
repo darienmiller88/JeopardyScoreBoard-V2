@@ -16,11 +16,13 @@ type ViewsController struct{
 	templates        map[string]*template.Template
 	Router          *chi.Mux
 	SavedGameService services.SaveGameService
+	LocationService  services.LocationService
 }
 
-func (v *ViewsController) Init(){
+func (v *ViewsController) Init(LocationService services.LocationService){
 	v.Router    = chi.NewRouter()
 	v.templates = make(map[string]*template.Template)
+	v.LocationService = LocationService
 
 	//Initialize template map
 	v.InitTemplateMap()
@@ -74,7 +76,18 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
-	if err := v.templates["AddPlayer"].Execute(res, nil); err != nil{
+	locationsResult := v.LocationService.GetAllLocations()
+
+	if locationsResult.Err != nil {
+		http.Error(res, locationsResult.Err.Error(), locationsResult.StatusCode)
+		return
+	}
+
+	data := map[string]any{
+		"Locations": locationsResult.ResultData,
+	}
+
+	if err := v.templates["AddPlayer"].Execute(res, data); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
