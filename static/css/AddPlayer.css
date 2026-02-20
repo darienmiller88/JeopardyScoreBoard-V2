@@ -17,7 +17,7 @@
 
 .add-player-form label {
     color: var(--primary);
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: bold;
     display: block;
     margin-bottom: 0.5rem;
@@ -30,6 +30,7 @@
 
 .add-player-form .btn-primary {
     width: 100%;
+    font-size: 1.1rem;
 }
 
 /* Player List Section */
