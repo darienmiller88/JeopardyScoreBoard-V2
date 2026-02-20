@@ -72,7 +72,8 @@
     border: 1px solid var(--glass-border);
     border-radius: 1.25rem;
     padding: 1rem;
-    width: fit-content;
+    width: 350px; /* Fixed width instead of fit-content */
+    min-height: 220px; /* Fixed height to keep cards uniform */
     transition: 0.2s ease, border-color 0.2s ease;
 }
 
@@ -100,7 +101,13 @@
     font-weight: 600;
     color: var(--text-white);
     text-align: center;
-    word-break: break-word;
+
+    /* Ellipsis for overflow */
+    /* border: 2px solid red; */
+    width: 95%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .player-card-actions {
@@ -140,8 +147,8 @@
 
 /* Responsive */
 
-/* Surface pro 7 */
-@media (max-width: 912px) {
+/* ipad pro */
+@media (max-width: 1024px) {
     #player-list {
         grid-template-columns: repeat(2, 1fr);
     }
