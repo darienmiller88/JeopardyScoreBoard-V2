@@ -11,18 +11,28 @@ type Player struct {
 	ID        			int            `db:"id"`
 	CreatedAt  			time.Time      `db:"created_at"`
 	UpdatedAt           time.Time      `db:"updated_at"`
-	PlayerName          string 	       `db:"player_name"`
 	PlayerNameEncrypted []byte         `db:"player_name_encrypted"`
 	PlayerNameHash      []byte         `db:"player_name_hash"`
 	LocationID          int            `db:"location_id"`
 	TeamID              sql.NullInt32  `db:"team_id"`
+	
+	// Non DB fields
 	Score               int            `db:"-"`
-	PlayerNameDecrypted string         `json:"-" db:"-"`
+	PlayerName          string 	       
+	FirstName           string
+	LastName            string
+	// PlayerNameDecrypted string         `json:"-" db:"-"`
+	PlayerNameAbbrev    string         ``
 }
 
 const (
 	minLength int = 4
 	maxLength int = 40
+
+	// min and max Length for first and last name
+	minNameLength = 4
+	maxNameLength = 20
+	
 )
 
 func (p *Player) Validate() error {
@@ -37,11 +47,20 @@ func (p *Player) Validate() error {
 	return nil
 }
 
-func (p *Player) validatePlayerNameLength() error {
-	playNameLen := len(p.PlayerName)
+func (p *Player) SetPlayerName(firstName string, lastName string){
+	p.PlayerName = firstName + " " + lastName
+}
 
-	if playNameLen < 4 || playNameLen > 40 {
-		return fmt.Errorf("player name must be between %d and %d", minLength, maxLength)
+func (p *Player) validatePlayerNameLength() error {
+	firstNameLen := len(p.FirstName)
+	lastNameLen := len(p.LastName)
+
+	if (firstNameLen < minNameLength || firstNameLen > maxNameLength) {
+		return fmt.Errorf("First name must be between %d and %d", minNameLength, maxNameLength)
+	}
+
+	if (lastNameLen < minNameLength || lastNameLen > maxNameLength) {
+		return fmt.Errorf("Last name must be between %d and %d", minNameLength, maxNameLength)
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -10,7 +9,7 @@ import (
 	"JeopardyScoreBoardV2/services"
 )
 
-//Will serve as HTMX end points to Add players, Delete players and Update their names
+// Will serve as HTMX end points to Add players, Delete players and Update their names
 type PlayersController struct {
 	Router        *chi.Mux
 	playerService services.PlayerService
@@ -58,36 +57,21 @@ func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter
 }
 
 func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *http.Request) {
-	if err := req.ParseForm(); err != nil{
-		http.Error(res,err.Error(), http.StatusInternalServerError)
+	if err := req.ParseForm(); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 
 	locationName := req.FormValue("location")
-	firstName    := req.FormValue("first")
-	lastName     := req.FormValue("last")
-	playerName   := firstName + " " + lastName
-
-	result := p.playerService.AddPlayerToLocation(locationName, playerName)
-
-	fmt.Println("playername:", playerName, "location:", locationName)
-	fmt.Println("err:", result.Err)
+	firstName := req.FormValue("first")
+	lastName := req.FormValue("last")
+	result := p.playerService.AddPlayerToLocation(locationName, firstName, lastName)
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)
 		return
 	}
 
-
-	data, err := json.Marshal(&result)
-
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	res.Header().Add("Content-type", "application/json")
-	res.WriteHeader(result.StatusCode)
-	res.Write(data)
+	http.Redirect(res, req, "/add-player", http.StatusSeeOther)
 }
 
 func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Request) {

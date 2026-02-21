@@ -21,7 +21,13 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 	i.Router = chi.NewRouter()
 
 	//Initialize the views controller, and inject the following services
-	i.viewsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })
+	i.viewsController.Init(
+		&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) },
+		&services.PlayerServiceImpl{ 
+			PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
+			LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
+		},
+	)
 
 	//Initialize the controllers, and inject the service and repo implementation
 	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })

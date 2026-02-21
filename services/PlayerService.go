@@ -11,7 +11,7 @@ import (
 
 type PlayerService interface {
 	UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player]
-	AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player]
+	AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player]
 	RemovePlayer(playerName string, locationName string) models.Result[models.Player]
 	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
@@ -61,13 +61,19 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, newPlayerName
 	return p.PlayerRepository.UpdatePlayerName(oldPlayerName, newPlayerName, locationName)
 }
 
-func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {
-	player := models.Player{PlayerName: playerName}
+func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player] {
+	player := models.Player{
+		FirstName: firstName,
+		LastName: lastName,
+	}
 
-	//Ensure the player name passes all validation.
+	//Ensure the player name (first + last) passes all validation.
 	if err := player.Validate(); err != nil {
 		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
+
+	//set the player name by using the first name and last name.
+	player.SetPlayerName(firstName, lastName)
 
 	//ensure location exists
 	if result := p.LocationRepository.GetLocation(locationName); result.Err != nil {
@@ -75,7 +81,7 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, playerName 
 	}
 
 	//ensure the name isn't taken
-	if result := p.isPlayerNameTaken(playerName); result.Err != nil{
+	if result := p.isPlayerNameTaken(player.PlayerName); result.Err != nil{
 		return utils.GetResult(result.Err, result.StatusCode, player)
 	}
 

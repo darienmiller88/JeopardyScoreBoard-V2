@@ -13,7 +13,7 @@
             <label>Location</label>
             
             <select name="location">
-                {{range .Locations}}
+                {{ range .Locations }}
                 <option>{{.}}</option>
                 {{ end }}
             </select>
@@ -32,38 +32,16 @@
             👥 Players at Pelham Bay
         </h3>
         <div id="player-list">
+            {{ range .Players }}
             <div class="player-card">
-                <div class="player-avatar">PP</div>
-                <span class="player-name">Peterpeterpeter Parkerarkerkare</span>
+                <div class="player-avatar">{{ .PlayerNameAbbrev }}</div>
+                <span class="player-name">{{ .PlayerName }}</span>
                 <div class="player-card-actions">
                     <button class="btn-card btn-edit">✏️ Edit</button>
                     <button class="btn-card btn-delete">🗑️ Delete</button>
                 </div>
             </div>
-            <div class="player-card">
-                <div class="player-avatar">CK</div>
-                <span class="player-name">Clark Kent</span>
-                <div class="player-card-actions">
-                    <button class="btn-card btn-edit">✏️ Edit</button>
-                    <button class="btn-card btn-delete">🗑️ Delete</button>
-                </div>
-            </div>
-            <div class="player-card">
-                <div class="player-avatar">DM</div>
-                <span class="player-name">Darien Miller</span>
-                <div class="player-card-actions">
-                    <button class="btn-card btn-edit">✏️ Edit</button>
-                    <button class="btn-card btn-delete">🗑️ Delete</button>
-                </div>
-            </div>
-            <div class="player-card">
-                <div class="player-avatar">CK</div>
-                <span class="player-name">Clark Kent</span>
-                <div class="player-card-actions">
-                    <button class="btn-card btn-edit">✏️ Edit</button>
-                    <button class="btn-card btn-delete">🗑️ Delete</button>
-                </div>
-            </div>
+            {{ end }}
         </div>
     </div>
 </div>

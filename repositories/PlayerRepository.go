@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -228,7 +229,16 @@ func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Res
 		}
 
 		// Store decrypted value in the JSON-visible field
-		players[i].PlayerNameDecrypted = decryptedName
+		players[i].PlayerName = decryptedName
+
+		//Name is validated before insertion, so it SHOULD have exactly 2 parts, ex -> jane doe
+		fields := strings.Fields(decryptedName)
+
+		//Extract the first char from the first name and last 
+		firstNameInitial, lastNameInitial := string([]rune(fields[0])[0]), string([]rune(fields[1])[0])
+
+		players[i].PlayerNameAbbrev = firstNameInitial + lastNameInitial
+
 	}
 
 	return utils.GetResult(nil, http.StatusOK, players)

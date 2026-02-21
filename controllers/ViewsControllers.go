@@ -17,12 +17,14 @@ type ViewsController struct{
 	Router          *chi.Mux
 	SavedGameService services.SaveGameService
 	LocationService  services.LocationService
+	PlayerService    services.PlayerService
 }
 
-func (v *ViewsController) Init(LocationService services.LocationService){
+func (v *ViewsController) Init(LocationService services.LocationService, PlayerService services.PlayerService){
 	v.Router    = chi.NewRouter()
 	v.templates = make(map[string]*template.Template)
 	v.LocationService = LocationService
+	v.PlayerService = PlayerService
 
 	//Initialize template map
 	v.InitTemplateMap()
@@ -83,8 +85,16 @@ func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
 		return
 	}
 
+	playersResult := v.PlayerService.GetPlayersFromLocation(locationsResult.ResultData[0])
+
+	if playersResult.Err != nil {
+		http.Error(res, playersResult.Err.Error(), playersResult.StatusCode)
+		return
+	}
+
 	data := map[string]any{
 		"Locations": locationsResult.ResultData,
+		"Players": playersResult.ResultData,
 	}
 
 	if err := v.templates["AddPlayer"].Execute(res, data); err != nil{
