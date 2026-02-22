@@ -1,15 +1,6 @@
 package controllers
 
 import (
-	// "fmt"
-	// "errors"
-	// "net/http"
-	// "net/http/httptest"
-	// "testing"
-
-	// "github.com/go-chi/chi/v5"
-	// "github.com/stretchr/testify/assert"
-
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/services"
 	"bytes"
@@ -32,7 +23,7 @@ func (m *mockPlayerService) UpdatePlayerName(oldPlayerName string, newPlayerName
 	return m.playerResult
 }
 
-func (m *mockPlayerService) AddPlayerToLocation(locationName string, playerName string) models.Result[models.Player] {
+func (m *mockPlayerService) AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player] {
 	return m.playerResult
 }
 

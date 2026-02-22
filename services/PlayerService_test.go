@@ -74,7 +74,8 @@ func (m *mockLocationRepositoryForPlayer) GetAllLocations() models.Result[[]stri
 
 // TestAddPlayer_Ok verifies successful player addition when all validations pass
 func TestAddPlayer_Ok(t *testing.T) {
-	validPlayerName := "Jane Doe"
+	firstName := "Jane"
+	lastName := "Doe"
 	mockPlayerRepo := &mockPlayerRepository{
 		getPlayerByNameFunc: func(playerName string) models.Result[models.Player] {
 			// First call from isPlayerNameTaken - name not found (good)
@@ -85,7 +86,10 @@ func TestAddPlayer_Ok(t *testing.T) {
 			)
 		},
 		playerResult: models.Result[models.Player]{
-			ResultData: models.Player{PlayerName: validPlayerName},
+			ResultData: models.Player{
+				FirstName: firstName,
+				LastName: lastName,
+			},
 			StatusCode: http.StatusCreated, // ← Change this to 201
 		},
 	}
@@ -101,7 +105,7 @@ func TestAddPlayer_Ok(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.AddPlayerToLocation("Elmwood", validPlayerName)
+	result := service.AddPlayerToLocation("Elmwood", firstName, lastName)
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusCreated, result.StatusCode)
@@ -109,7 +113,7 @@ func TestAddPlayer_Ok(t *testing.T) {
 }
 
 // TestAddPlayer_NameTooShort verifies validation fails for names under 4 characters
-func TestAddPlayer_NameTooShort(t *testing.T) {
+func TestAddPlayer_FirstNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepository{}
 	service := &PlayerServiceImpl{
@@ -117,14 +121,14 @@ func TestAddPlayer_NameTooShort(t *testing.T) {
 		LocationRepository: mockLocationRepo,
 	}
 
-	result := service.AddPlayerToLocation("Elmwood", "Joe")
+	result := service.AddPlayerToLocation("Elmwood", "J", "liberman")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
 }
 
-// TestAddPlayer_NameTooLong verifies validation fails for names over 60 characters
-func TestAddPlayer_NameTooLong(t *testing.T) {
+// TestAddPlayer_NameTooLong verifies validation fails for first names over 20 characters
+func TestAddPlayer_FirstNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepository{}
 	service := &PlayerServiceImpl{
@@ -132,7 +136,7 @@ func TestAddPlayer_NameTooLong(t *testing.T) {
 		LocationRepository: mockLocationRepo,
 	}
 
-	result := service.AddPlayerToLocation("Elmwood", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdwextra")
+	result := service.AddPlayerToLocation("Elmwood", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdwextra", "regular")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)

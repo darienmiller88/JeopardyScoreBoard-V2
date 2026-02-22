@@ -237,8 +237,8 @@ func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Res
 		//Extract the first char from the first name and last 
 		firstNameInitial, lastNameInitial := string([]rune(fields[0])[0]), string([]rune(fields[1])[0])
 
-		players[i].PlayerNameAbbrev = firstNameInitial + lastNameInitial
-
+		//combine both initials and assign them PlayerNameAbbrev
+		players[i].PlayerNameAbbrev = strings.ToUpper(firstNameInitial + lastNameInitial)
 	}
 
 	return utils.GetResult(nil, http.StatusOK, players)

@@ -289,8 +289,8 @@ func TestGetPlayersFromLocation_Ok(t *testing.T) {
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, 2, len(result.ResultData))
-	assert.Equal(t, "brent cooper", result.ResultData[0].PlayerNameDecrypted)
-	assert.Equal(t, "marky mark", result.ResultData[1].PlayerNameDecrypted)
+	assert.Equal(t, "brent cooper", result.ResultData[0].PlayerName)
+	assert.Equal(t, "marky mark", result.ResultData[1].PlayerName)
 }
 
 func TestGetPlayersFromLocation_InvalidLocation(t *testing.T) {
@@ -384,9 +384,9 @@ func TestGetAllPlayersFromAllLocations_Ok(t *testing.T) {
 	require.NoError(t, result.Err)
 	assert.Equal(t, 3, len(result.ResultData))
 	assert.Equal(t, http.StatusOK, result.StatusCode)
-	assert.Equal(t, "brent cooper", result.ResultData[0].PlayerNameDecrypted)
-	assert.Equal(t, "marky mark", result.ResultData[1].PlayerNameDecrypted)
-	assert.Equal(t, "dar miller", result.ResultData[2].PlayerNameDecrypted)
+	assert.Equal(t, "brent cooper", result.ResultData[0].PlayerName)
+	assert.Equal(t, "marky mark", result.ResultData[1].PlayerName)
+	assert.Equal(t, "dar miller", result.ResultData[2].PlayerName)
 }
 
 func TestGetAllPlayersFromAllLocations_EmptyResult(t *testing.T) {
@@ -450,7 +450,7 @@ func TestGetPlayerByName_Success(t *testing.T) {
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
-	assert.Equal(t, playerName, result.ResultData.PlayerNameDecrypted)
+	assert.Equal(t, playerName, result.ResultData.PlayerName)
 }
 
 func TestGetPlayerByName_NotFound(t *testing.T) {

@@ -30,28 +30,29 @@ const (
 	maxLength int = 40
 
 	// min and max Length for first and last name
-	minNameLength = 4
+	minNameLength = 2
 	maxNameLength = 20
 	
 )
 
 func (p *Player) Validate() error {
-	if err := p.validatePlayerNameLength(); err != nil {
+	if err := p.validateFirstAndLastNameLength(); err != nil {
 		return err
 	}
 
-	if err := p.validatePlayerNameHasTwoParts(); err != nil {
+	if err := p.validateFirstAndLastNameHasOnePart(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+//Combines the first name and 
 func (p *Player) SetPlayerName(firstName string, lastName string){
 	p.PlayerName = firstName + " " + lastName
 }
 
-func (p *Player) validatePlayerNameLength() error {
+func (p *Player) validateFirstAndLastNameLength() error {
 	firstNameLen := len(p.FirstName)
 	lastNameLen := len(p.LastName)
 
@@ -66,11 +67,17 @@ func (p *Player) validatePlayerNameLength() error {
 	return nil
 }
 
-func (p *Player) validatePlayerNameHasTwoParts() error {
-	fields := strings.Fields(p.PlayerName)
+func (p *Player) validateFirstAndLastNameHasOnePart() error {
+	firstNameFields := strings.Fields(p.FirstName)
 
-	if len(fields) != 2 {
-		return fmt.Errorf("Player name must have exactly two parts: ex -> 'jane doe'")
+	if len(firstNameFields) != 1{
+		return fmt.Errorf("First name must have exactly 1 part: ex -> 'jane'")
+	}
+
+	lastNameFields := strings.Fields(p.LastName)
+
+	if len(lastNameFields) != 1{
+		return fmt.Errorf("Last name must have exactly 1 part: ex -> 'jane'")
 	}
 
 	return nil

@@ -85,7 +85,7 @@ func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
 		return
 	}
 
-	playersResult := v.PlayerService.GetPlayersFromLocation(locationsResult.ResultData[0])
+	playersResult := v.PlayerService.GetPlayersFromLocation(locationsResult.ResultData[3])
 
 	if playersResult.Err != nil {
 		http.Error(res, playersResult.Err.Error(), playersResult.StatusCode)
