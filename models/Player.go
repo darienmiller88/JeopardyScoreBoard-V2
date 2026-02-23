@@ -21,18 +21,13 @@ type Player struct {
 	PlayerName          string 	       
 	FirstName           string
 	LastName            string
-	// PlayerNameDecrypted string         `json:"-" db:"-"`
 	PlayerNameAbbrev    string         ``
 }
 
 const (
-	minLength int = 4
-	maxLength int = 40
-
 	// min and max Length for first and last name
 	minNameLength = 2
 	maxNameLength = 20
-	
 )
 
 func (p *Player) Validate() error {
@@ -49,7 +44,7 @@ func (p *Player) Validate() error {
 
 //Combines the first name and 
 func (p *Player) SetPlayerName(firstName string, lastName string){
-	p.PlayerName = firstName + " " + lastName
+	p.PlayerName = strings.Trim(firstName, " ") + " " + strings.Trim(lastName, " ")
 }
 
 func (p *Player) validateFirstAndLastNameLength() error {
@@ -77,7 +72,7 @@ func (p *Player) validateFirstAndLastNameHasOnePart() error {
 	lastNameFields := strings.Fields(p.LastName)
 
 	if len(lastNameFields) != 1{
-		return fmt.Errorf("Last name must have exactly 1 part: ex -> 'jane'")
+		return fmt.Errorf("Last name must have exactly 1 part: ex -> 'Doe'")
 	}
 
 	return nil

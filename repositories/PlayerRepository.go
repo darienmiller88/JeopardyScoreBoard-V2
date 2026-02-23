@@ -12,6 +12,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 type PlayerRepository interface {
@@ -35,7 +36,7 @@ func GetSqlPlayerRepository(newDB *sqlx.DB, encryptionService *encryption.Encryp
 }
 
 // Add a single player to a given location.
-func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {	
+func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
 	//First, encrypt the player name the client has sent, and receive the ciphertext.
 	encryptedName, err := s.encryptionService.Encrypt(player.PlayerName)
 
@@ -55,6 +56,23 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 	).Scan(&player.ID, &player.CreatedAt, &player.UpdatedAt, &player.LocationID)
 
 	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch string(pgErr.Code) {
+				case "23505": // unique_violation
+					return utils.GetResult(
+						fmt.Errorf("player name '%s' already taken in this location", player.PlayerName),
+						http.StatusConflict,
+						models.Player{},
+					)
+
+				case "23503": // foreign_key_violation
+					return utils.GetResult(
+						fmt.Errorf("invalid location '%s'", locationName),
+						http.StatusBadRequest,
+						models.Player{},
+					)
+			}
+		}
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
@@ -75,18 +93,36 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 
 	//Find the column of the old name by its hash, and create a new hash for the new name
 	olderPlayerNameHash := encryption.NameHash(oldPlayerName)
-	newPlayerNameHash   := encryption.NameHash(newPlayerName)
+	newPlayerNameHash := encryption.NameHash(newPlayerName)
 
 	//Use all of the following to updated the players name, encrypted name, and new hash.
 	result, err := s.db.Exec(
 		constants.UpdatePlayerName,
-		encryptedName, //$1
-		newPlayerNameHash, //$2
-		olderPlayerNameHash,//$3
-		locationName, //$4
+		encryptedName,       //$1
+		newPlayerNameHash,   //$2
+		olderPlayerNameHash, //$3
+		locationName,        //$4
 	)
 
 	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch string(pgErr.Code) {
+				case "23505": // unique_violation
+					return utils.GetResult(
+						fmt.Errorf("player name '%s' already taken in this location", newPlayerName),
+						http.StatusConflict,
+						models.Player{},
+					)
+
+				case "23503": // foreign_key_violation
+					return utils.GetResult(
+						fmt.Errorf("invalid location '%s'", locationName),
+						http.StatusBadRequest,
+						models.Player{},
+					)
+			}
+		}
+
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
@@ -97,24 +133,37 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	}
 
 	return utils.GetResult(nil, http.StatusOK, models.Player{
-		PlayerName: newPlayerName,
+		PlayerName:          newPlayerName,
 		PlayerNameEncrypted: encryptedName,
-		PlayerNameHash: newPlayerNameHash,
+		PlayerNameHash:      newPlayerNameHash,
 	})
 }
 
 // Remove a single player from a given location.
 func (s *sqlPlayerRepository) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
-	
 	//Search for a player by their hash rather than their actual name
 	result, err := s.db.Exec(constants.DeletePlayer, encryption.NameHash(playerName), locationName)
 
 	if err != nil {
+
+		//Check for a fk violation, which will be if an invalid location name is sent.
+		if pgErr, ok := err.(*pq.Error); ok{
+			switch string(pgErr.Code) {
+				case "23503": // foreign_key_violation, location name does not exist
+					return utils.GetResult(
+						fmt.Errorf("invalid location '%s'", locationName),
+						http.StatusBadRequest,
+						models.Player{},
+					)
+			}
+		}
+
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
 	numRowsAffected, _ := result.RowsAffected()
 
+	//If no rows were returned, the player does not exist.
 	if numRowsAffected == 0 {
 		return utils.GetResult(fmt.Errorf("could not find player %s", playerName), http.StatusNotFound, models.Player{})
 	}
@@ -145,7 +194,6 @@ func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models
 	return utils.GetResult(nil, http.StatusOK, result.ResultData)
 }
 
-
 // GetAllPlayersFromAllLocations retrieves every player across all locations,
 // then decrypts their names for safe API consumption.
 func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
@@ -169,23 +217,23 @@ func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]mo
 // GetPlayersByNames retrieves players matching a list of plaintext names.
 // The SQL uses hashes to locate the correct rows, then we decrypt
 // the stored encrypted names before returning them.
-func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player] {
-	validPlayers := []models.Player{}
+// func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player] {
+// 	validPlayers := []models.Player{}
 
-	// pq.Array allows passing Go slice into SQL ANY() comparison
-	if err := s.db.Select(&validPlayers, constants.GetPlayersByNames, pq.Array(players)); err != nil {
-		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
-	}
+// 	// pq.Array allows passing Go slice into SQL ANY() comparison
+// 	if err := s.db.Select(&validPlayers, constants.GetPlayersByNames, pq.Array(players)); err != nil {
+// 		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
+// 	}
 
-	// Convert encrypted names into readable form
-	result := s.decryptPlayers(validPlayers)
+// 	// Convert encrypted names into readable form
+// 	result := s.decryptPlayers(validPlayers)
 
-	if result.Err != nil {
-		return result
-	}
+// 	if result.Err != nil {
+// 		return result
+// 	}
 
-	return utils.GetResult(nil, http.StatusOK, result.ResultData)
-}
+// 	return utils.GetResult(nil, http.StatusOK, result.ResultData)
+// }
 
 // GetPlayerByName retrieves a single player by plaintext name.
 // The lookup is performed via hash in SQL, then the encrypted
@@ -223,7 +271,7 @@ func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Res
 
 		// Decrypt the stored ciphertext from the DB
 		decryptedName, err := s.encryptionService.Decrypt(players[i].PlayerNameEncrypted)
-		
+
 		if err != nil {
 			return utils.GetResult(err, http.StatusInternalServerError, []models.Player{})
 		}
@@ -234,7 +282,7 @@ func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Res
 		//Name is validated before insertion, so it SHOULD have exactly 2 parts, ex -> jane doe
 		fields := strings.Fields(decryptedName)
 
-		//Extract the first char from the first name and last 
+		//Extract the first char from the first name and last
 		firstNameInitial, lastNameInitial := string([]rune(fields[0])[0]), string([]rune(fields[1])[0])
 
 		//combine both initials and assign them PlayerNameAbbrev

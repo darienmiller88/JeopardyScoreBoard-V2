@@ -112,7 +112,7 @@ func TestAddPlayer_Ok(t *testing.T) {
 	assert.Equal(t, "Jane Doe", result.ResultData.PlayerName)
 }
 
-// TestAddPlayer_NameTooShort verifies validation fails for names under 4 characters
+// TestAddPlayer_NameTooShort verifies validation fails for first names under 2 characters
 func TestAddPlayer_FirstNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepository{}
@@ -142,8 +142,38 @@ func TestAddPlayer_FirstNameTooLong(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
 }
 
-// TestAddPlayer_NameMustHaveTwoParts verifies validation requires exactly two name parts
-func TestAddPlayer_NameMustHaveTwoParts(t *testing.T) {
+// TestAddPlayer_LastNameTooShort verifies validation fails for last names too short
+func TestAddPlayer_LastNameTooShort(t *testing.T) {
+	mockPlayerRepo := &mockPlayerRepository{}
+	mockLocationRepo := &mockLocationRepository{}
+	service := &PlayerServiceImpl{
+		PlayerRepository:   mockPlayerRepo,
+		LocationRepository: mockLocationRepo,
+	}
+
+	result := service.AddPlayerToLocation("Elmwood", "liberman", "K")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
+
+// TestAddPlayer_LastNameTooLong verifies validation fails for last names over 20 characters
+func TestAddPlayer_LastNameTooLong(t *testing.T) {
+	mockPlayerRepo := &mockPlayerRepository{}
+	mockLocationRepo := &mockLocationRepository{}
+	service := &PlayerServiceImpl{
+		PlayerRepository:   mockPlayerRepo,
+		LocationRepository: mockLocationRepo,
+	}
+
+	result := service.AddPlayerToLocation("Elmwood", "march", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdwextra")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
+
+// TestAddPlayer_FirstNameMustHaveOnePart verifies validation requires exactly one part
+func TestAddPlayer_FirstNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
@@ -152,16 +182,26 @@ func TestAddPlayer_NameMustHaveTwoParts(t *testing.T) {
 	}
 
 	// Single name
-	result := service.AddPlayerToLocation("Elmwood", "Cheryl")
+	result := service.AddPlayerToLocation("Elmwood", "marky maek", "kltveu")
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
-	assert.Contains(t, result.Err.Error(), "two parts")
+	assert.Contains(t, result.Err.Error(), "1 part")
+}
 
-	// More than two names
-	result = service.AddPlayerToLocation("Elmwood", "This name has more than two parts")
+// TestAddPlayer_FirstNameMustHaveOnePart verifies validation requires exactly one part
+func TestAddPlayer_LastNameMustHaveOnePart(t *testing.T) {
+	mockPlayerRepo := &mockPlayerRepository{}
+	mockLocationRepo := &mockLocationRepositoryForPlayer{}
+	service := &PlayerServiceImpl{
+		PlayerRepository:   mockPlayerRepo,
+		LocationRepository: mockLocationRepo,
+	}
+
+	// Single name
+	result := service.AddPlayerToLocation("Elmwood", "kat", "marky mark")
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
-	assert.Contains(t, result.Err.Error(), "two parts")
+	assert.Contains(t, result.Err.Error(), "1 part")
 }
 
 // TestAddPlayer_LocationNotFound verifies error when location doesn't exist
@@ -178,7 +218,7 @@ func TestAddPlayer_LocationNotFound(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.AddPlayerToLocation("NonExistent", "Jane Doe")
+	result := service.AddPlayerToLocation("NonExistent", "Jane", "Doe")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
@@ -203,7 +243,7 @@ func TestAddPlayer_NameAlreadyTaken(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.AddPlayerToLocation("Elmwood", "Jane Doe")
+	result := service.AddPlayerToLocation("Elmwood", "Jane", "Doe")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusConflict, result.StatusCode)
@@ -229,7 +269,7 @@ func TestAddPlayer_DatabaseError(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.AddPlayerToLocation("Elmwood", "Jane Doe")
+	result := service.AddPlayerToLocation("Elmwood", "Jane", "Doe")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
@@ -384,15 +424,15 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez", "Elmwood")
+	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
 
 	require.NoError(t, result.Err)
 	assert.Equal(t, http.StatusOK, result.StatusCode)
 	assert.Equal(t, "Bob Melendez", result.ResultData.PlayerName)
 }
 
-// TestUpdatePlayerName_Service_InvalidNewName verifies validation fails for invalid new name
-func TestUpdatePlayerName_Service_InvalidNewName(t *testing.T) {
+// TestUpdatePlayerName_Service_FirstNameTooShort verifies validation fails for short new first name
+func TestUpdatePlayerName_Service_FirstNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
@@ -400,14 +440,14 @@ func TestUpdatePlayerName_Service_InvalidNewName(t *testing.T) {
 		LocationRepository: mockLocationRepo,
 	}
 
-	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Elmwood") // too short
+	result := service.UpdatePlayerName("Alice Twilight", "m", "Tyler", "Elmwood") // too short
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
 }
 
-// TestUpdatePlayerName_Service_NameMustHaveTwoParts verifies new name must have two parts
-func TestUpdatePlayerName_Service_NameMustHaveTwoParts(t *testing.T) {
+// TestUpdatePlayerName_Service_LastNameTooShort verifies validation fails for short new last name
+func TestUpdatePlayerName_Service_LastNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
@@ -415,7 +455,68 @@ func TestUpdatePlayerName_Service_NameMustHaveTwoParts(t *testing.T) {
 		LocationRepository: mockLocationRepo,
 	}
 
-	result := service.UpdatePlayerName("Alice Twilight", "Margaret", "Elmwood")
+	result := service.UpdatePlayerName("Alice Twilight", "Bob", "k", "Elmwood") // too short
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
+
+// TestUpdatePlayerName_Service_FirstNameTooLong verifies validation fails for long new first name
+func TestUpdatePlayerName_Service_FirstNameTooLong(t *testing.T) {
+	mockPlayerRepo := &mockPlayerRepository{}
+	mockLocationRepo := &mockLocationRepositoryForPlayer{}
+	service := &PlayerServiceImpl{
+		PlayerRepository:   mockPlayerRepo,
+		LocationRepository: mockLocationRepo,
+	}
+
+	result := service.UpdatePlayerName("Alice Twilight", "gfthyghugyuyftghjgftyghjugyftyhub", "Tyler", "Elmwood") // too short
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
+
+// TestUpdatePlayerName_Service_LastNameTooLong verifies validation fails for long new last name
+func TestUpdatePlayerName_Service_LastNameTooLong(t *testing.T) {
+	mockPlayerRepo := &mockPlayerRepository{}
+	mockLocationRepo := &mockLocationRepositoryForPlayer{}
+	service := &PlayerServiceImpl{
+		PlayerRepository:   mockPlayerRepo,
+		LocationRepository: mockLocationRepo,
+	}
+
+	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Tyljkljkjhkhuitybunnnner", "Elmwood") // too short
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+}
+
+// TestUpdatePlayerName_Service_FirstNameMustHaveOnePart verifies new first name must have one part
+func TestUpdatePlayerName_Service_FirstNameMustHaveOnePart(t *testing.T) {
+	mockPlayerRepo := &mockPlayerRepository{}
+	mockLocationRepo := &mockLocationRepositoryForPlayer{}
+	service := &PlayerServiceImpl{
+		PlayerRepository:   mockPlayerRepo,
+		LocationRepository: mockLocationRepo,
+	}
+
+	result := service.UpdatePlayerName("Alice Twilight", "Margaret 2ho", "blahblah", "Elmwood")
+
+	require.Error(t, result.Err)
+	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
+	assert.Contains(t, result.Err.Error(), "two parts")
+}
+
+// TestUpdatePlayerName_Service_LastNameMustHaveOnePart verifies new last name must have one part
+func TestUpdatePlayerName_Service_LastNameMustHaveOnePart(t *testing.T) {
+	mockPlayerRepo := &mockPlayerRepository{}
+	mockLocationRepo := &mockLocationRepositoryForPlayer{}
+	service := &PlayerServiceImpl{
+		PlayerRepository:   mockPlayerRepo,
+		LocationRepository: mockLocationRepo,
+	}
+
+	result := service.UpdatePlayerName("Alice Twilight", "Margaret", "  blahblah lbas", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
@@ -431,7 +532,7 @@ func TestUpdatePlayerName_Service_SameName(t *testing.T) {
 		LocationRepository: mockLocationRepo,
 	}
 
-	result := service.UpdatePlayerName("Jane Doe", "Jane Doe", "Elmwood")
+	result := service.UpdatePlayerName("Jane Doe", "Jane", "Doe", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
@@ -452,7 +553,7 @@ func TestUpdatePlayerName_Service_OldNameDoesNotExist(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.UpdatePlayerName("Ghost Player", "Jane Doe", "Elmwood")
+	result := service.UpdatePlayerName("Ghost Player", "Jane", "Doe", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
@@ -491,11 +592,11 @@ func TestUpdatePlayerName_Service_NewNameAlreadyTaken(t *testing.T) {
 		LocationRepository: mockLocationRepo,
 	}
 
-	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez", "Elmwood")
+	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusConflict, result.StatusCode)
-	assert.Contains(t, result.Err.Error(), "is taken")
+	assert.Contains(t, result.Err.Error(), "taken")
 }
 
 // TestUpdatePlayerName_Service_LocationNotFound verifies error when location doesn't exist
@@ -519,7 +620,7 @@ func TestUpdatePlayerName_Service_LocationNotFound(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez", "NonExistent")
+	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "NonExistent")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
@@ -539,7 +640,7 @@ func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
 		PlayerRepository:   mockPlayerRepo,
 		LocationRepository: mockLocationRepo,
 	}
-	result := service.UpdatePlayerName("Alice Twilight", "Bob Melendez", "Elmwood")
+	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
