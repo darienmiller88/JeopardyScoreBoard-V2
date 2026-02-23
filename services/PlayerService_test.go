@@ -93,17 +93,9 @@ func TestAddPlayer_Ok(t *testing.T) {
 			StatusCode: http.StatusCreated, // ← Change this to 201
 		},
 	}
-	
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
-		},
-	}
 
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.AddPlayerToLocation("Elmwood", firstName, lastName)
 
@@ -115,10 +107,9 @@ func TestAddPlayer_Ok(t *testing.T) {
 // TestAddPlayer_NameTooShort verifies validation fails for first names under 2 characters
 func TestAddPlayer_FirstNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepository{}
+	
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "J", "liberman")
@@ -130,10 +121,8 @@ func TestAddPlayer_FirstNameTooShort(t *testing.T) {
 // TestAddPlayer_NameTooLong verifies validation fails for first names over 20 characters
 func TestAddPlayer_FirstNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepository{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdwextra", "regular")
@@ -145,10 +134,8 @@ func TestAddPlayer_FirstNameTooLong(t *testing.T) {
 // TestAddPlayer_LastNameTooShort verifies validation fails for last names too short
 func TestAddPlayer_LastNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepository{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "liberman", "K")
@@ -160,10 +147,8 @@ func TestAddPlayer_LastNameTooShort(t *testing.T) {
 // TestAddPlayer_LastNameTooLong verifies validation fails for last names over 20 characters
 func TestAddPlayer_LastNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepository{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "march", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdwextra")
@@ -175,10 +160,8 @@ func TestAddPlayer_LastNameTooLong(t *testing.T) {
 // TestAddPlayer_FirstNameMustHaveOnePart verifies validation requires exactly one part
 func TestAddPlayer_FirstNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	// Single name
@@ -191,10 +174,8 @@ func TestAddPlayer_FirstNameMustHaveOnePart(t *testing.T) {
 // TestAddPlayer_FirstNameMustHaveOnePart verifies validation requires exactly one part
 func TestAddPlayer_LastNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	// Single name
@@ -206,17 +187,9 @@ func TestAddPlayer_LastNameMustHaveOnePart(t *testing.T) {
 
 // TestAddPlayer_LocationNotFound verifies error when location doesn't exist
 func TestAddPlayer_LocationNotFound(t *testing.T) {
-	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			Err:        fmt.Errorf("location not found"),
-			StatusCode: http.StatusNotFound,
-		},
-	}
-
+	mockPlayerRepo := &mockPlayerRepository{}	
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.AddPlayerToLocation("NonExistent", "Jane", "Doe")
 
@@ -229,19 +202,12 @@ func TestAddPlayer_NameAlreadyTaken(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{PlayerName: "Jane Doe"},
-			StatusCode: http.StatusOK, // Player exists
-		},
-	}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusConflict, // Player exists
 		},
 	}
 
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.AddPlayerToLocation("Elmwood", "Jane", "Doe")
 
@@ -258,16 +224,9 @@ func TestAddPlayer_DatabaseError(t *testing.T) {
 			StatusCode: http.StatusInternalServerError,
 		},
 	}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
-		},
-	}
 
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.AddPlayerToLocation("Elmwood", "Jane", "Doe")
 
@@ -393,36 +352,15 @@ func TestGetPlayersFromLocation_RepoError(t *testing.T) {
 
 // TestUpdatePlayerName_Service_Ok verifies successful player name update
 func TestUpdatePlayerName_Service_Ok(t *testing.T) {
-	count := 0
-
 	mockPlayerRepo := &mockPlayerRepository{
-		getPlayerByNameFunc: func(playerName string) models.Result[models.Player] {
-			count++
-
-			// First call from doesPlayerExist - name found (good)
-			if count == 1 {
-				return utils.GetResult(nil, http.StatusOK, models.Player{})
-			}
-
-			//Second call from isPlayerTaken - new name not found (good)
-			return utils.GetResult(nil, int(http.StatusNotFound), models.Player{})
-		},
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{PlayerName: "Bob Melendez"},
 			StatusCode: http.StatusOK, 
 		},
 	}
-	
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
-		},
-	}
 
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
 
@@ -434,10 +372,8 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 // TestUpdatePlayerName_Service_FirstNameTooShort verifies validation fails for short new first name
 func TestUpdatePlayerName_Service_FirstNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "m", "Tyler", "Elmwood") // too short
@@ -449,10 +385,8 @@ func TestUpdatePlayerName_Service_FirstNameTooShort(t *testing.T) {
 // TestUpdatePlayerName_Service_LastNameTooShort verifies validation fails for short new last name
 func TestUpdatePlayerName_Service_LastNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "k", "Elmwood") // too short
@@ -464,10 +398,8 @@ func TestUpdatePlayerName_Service_LastNameTooShort(t *testing.T) {
 // TestUpdatePlayerName_Service_FirstNameTooLong verifies validation fails for long new first name
 func TestUpdatePlayerName_Service_FirstNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "gfthyghugyuyftghjgftyghjugyftyhub", "Tyler", "Elmwood") // too short
@@ -479,10 +411,8 @@ func TestUpdatePlayerName_Service_FirstNameTooLong(t *testing.T) {
 // TestUpdatePlayerName_Service_LastNameTooLong verifies validation fails for long new last name
 func TestUpdatePlayerName_Service_LastNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Tyljkljkjhkhuitybunnnner", "Elmwood") // too short
@@ -494,10 +424,8 @@ func TestUpdatePlayerName_Service_LastNameTooLong(t *testing.T) {
 // TestUpdatePlayerName_Service_FirstNameMustHaveOnePart verifies new first name must have one part
 func TestUpdatePlayerName_Service_FirstNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Margaret 2ho", "blahblah", "Elmwood")
@@ -510,10 +438,8 @@ func TestUpdatePlayerName_Service_FirstNameMustHaveOnePart(t *testing.T) {
 // TestUpdatePlayerName_Service_LastNameMustHaveOnePart verifies new last name must have one part
 func TestUpdatePlayerName_Service_LastNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Margaret", "  blahblah lbas", "Elmwood")
@@ -526,10 +452,8 @@ func TestUpdatePlayerName_Service_LastNameMustHaveOnePart(t *testing.T) {
 // TestUpdatePlayerName_Service_SameName verifies error when old and new names are identical
 func TestUpdatePlayerName_Service_SameName(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 
 	result := service.UpdatePlayerName("Jane Doe", "Jane", "Doe", "Elmwood")
@@ -547,11 +471,9 @@ func TestUpdatePlayerName_Service_OldNameDoesNotExist(t *testing.T) {
 			StatusCode: http.StatusNotFound,
 		},
 	}
-	mockLocationRepo := &mockLocationRepository{}
-
+	
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.UpdatePlayerName("Ghost Player", "Jane", "Doe", "Elmwood")
 
@@ -561,35 +483,13 @@ func TestUpdatePlayerName_Service_OldNameDoesNotExist(t *testing.T) {
 
 // TestUpdatePlayerName_Service_NewNameAlreadyTaken verifies error when new name is taken
 func TestUpdatePlayerName_Service_NewNameAlreadyTaken(t *testing.T) {
-	callCount := 0
-
-	//UpdatePlayerName calls GetPlayerByName(playerName string) twice: once to verify if the old name exists,
-	//and another to verify if the new name is taken. If the second call returns a 200, the name is taken
-	//and the update cannot happen.
-	mockPlayerRepo := &mockPlayerRepository{
-		getPlayerByNameFunc: func(playerName string) models.Result[models.Player] {
-			callCount++
-
-			if callCount == 1 {
-				// First call: old name exists (OK)
-				return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: "Alice Twilight"})
-			}
-
-			// Second call: new name already taken (Conflict)
-			return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: "Bob Melendez"})
-		},
-	}
-
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
-		},
-	}
-
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
+		PlayerRepository: &mockPlayerRepository{
+			playerResult: models.Result[models.Player]{
+				StatusCode: http.StatusConflict,
+				Err: fmt.Errorf("name taken"),
+			},
+		},
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
@@ -604,21 +504,12 @@ func TestUpdatePlayerName_Service_LocationNotFound(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{PlayerName: "Alice Twilight"},
-
-			//to update the name, a 404 must be thrown to signal is isn't there.
-			StatusCode: http.StatusNotFound,
-		},
-	}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			Err:        fmt.Errorf("location not found"),
 			StatusCode: http.StatusNotFound,
 		},
 	}
 
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "NonExistent")
 
@@ -634,11 +525,9 @@ func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
 			StatusCode: http.StatusInternalServerError,
 		},
 	}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{}
 
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
 
@@ -659,16 +548,9 @@ func TestRemovePlayer_Service_Ok(t *testing.T) {
 			StatusCode: http.StatusOK,
 		},
 	}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
-		},
-	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.RemovePlayer(playerDeleted, "Elmwood")
@@ -686,16 +568,9 @@ func TestRemovePlayer_Service_PlayerNotFound(t *testing.T) {
 			StatusCode: http.StatusNotFound,
 		},
 	}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
-		},
-	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.RemovePlayer("Ghost Casper", "Elmwood")
 
@@ -705,17 +580,8 @@ func TestRemovePlayer_Service_PlayerNotFound(t *testing.T) {
 
 // TestRemovePlayer_Service_LocationNotFound verifies error when location doesn't exist
 func TestRemovePlayer_Service_LocationNotFound(t *testing.T) {
-	mockPlayerRepo := &mockPlayerRepository{}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			Err:        fmt.Errorf("location not found"),
-			StatusCode: http.StatusNotFound,
-		},
-	}
-
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
+		PlayerRepository: &mockPlayerRepository{},
 	}
 	result := service.RemovePlayer("Jane Doe", "NonExistent")
 
@@ -731,88 +597,11 @@ func TestRemovePlayer_Service_DatabaseError(t *testing.T) {
 			StatusCode: http.StatusInternalServerError,
 		},
 	}
-	mockLocationRepo := &mockLocationRepositoryForPlayer{
-		locationResult: models.Result[string]{
-			ResultData: "Elmwood",
-			StatusCode: http.StatusOK,
-		},
-	}
-
 	service := &PlayerServiceImpl{
 		PlayerRepository:   mockPlayerRepo,
-		LocationRepository: mockLocationRepo,
 	}
 	result := service.RemovePlayer("Jane Doe", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
-}
-
-////////////////////
-// Helper Method Tests
-////////////////////
-
-// TestDoesPlayerExist_PlayerExists verifies helper returns success when player exists
-func TestDoesPlayerExist_PlayerExists(t *testing.T) {
-	mockPlayerRepo := &mockPlayerRepository{
-		playerResult: models.Result[models.Player]{
-			ResultData: models.Player{PlayerName: "Jane Doe"},
-			StatusCode: http.StatusOK,
-		},
-	}
-
-	service := &PlayerServiceImpl{PlayerRepository: mockPlayerRepo}
-	result := service.doesPlayerExist("Jane Doe")
-
-	require.NoError(t, result.Err)
-	assert.Equal(t, http.StatusOK, result.StatusCode)
-}
-
-// TestDoesPlayerExist_PlayerNotFound verifies helper returns 404 when player doesn't exist
-func TestDoesPlayerExist_PlayerNotFound(t *testing.T) {
-	mockPlayerRepo := &mockPlayerRepository{
-		playerResult: models.Result[models.Player]{
-			Err:        fmt.Errorf("player not found"),
-			StatusCode: http.StatusNotFound,
-		},
-	}
-
-	service := &PlayerServiceImpl{PlayerRepository: mockPlayerRepo}
-	result := service.doesPlayerExist("Ghost Player")
-
-	require.Error(t, result.Err)
-	assert.Equal(t, http.StatusNotFound, result.StatusCode)
-}
-
-// TestIsPlayerNameTaken_NameIsTaken verifies helper returns conflict when name exists
-func TestIsPlayerNameTaken_NameIsTaken(t *testing.T) {
-	mockPlayerRepo := &mockPlayerRepository{
-		playerResult: models.Result[models.Player]{
-			ResultData: models.Player{PlayerName: "Jane Doe"},
-			StatusCode: http.StatusOK,
-		},
-	}
-
-	service := &PlayerServiceImpl{PlayerRepository: mockPlayerRepo}
-	result := service.isPlayerNameTaken("Jane Doe")
-
-	require.Error(t, result.Err)
-	assert.Equal(t, http.StatusConflict, result.StatusCode)
-	assert.Contains(t, result.Err.Error(), "is taken")
-}
-
-// TestIsPlayerNameTaken_NameIsAvailable verifies helper returns success when name is available
-func TestIsPlayerNameTaken_NameIsAvailable(t *testing.T) {
-	mockPlayerRepo := &mockPlayerRepository{
-		playerResult: models.Result[models.Player]{
-			Err:        fmt.Errorf("player not found"),
-			StatusCode: http.StatusNotFound,
-		},
-	}
-
-	service := &PlayerServiceImpl{PlayerRepository: mockPlayerRepo}
-	result := service.isPlayerNameTaken("Available Name")
-
-	require.NoError(t, result.Err)
-	assert.Equal(t, http.StatusOK, result.StatusCode)
 }

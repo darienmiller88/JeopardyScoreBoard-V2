@@ -19,7 +19,6 @@ type PlayerService interface {
 
 type PlayerServiceImpl struct {
 	PlayerRepository   repositories.PlayerRepository
-	LocationRepository repositories.LocationRepository
 }
 
 //Update a players old name to be a new name.

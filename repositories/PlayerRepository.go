@@ -68,7 +68,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 				case "23503": // foreign_key_violation
 					return utils.GetResult(
 						fmt.Errorf("invalid location '%s'", locationName),
-						http.StatusBadRequest,
+						http.StatusNotFound,
 						models.Player{},
 					)
 			}
@@ -117,7 +117,7 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 				case "23503": // foreign_key_violation
 					return utils.GetResult(
 						fmt.Errorf("invalid location '%s'", locationName),
-						http.StatusBadRequest,
+						http.StatusNotFound,
 						models.Player{},
 					)
 			}
@@ -152,7 +152,7 @@ func (s *sqlPlayerRepository) RemovePlayer(playerName string, locationName strin
 				case "23503": // foreign_key_violation, location name does not exist
 					return utils.GetResult(
 						fmt.Errorf("invalid location '%s'", locationName),
-						http.StatusBadRequest,
+						http.StatusNotFound,
 						models.Player{},
 					)
 			}
