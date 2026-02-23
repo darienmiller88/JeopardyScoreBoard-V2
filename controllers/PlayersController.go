@@ -107,7 +107,7 @@ func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.
 		return
 	}
 
-	result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName, locationName)
+	result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName, "", locationName)
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)

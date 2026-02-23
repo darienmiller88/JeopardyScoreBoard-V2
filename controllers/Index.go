@@ -25,7 +25,6 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 		&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) },
 		&services.PlayerServiceImpl{ 
 			PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
-			LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
 		},
 	)
 
@@ -33,7 +32,6 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })
 	i.playersController.Init(&services.PlayerServiceImpl{ 
 		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
-		LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
 	})
 	i.savedGamesController.Init(&services.SaveGameServiceImpl{ 
 		SavedGameRepository: repositories.GetSqlSavedGameRepository(db, encryptionService),

@@ -217,23 +217,23 @@ func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]mo
 // GetPlayersByNames retrieves players matching a list of plaintext names.
 // The SQL uses hashes to locate the correct rows, then we decrypt
 // the stored encrypted names before returning them.
-// func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player] {
-// 	validPlayers := []models.Player{}
+func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player] {
+	validPlayers := []models.Player{}
 
-// 	// pq.Array allows passing Go slice into SQL ANY() comparison
-// 	if err := s.db.Select(&validPlayers, constants.GetPlayersByNames, pq.Array(players)); err != nil {
-// 		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
-// 	}
+	// pq.Array allows passing Go slice into SQL ANY() comparison
+	if err := s.db.Select(&validPlayers, constants.GetPlayersByNames, pq.Array(players)); err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, validPlayers)
+	}
 
-// 	// Convert encrypted names into readable form
-// 	result := s.decryptPlayers(validPlayers)
+	// Convert encrypted names into readable form
+	result := s.decryptPlayers(validPlayers)
 
-// 	if result.Err != nil {
-// 		return result
-// 	}
+	if result.Err != nil {
+		return result
+	}
 
-// 	return utils.GetResult(nil, http.StatusOK, result.ResultData)
-// }
+	return utils.GetResult(nil, http.StatusOK, result.ResultData)
+}
 
 // GetPlayerByName retrieves a single player by plaintext name.
 // The lookup is performed via hash in SQL, then the encrypted

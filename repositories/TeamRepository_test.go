@@ -43,9 +43,9 @@ func TestGetTeamWithAllPlayersDB_Happy(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(constants.GetAllPlayersOnTeam)).
 		WithArgs(teamId).
 		WillReturnRows(
-			sqlmock.NewRows([]string{"id", "player_name", "location_id", "team_id", "created_at", "updated_at"}).
-				AddRow(1, "Alice", 3, teamId, time.Now(), time.Now()).
-				AddRow(2, "Bob", 3, teamId, time.Now(), time.Now()),
+			sqlmock.NewRows([]string{"id", "player_name_hash", "player_name_encrypted", "location_id", "team_id", "created_at", "updated_at"}).
+				AddRow(1, sqlmock.AnyArg(), sqlmock.AnyArg(), 3, teamId, time.Now(), time.Now()).
+				AddRow(2, sqlmock.AnyArg(), sqlmock.AnyArg(), 3, teamId, time.Now(), time.Now()),
 		)
 
 	result := repo.GetTeamWithAllPlayersDB(teamId)
