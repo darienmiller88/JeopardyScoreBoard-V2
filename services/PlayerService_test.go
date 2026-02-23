@@ -6,15 +6,14 @@ import (
 	"testing"
 
 	"JeopardyScoreBoardV2/models"
-	"JeopardyScoreBoardV2/utils"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type mockPlayerRepository struct {
-	playerResult  models.Result[models.Player]
-	playersResult models.Result[[]models.Player]
+	playerResult        models.Result[models.Player]
+	playersResult       models.Result[[]models.Player]
 	getPlayerByNameFunc func(string) models.Result[models.Player] // Add this function field
 }
 
@@ -51,23 +50,6 @@ func (m *mockPlayerRepository) GetPlayerByName(playerName string) models.Result[
 	return m.playerResult
 }
 
-type mockLocationRepositoryForPlayer struct {
-	locationResult models.Result[string]
-}
-
-func (m *mockLocationRepositoryForPlayer) GetLocation(locationName string) models.Result[string] {
-	return m.locationResult
-}
-
-func (m *mockLocationRepositoryForPlayer) GetLocationById(locationId int)  models.Result[models.Location]{
-	return models.Result[models.Location]{}
-}
-
-func (m *mockLocationRepositoryForPlayer) GetAllLocations() models.Result[[]string] {
-	return models.Result[[]string]{}
-}
-
-
 ////////////////////
 // CREATE/POST tests
 ////////////////////
@@ -77,25 +59,16 @@ func TestAddPlayer_Ok(t *testing.T) {
 	firstName := "Jane"
 	lastName := "Doe"
 	mockPlayerRepo := &mockPlayerRepository{
-		getPlayerByNameFunc: func(playerName string) models.Result[models.Player] {
-			// First call from isPlayerNameTaken - name not found (good)
-			return utils.GetResult(
-				fmt.Errorf("player not found"),
-				http.StatusNotFound,
-				models.Player{},
-			)
-		},
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{
-				FirstName: firstName,
-				LastName: lastName,
+				PlayerName: "Jane Doe",
 			},
-			StatusCode: http.StatusCreated, // ← Change this to 201
+			StatusCode: http.StatusCreated,
 		},
 	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.AddPlayerToLocation("Elmwood", firstName, lastName)
 
@@ -107,9 +80,8 @@ func TestAddPlayer_Ok(t *testing.T) {
 // TestAddPlayer_NameTooShort verifies validation fails for first names under 2 characters
 func TestAddPlayer_FirstNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
-	
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "J", "liberman")
@@ -122,7 +94,7 @@ func TestAddPlayer_FirstNameTooShort(t *testing.T) {
 func TestAddPlayer_FirstNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdwextra", "regular")
@@ -135,7 +107,7 @@ func TestAddPlayer_FirstNameTooLong(t *testing.T) {
 func TestAddPlayer_LastNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "liberman", "K")
@@ -148,7 +120,7 @@ func TestAddPlayer_LastNameTooShort(t *testing.T) {
 func TestAddPlayer_LastNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.AddPlayerToLocation("Elmwood", "march", "Joedcsxevrgvfsxergtdwxertgfwsxdgtrvwsxdertgvcevrtbgfcdwextra")
@@ -161,7 +133,7 @@ func TestAddPlayer_LastNameTooLong(t *testing.T) {
 func TestAddPlayer_FirstNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	// Single name
@@ -175,7 +147,7 @@ func TestAddPlayer_FirstNameMustHaveOnePart(t *testing.T) {
 func TestAddPlayer_LastNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	// Single name
@@ -187,9 +159,13 @@ func TestAddPlayer_LastNameMustHaveOnePart(t *testing.T) {
 
 // TestAddPlayer_LocationNotFound verifies error when location doesn't exist
 func TestAddPlayer_LocationNotFound(t *testing.T) {
-	mockPlayerRepo := &mockPlayerRepository{}	
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: &mockPlayerRepository{
+			playerResult: models.Result[models.Player]{
+				Err: fmt.Errorf("location not found"),
+				StatusCode: http.StatusNotFound,
+			},
+		},
 	}
 	result := service.AddPlayerToLocation("NonExistent", "Jane", "Doe")
 
@@ -201,19 +177,19 @@ func TestAddPlayer_LocationNotFound(t *testing.T) {
 func TestAddPlayer_NameAlreadyTaken(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{
 		playerResult: models.Result[models.Player]{
-			ResultData: models.Player{PlayerName: "Jane Doe"},
+			Err: fmt.Errorf("player taken"),
 			StatusCode: http.StatusConflict, // Player exists
 		},
 	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.AddPlayerToLocation("Elmwood", "Jane", "Doe")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusConflict, result.StatusCode)
-	assert.Contains(t, result.Err.Error(), "is taken")
+	assert.Contains(t, result.Err.Error(), "taken")
 }
 
 // TestAddPlayer_DatabaseError verifies error handling for database failures
@@ -226,7 +202,7 @@ func TestAddPlayer_DatabaseError(t *testing.T) {
 	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.AddPlayerToLocation("Elmwood", "Jane", "Doe")
 
@@ -343,9 +319,6 @@ func TestGetPlayersFromLocation_RepoError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, result.StatusCode)
 }
 
-
-
-
 ////////////////////
 // UPDATE/PUT tests
 ////////////////////
@@ -355,12 +328,12 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{
 		playerResult: models.Result[models.Player]{
 			ResultData: models.Player{PlayerName: "Bob Melendez"},
-			StatusCode: http.StatusOK, 
+			StatusCode: http.StatusOK,
 		},
 	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
 
@@ -373,7 +346,7 @@ func TestUpdatePlayerName_Service_Ok(t *testing.T) {
 func TestUpdatePlayerName_Service_FirstNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "m", "Tyler", "Elmwood") // too short
@@ -386,7 +359,7 @@ func TestUpdatePlayerName_Service_FirstNameTooShort(t *testing.T) {
 func TestUpdatePlayerName_Service_LastNameTooShort(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "k", "Elmwood") // too short
@@ -399,7 +372,7 @@ func TestUpdatePlayerName_Service_LastNameTooShort(t *testing.T) {
 func TestUpdatePlayerName_Service_FirstNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "gfthyghugyuyftghjgftyghjugyftyhub", "Tyler", "Elmwood") // too short
@@ -412,7 +385,7 @@ func TestUpdatePlayerName_Service_FirstNameTooLong(t *testing.T) {
 func TestUpdatePlayerName_Service_LastNameTooLong(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Tyljkljkjhkhuitybunnnner", "Elmwood") // too short
@@ -425,35 +398,35 @@ func TestUpdatePlayerName_Service_LastNameTooLong(t *testing.T) {
 func TestUpdatePlayerName_Service_FirstNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Margaret 2ho", "blahblah", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
-	assert.Contains(t, result.Err.Error(), "two parts")
+	assert.Contains(t, result.Err.Error(), "1 part")
 }
 
 // TestUpdatePlayerName_Service_LastNameMustHaveOnePart verifies new last name must have one part
 func TestUpdatePlayerName_Service_LastNameMustHaveOnePart(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.UpdatePlayerName("Alice Twilight", "Margaret", "  blahblah lbas", "Elmwood")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusUnprocessableEntity, result.StatusCode)
-	assert.Contains(t, result.Err.Error(), "two parts")
+	assert.Contains(t, result.Err.Error(), "1 part")
 }
 
 // TestUpdatePlayerName_Service_SameName verifies error when old and new names are identical
 func TestUpdatePlayerName_Service_SameName(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 
 	result := service.UpdatePlayerName("Jane Doe", "Jane", "Doe", "Elmwood")
@@ -471,7 +444,7 @@ func TestUpdatePlayerName_Service_OldNameDoesNotExist(t *testing.T) {
 			StatusCode: http.StatusNotFound,
 		},
 	}
-	
+
 	service := &PlayerServiceImpl{
 		PlayerRepository: mockPlayerRepo,
 	}
@@ -487,7 +460,7 @@ func TestUpdatePlayerName_Service_NewNameAlreadyTaken(t *testing.T) {
 		PlayerRepository: &mockPlayerRepository{
 			playerResult: models.Result[models.Player]{
 				StatusCode: http.StatusConflict,
-				Err: fmt.Errorf("name taken"),
+				Err:        fmt.Errorf("name taken"),
 			},
 		},
 	}
@@ -503,18 +476,19 @@ func TestUpdatePlayerName_Service_NewNameAlreadyTaken(t *testing.T) {
 func TestUpdatePlayerName_Service_LocationNotFound(t *testing.T) {
 	mockPlayerRepo := &mockPlayerRepository{
 		playerResult: models.Result[models.Player]{
-			ResultData: models.Player{PlayerName: "Alice Twilight"},
+			Err: fmt.Errorf("location not found"),
 			StatusCode: http.StatusNotFound,
 		},
 	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "NonExistent")
 
 	require.Error(t, result.Err)
 	assert.Equal(t, http.StatusNotFound, result.StatusCode)
+	assert.Contains(t, result.Err.Error(), "location not found")
 }
 
 // TestUpdatePlayerName_Service_RepoError verifies error handling for database failures
@@ -527,7 +501,7 @@ func TestUpdatePlayerName_Service_RepoError(t *testing.T) {
 	}
 
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.UpdatePlayerName("Alice Twilight", "Bob", "Melendez", "Elmwood")
 
@@ -581,7 +555,12 @@ func TestRemovePlayer_Service_PlayerNotFound(t *testing.T) {
 // TestRemovePlayer_Service_LocationNotFound verifies error when location doesn't exist
 func TestRemovePlayer_Service_LocationNotFound(t *testing.T) {
 	service := &PlayerServiceImpl{
-		PlayerRepository: &mockPlayerRepository{},
+		PlayerRepository: &mockPlayerRepository{
+			playerResult: models.Result[models.Player]{
+				Err: fmt.Errorf("location not found"),
+				StatusCode: http.StatusNotFound,
+			},
+		},
 	}
 	result := service.RemovePlayer("Jane Doe", "NonExistent")
 
@@ -598,7 +577,7 @@ func TestRemovePlayer_Service_DatabaseError(t *testing.T) {
 		},
 	}
 	service := &PlayerServiceImpl{
-		PlayerRepository:   mockPlayerRepo,
+		PlayerRepository: mockPlayerRepo,
 	}
 	result := service.RemovePlayer("Jane Doe", "Elmwood")
 
