@@ -1,0 +1,10 @@
+{{define "card"}}
+<div class="player-card">
+    <div class="player-avatar">{{ .PlayerNameAbbrev }}</div>
+    <span class="player-name">{{ .PlayerName }}</span>
+    <div class="player-card-actions">
+        <button class="btn-card btn-edit">✏️ Edit</button>
+        <button class="btn-card btn-delete">🗑️ Delete</button>
+    </div>
+</div>
+{{ end }}

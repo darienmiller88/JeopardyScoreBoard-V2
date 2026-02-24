@@ -32,7 +32,7 @@ func (v *ViewsController) Init(LocationService services.LocationService, PlayerS
 	//Initialize view routes
 	v.Router.Get("/", v.CreateGame)
 	v.Router.Get("/team-mode", v.TeamMode)
-	v.Router.Get("/add-player", v.AddPlayer)
+	v.Router.Get("/add-player", v.AddPlayerPage)
 	v.Router.Get("/view-games", v.ViewGames)
 	v.Router.Get("/log-in", v.LogIn)
 	v.Router.NotFound(v.NotFound)
@@ -77,7 +77,7 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
 	}
 }
 
-func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
+func (v *ViewsController) AddPlayerPage(res http.ResponseWriter, req *http.Request){
 	locationsResult := v.LocationService.GetAllLocations()
 
 	if locationsResult.Err != nil {
@@ -85,7 +85,8 @@ func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
 		return
 	}
 
-	playersResult := v.PlayerService.GetPlayersFromLocation(locationsResult.ResultData[3])
+	selectedLocation := locationsResult.ResultData[0]
+	playersResult := v.PlayerService.GetPlayersFromLocation(selectedLocation)
 
 	if playersResult.Err != nil {
 		http.Error(res, playersResult.Err.Error(), playersResult.StatusCode)
@@ -95,6 +96,7 @@ func (v *ViewsController) AddPlayer(res http.ResponseWriter, req *http.Request){
 	data := map[string]any{
 		"Locations": locationsResult.ResultData,
 		"Players": playersResult.ResultData,
+		"SelectedLocation": selectedLocation,
 	}
 
 	if err := v.templates["AddPlayer"].Execute(res, data); err != nil{

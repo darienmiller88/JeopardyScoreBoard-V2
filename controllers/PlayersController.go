@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -12,6 +14,7 @@ import (
 // Will serve as HTMX end points to Add players, Delete players and Update their names
 type PlayersController struct {
 	Router        *chi.Mux
+	template      *template.Template
 	playerService services.PlayerService
 }
 
@@ -19,41 +22,40 @@ func (p *PlayersController) Init(service services.PlayerService) {
 	p.Router = chi.NewRouter()
 	p.playerService = service
 
-	//Will be moved to views controller
-	p.Router.Get("/", p.GetAllPlayers)
-	p.Router.Get("/{location_name}", p.GetAllPlayersFromOneLocation)
-
-	//These will stay as HTMX end points.
+	p.Router.Get("/by-location", p.GetAllPlayersFromOneLocation)
 	p.Router.Put("/{location_name}", p.UpdatePlayerName)
 	p.Router.Post("/", p.AddPlayerToLocation)
 	p.Router.Delete("/{location_name}", p.RemovePlayer)
-}
 
-func (p *PlayersController) GetAllPlayers(res http.ResponseWriter, req *http.Request) {
-	result := p.playerService.GetAllPlayersFromAllLocations()
+	t, err := template.ParseGlob("templates/partials/*.html")
 
-	if result.Err != nil {
-		http.Error(res, result.Err.Error(), result.StatusCode)
-		return
+	if err != nil {
+		panic(err)
 	}
 
-	res.Header().Add("Content-type", "application/json")
-	res.WriteHeader(200)
-	json.NewEncoder(res).Encode(result)
+	p.template = t
 }
 
 func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter, req *http.Request) {
-	location := chi.URLParam(req, "location_name")
+	location := req.URL.Query().Get("location")
 	result := p.playerService.GetPlayersFromLocation(location)
+
+	fmt.Println("location:", location)
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)
 		return
 	}
 
-	res.Header().Add("Content-type", "application/json")
-	res.WriteHeader(200)
-	json.NewEncoder(res).Encode(result)
+	data := template.FuncMap{
+		"Players": result.ResultData,
+		"SelectedLocation": location,
+		"HasPlayers": len(result.ResultData) > 0,
+	}
+
+	if err := p.template.ExecuteTemplate(res, "player_list_section", data); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *http.Request) {
