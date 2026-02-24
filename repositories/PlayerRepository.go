@@ -78,6 +78,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 
 	player.PlayerNameEncrypted = encryptedName
 	player.PlayerNameHash = hash
+	player.PlayerNameAbbrev = s.getPlayerNameInitials(player.PlayerName)
 
 	return utils.GetResult(nil, http.StatusCreated, player)
 }
@@ -136,6 +137,7 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 		PlayerName:          newPlayerName,
 		PlayerNameEncrypted: encryptedName,
 		PlayerNameHash:      newPlayerNameHash,
+		PlayerNameAbbrev:    s.getPlayerNameInitials(newPlayerName),
 	})
 }
 
@@ -279,15 +281,21 @@ func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Res
 		// Store decrypted value in the JSON-visible field
 		players[i].PlayerName = decryptedName
 
-		//Name is validated before insertion, so it SHOULD have exactly 2 parts, ex -> jane doe
-		fields := strings.Fields(decryptedName)
+		//combine both initials and assign them PlayerNameAbbrev
+		players[i].PlayerNameAbbrev = s.getPlayerNameInitials(decryptedName)
+	}
+
+	return utils.GetResult(nil, http.StatusOK, players)
+}
+
+
+func (s *sqlPlayerRepository) getPlayerNameInitials(playerName string) string {
+	//Name is validated before insertion, so it SHOULD have exactly 2 parts, ex -> jane doe
+		fields := strings.Fields(playerName)
 
 		//Extract the first char from the first name and last
 		firstNameInitial, lastNameInitial := string([]rune(fields[0])[0]), string([]rune(fields[1])[0])
 
-		//combine both initials and assign them PlayerNameAbbrev
-		players[i].PlayerNameAbbrev = strings.ToUpper(firstNameInitial + lastNameInitial)
-	}
-
-	return utils.GetResult(nil, http.StatusOK, players)
+		//combine both initials and return it as: (J)ane (D)oe -> JD
+		return strings.ToUpper(firstNameInitial + lastNameInitial)
 }

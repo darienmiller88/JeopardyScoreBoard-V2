@@ -73,7 +73,9 @@ func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *ht
 		return
 	}
 
-	http.Redirect(res, req, "/add-player", http.StatusSeeOther)
+	if err := p.template.ExecuteTemplate(res, "player_card", result.ResultData); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Request) {

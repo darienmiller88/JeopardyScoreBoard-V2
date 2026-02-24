@@ -9,7 +9,7 @@
     <div class="glass form-container">
         <h1 class="gradient-text add-player-header">Add New Player</h1>
         
-        <form class="add-player-form" hx-post="/players" hx-target="#player-list">
+        <form class="add-player-form" hx-post="/players" hx-target="#player-list" hx-swap="beforeend">
             <label>Location</label>
             <select 
                 name="location"
