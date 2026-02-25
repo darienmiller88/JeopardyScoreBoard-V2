@@ -44,7 +44,7 @@ func (p *Player) Validate() error {
 
 //Combines the first name and 
 func (p *Player) SetPlayerName(firstName string, lastName string){
-	p.PlayerName = strings.Trim(firstName, " ") + " " + strings.Trim(lastName, " ")
+	p.PlayerName = firstName + " " + lastName
 }
 
 func (p *Player) validateFirstAndLastNameLength() error {

@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/repositories"
@@ -24,8 +25,8 @@ type PlayerServiceImpl struct {
 //Update a players old name to be a new name.
 func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, firstName string, lastName string, locationName string) models.Result[models.Player] {
 	player := models.Player{
-		FirstName: firstName,
-		LastName: lastName,
+		FirstName: strings.Trim(firstName, " "),
+		LastName: strings.Trim(lastName, " "),
 	}
 
 	//Ensure the new name passes validation/is properly formatted
@@ -50,8 +51,8 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, firstName str
 
 func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player] {
 	player := models.Player{
-		FirstName: firstName,
-		LastName: lastName,
+		FirstName: strings.Trim(firstName, " "),
+		LastName: strings.Trim(lastName, " "),
 	}
 
 	//Ensure the player name (first + last) passes all validation.

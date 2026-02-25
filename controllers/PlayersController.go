@@ -61,6 +61,7 @@ func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter
 func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *http.Request) {
 	if err := req.ParseForm(); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	locationName := req.FormValue("location")

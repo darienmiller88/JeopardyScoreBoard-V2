@@ -9,7 +9,13 @@
     <div class="glass form-container">
         <h1 class="gradient-text add-player-header">Add New Player</h1>
         
-        <form class="add-player-form" hx-post="/players" hx-target="#player-list" hx-swap="beforeend">
+        <form 
+            class="add-player-form"
+            hx-post="/players" 
+            hx-target="#player-list" 
+            hx-swap="beforeend"
+            hx-on::response-error="alert('Status:', event.detail.xhr.status, 'Message:', event.detail.xhr.responseText)">
+        >
             <label>Location</label>
             <select 
                 name="location"
@@ -28,6 +34,7 @@
             <label>Last Name</label>
             <input type="text" name="last"  minlength="2" maxlength="20" placeholder="e.g., Parker" required>
 
+            <div id="form-error"></div>
             <button type="submit" class="btn btn-primary">+ Add Player to Location</button>
         </form>
     </div>

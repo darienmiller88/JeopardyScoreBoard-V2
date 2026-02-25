@@ -129,23 +129,22 @@
 }
 
 .btn-edit {
-    background-color: var(--primary);
-}
-
-.btn-edit:hover {
-    background-color: rgba(34, 211, 238, 0.12);
-    border-color: var(--primary);
+    background: linear-gradient(135deg, #22d3ee, #0ea5e9, #3b82f6);
 }
 
 .btn-delete {
-    background-color: var(--danger);
+    background: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, var(--primary-glow), var(--primary));
+    transform: scale(1.05);
 }
 
 .btn-delete:hover {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: var(--danger);
+    background: linear-gradient(135deg, #dc2626, var(--danger));
+    transform: scale(1.05);
 }
-
 /* Responsive */
 
 /* ipad pro */
