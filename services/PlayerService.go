@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/repositories"
@@ -19,23 +18,20 @@ type PlayerService interface {
 }
 
 type PlayerServiceImpl struct {
-	PlayerRepository   repositories.PlayerRepository
+	PlayerRepository repositories.PlayerRepository
 }
 
-//Update a players old name to be a new name.
+// Update a players old name to be a new name.
 func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, firstName string, lastName string, locationName string) models.Result[models.Player] {
-	player := models.Player{
-		FirstName: strings.Trim(firstName, " "),
-		LastName: strings.Trim(lastName, " "),
-	}
+	player := models.Player{}
+
+	//Set the player name to be the first name plus last name
+	player.SetPlayerName(firstName, lastName)
 
 	//Ensure the new name passes validation/is properly formatted
 	if err := player.Validate(); err != nil {
 		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
-
-	//Set the player name to be the first name plus last name
-	player.SetPlayerName(firstName, lastName)
 
 	//Ensure the new name and old name are different.
 	if oldPlayerName == player.PlayerName {
@@ -50,18 +46,17 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, firstName str
 }
 
 func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player] {
-	player := models.Player{
-		FirstName: strings.Trim(firstName, " "),
-		LastName: strings.Trim(lastName, " "),
-	}
+	player := models.Player{}
+
+	//set the player name by using the first name and last name.
+	player.SetPlayerName(firstName, lastName)
 
 	//Ensure the player name (first + last) passes all validation.
 	if err := player.Validate(); err != nil {
 		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
 
-	//set the player name by using the first name and last name.
-	player.SetPlayerName(firstName, lastName)
+	fmt.Println("name:", player.PlayerName, "len:", len(player.PlayerName))
 
 	//After confirming the following:
 	//1. The new name is properly formatted (validated)
@@ -69,7 +64,7 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, firstName s
 	return p.PlayerRepository.AddPlayerToLocation(locationName, player)
 }
 
-//Remove a player belonging to a certain location by using their name and location.
+// Remove a player belonging to a certain location by using their name and location.
 func (p *PlayerServiceImpl) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
 	return p.PlayerRepository.RemovePlayer(playerName, locationName)
 }

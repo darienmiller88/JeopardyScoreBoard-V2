@@ -4,6 +4,20 @@
 <link rel="stylesheet" href="../static/css/AddPlayer.css">
 {{ end }}
 
+{{ define "js" }}
+<script>
+    function showError(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+</script>
+{{ end }}
+
 {{ define "content" }}
 <div class="add-player-container">
     <div class="glass form-container">
@@ -14,7 +28,7 @@
             hx-post="/players" 
             hx-target="#player-list" 
             hx-swap="beforeend"
-            hx-on::response-error="alert('Status:', event.detail.xhr.status, 'Message:', event.detail.xhr.responseText)">
+            hx-on::response-error="document.getElementById('error-box').innerText = event.detail.xhr.responseText"
         >
             <label>Location</label>
             <select 
@@ -34,7 +48,7 @@
             <label>Last Name</label>
             <input type="text" name="last"  minlength="2" maxlength="20" placeholder="e.g., Parker" required>
 
-            <div id="form-error"></div>
+            <div id="toast" class="toast"></div>
             <button type="submit" class="btn btn-primary">+ Add Player to Location</button>
         </form>
     </div>
