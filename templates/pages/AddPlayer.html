@@ -5,39 +5,7 @@
 {{ end }}
 
 {{ define "js" }}
-<script>
-    function showToast(message, type = 'success', duration = 2000) {
-        const toast = document.getElementById('toast');
-        
-        const icons = {
-            error: '✕',
-            success: '✓',
-            info: 'i',
-            warning: '!'
-        };
-        
-        const icon = icons[type] || '✓';
-        
-        toast.innerHTML = `
-            <div class="toast-icon">${icon}</div>
-            <span>${message}</span>
-            <button class="toast-close" onclick="hideToast()">×</button>
-        `;
-        
-        toast.className = 'toast ' + type;
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, duration);
-    }
-
-    function hideToast() {
-        const toast = document.getElementById('toast');
-        toast.classList.remove('show');
-    }
-       
-</script>
+<script src="../static/js/AddPlayer.js"></script>
 {{ end }}
 
 {{ define "content" }}
@@ -50,7 +18,7 @@
             hx-post="/players" 
             hx-target="#player-list" 
             hx-swap="beforeend"
-            hx-on::response-error="showToast(event.detail.xhr.responseText, 'error', 2000)"
+            hx-on::response-error="showToast(event.detail.xhr.responseText, 'error', 3500)"
             hx-on::after-request="
                 if(event.detail.successful) {
                     showToast('Player added successfully!', 'success', 2000)
@@ -75,13 +43,12 @@
             <label>Last Name</label>
             <input type="text" name="last"  minlength="2" maxlength="20" placeholder="e.g., Parker" required>
 
-            <button type="submit" class="btn btn-primary">+ Add Player to Location</button>
+            <button type="submit" class="btn btn-primary">
+                + Add Player to Location
+            </button>
         </form>
     </div>
     
-    <button onclick="showToast('success', 'success', 2000)">
-        Test Toast
-    </button>
     <div id="player-list-section-id" class="player-list-section">
         <h3 class="player-list-header">
             👥 Players at {{ .SelectedLocation }}
