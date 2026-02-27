@@ -18,10 +18,16 @@
             hx-post="/players" 
             hx-target="#player-list" 
             hx-swap="beforeend"
-            hx-on::response-error="showToast(event.detail.xhr.responseText, 'error', 3500)"
+            hx-on::before-request="disableForm(this, 3000)"
+            hx-on::response-error="
+                showToast(event.detail.xhr.responseText, 'error', 3000);
+                enableForm(this, 3000);
+            "
             hx-on::after-request="
                 if(event.detail.successful) {
-                    showToast('Player added successfully!', 'success', 2000)
+                    showToast('Player added successfully!', 'success', 2000);
+                    this.reset();
+                    enableForm(this, 2000);
                 }
             "
         >
@@ -59,8 +65,8 @@
                 <div class="player-avatar">{{ .PlayerNameAbbrev }}</div>
                 <span class="player-name">{{ .PlayerName }}</span>
                 <div class="player-card-actions">
-                    <button class="btn-card btn-edit">✏️ Edit</button>
-                    <button class="btn-card btn-delete">🗑️ Delete</button>
+                    <button class="btn-card btn-edit" data-bs-toggle="modal" data-bs-target="#editModal">✏️ Edit</button>
+                    <button class="btn-card btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal">🗑️ Delete</button>
                 </div>
             </div>
             {{ end }}
@@ -68,5 +74,44 @@
     </div>
     
     <div id="toast" class="toast"></div>
+
+    <!-- Modal for editting player name -->
+    <div id="editModal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Modal body text goes here.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal for Deleting player -->
+    <div id="deleteModal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Player</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5><span class="delete-warning">Are you sure?</span> They will also be removed from the game they are currently in.</h5>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-delete" data-bs-dismiss="modal">Delete Player</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {{ end }}

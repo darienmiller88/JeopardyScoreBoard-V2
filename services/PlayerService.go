@@ -56,8 +56,6 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, firstName s
 		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
 
-	fmt.Println("name:", player.PlayerName, "len:", len(player.PlayerName))
-
 	//After confirming the following:
 	//1. The new name is properly formatted (validated)
 	//Add the new player to be database.

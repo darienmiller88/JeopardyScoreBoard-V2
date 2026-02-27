@@ -241,7 +241,16 @@
     color: #f59e0b;
 }
 
-/* Responsive */
+
+/* for modals */
+.delete-warning{
+    color: var(--danger);
+}
+
+.modal-title{
+    font-size: 1.6rem;
+    text-align: center;
+}
 
 /* ipad pro */
 @media (max-width: 1024px) {
