@@ -19,7 +19,7 @@ type PlayerRepository interface {
 	UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player]
 	AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]
 	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
-	RemovePlayer(playerName string, locationName string) models.Result[models.Player]
+	RemovePlayer(playerId string, locationName string) models.Result[models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 	GetPlayersByNames(players []string) models.Result[[]models.Player]
 	GetPlayerByName(playerName string) models.Result[models.Player]
@@ -84,7 +84,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 }
 
 // Function to update a players name for a given location.
-func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player] {
+func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerId string, newPlayerName string, locationName string) models.Result[models.Player] {
 	//Encrypt the new name
 	encryptedName, err := s.encryptionService.Encrypt(newPlayerName)
 
@@ -92,17 +92,16 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 		return utils.GetResult(err, http.StatusInternalServerError, models.Player{})
 	}
 
-	//Find the column of the old name by its hash, and create a new hash for the new name
-	olderPlayerNameHash := encryption.NameHash(oldPlayerName)
+	//create a new hash for the new name
 	newPlayerNameHash := encryption.NameHash(newPlayerName)
 
 	//Use all of the following to updated the players name, encrypted name, and new hash.
 	result, err := s.db.Exec(
 		constants.UpdatePlayerName,
-		encryptedName,       //$1
-		newPlayerNameHash,   //$2
-		olderPlayerNameHash, //$3
-		locationName,        //$4
+		encryptedName,     //$1
+		newPlayerNameHash, //$2
+		oldPlayerId,       //$3
+		locationName,      //$4
 	)
 
 	if err != nil {
@@ -130,7 +129,7 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 	numRowsAffected, _ := result.RowsAffected()
 
 	if numRowsAffected == 0 {
-		return utils.GetResult(fmt.Errorf("could not find player %s", oldPlayerName), http.StatusNotFound, models.Player{})
+		return utils.GetResult(fmt.Errorf("could not find player with id %s", oldPlayerId), http.StatusNotFound, models.Player{})
 	}
 
 	return utils.GetResult(nil, http.StatusOK, models.Player{
@@ -142,9 +141,9 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerName string, newPlayerNa
 }
 
 // Remove a single player from a given location.
-func (s *sqlPlayerRepository) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
+func (s *sqlPlayerRepository) RemovePlayer(playerId string, locationName string) models.Result[models.Player] {
 	//Search for a player by their hash rather than their actual name
-	result, err := s.db.Exec(constants.DeletePlayer, encryption.NameHash(playerName), locationName)
+	result, err := s.db.Exec(constants.DeletePlayer, playerId, locationName)
 
 	if err != nil {
 
@@ -167,10 +166,10 @@ func (s *sqlPlayerRepository) RemovePlayer(playerName string, locationName strin
 
 	//If no rows were returned, the player does not exist.
 	if numRowsAffected == 0 {
-		return utils.GetResult(fmt.Errorf("could not find player %s", playerName), http.StatusNotFound, models.Player{})
+		return utils.GetResult(fmt.Errorf("could not find player with id %s", playerId), http.StatusNotFound, models.Player{})
 	}
 
-	return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: playerName})
+	return utils.GetResult(nil, http.StatusOK, models.Player{PlayerName: playerId})
 }
 
 // GetPlayersFromLocation fetches all players for a given location name,

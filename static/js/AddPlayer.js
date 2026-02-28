@@ -95,12 +95,14 @@ function populateDeleteModal(button) {
     
     //Add the player name to the delete player modal
     document.getElementById('delete-player-name').textContent = playerName;
-    
+
     const deleteBtn = document.getElementById('confirm-delete-btn');
     
-    // Update the delete button with correct URL and target htmx attributes
-    deleteBtn.setAttribute('hx-delete', `/players/${playerId}/location/${location}`);
+    // Update the delete button with target htmx attributes
+    deleteBtn.setAttribute('hx-delete', `/players?id=${playerId}&location=${location}`);
     deleteBtn.setAttribute('hx-target', `#player-${playerId}`)
+
+    htmx.process(deleteBtn);
 }
 
 function savePlayerEdit() {

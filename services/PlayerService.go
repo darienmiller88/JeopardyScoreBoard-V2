@@ -11,7 +11,7 @@ import (
 type PlayerService interface {
 	UpdatePlayerName(oldPlayerId string, firstName string, lastName string, locationName string) models.Result[models.Player]
 	AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player]
-	RemovePlayer(playerName string, locationName string) models.Result[models.Player]
+	RemovePlayer(playerId string, locationName string) models.Result[models.Player]
 	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 }
@@ -57,8 +57,8 @@ func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, firstName s
 }
 
 // Remove a player belonging to a certain location by using their name and location.
-func (p *PlayerServiceImpl) RemovePlayer(playerName string, locationName string) models.Result[models.Player] {
-	return p.PlayerRepository.RemovePlayer(playerName, locationName)
+func (p *PlayerServiceImpl) RemovePlayer(playerId string, locationName string) models.Result[models.Player] {
+	return p.PlayerRepository.RemovePlayer(playerId, locationName)
 }
 
 func (p *PlayerServiceImpl) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {

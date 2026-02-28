@@ -191,7 +191,7 @@ const(
 			player_name_encrypted = $1,
 			player_name_hash = $2
 		WHERE
-			player_name_hash = $3
+			id = $3
 			AND location_id = (
 				SELECT id FROM locations WHERE location_name = $4
 			);
@@ -204,7 +204,7 @@ const(
 
 	//DELETE
 	DeletePlayer string = `
-		DELETE FROM players WHERE player_name_hash=$1 AND location_id=(SELECT id FROM locations WHERE location_name=$2)
+		DELETE FROM players WHERE id=$1 AND location_id=(SELECT id FROM locations WHERE location_name=$2)
 	`
 
 	DeleteSavedGame string = `

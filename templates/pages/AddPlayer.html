@@ -84,6 +84,7 @@
                         data-bs-toggle="modal" 
                         data-bs-target="#deleteModal"
                         data-player-id="{{ .ID }}"
+                        data-location="{{ $.SelectedLocation }}"
                         data-player-name="{{ .PlayerName }}"
                         onclick="populateDeleteModal(this)">
                         🗑️ Delete
@@ -154,6 +155,7 @@
                         <span class="delete-warning">Are you sure you want to delete <span id="delete-player-name"></span>?</span> 
                         They will also be removed from the game they are currently in.
                     </h5>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -162,6 +164,8 @@
                         id="confirm-delete-btn"
                         class="btn btn-primary btn-delete"
                         data-bs-dismiss="modal"
+                        hx-delete=""
+                        hx-include="#editDeleteForm"
                         hx-swap="outerHTML swap:0.5s"
                         hx-on::after-request="
                             if(event.detail.successful) {

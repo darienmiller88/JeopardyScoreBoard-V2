@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -24,7 +23,7 @@ func (p *PlayersController) Init(service services.PlayerService) {
 
 	p.Router.Get("/by-location", p.GetAllPlayersFromOneLocation)
 	p.Router.Put("/", p.UpdatePlayerName)
-	p.Router.Delete("/{id}/location/{location_name}", p.RemovePlayer)
+	p.Router.Delete("/", p.RemovePlayer)
 	p.Router.Post("/", p.AddPlayerToLocation)
 
 	t, err := template.ParseGlob("templates/partials/*.html")
@@ -48,9 +47,9 @@ func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter
 	}
 
 	data := template.FuncMap{
-		"Players": result.ResultData,
+		"Players":          result.ResultData,
 		"SelectedLocation": location,
-		"HasPlayers": len(result.ResultData) > 0,
+		"HasPlayers":       len(result.ResultData) > 0,
 	}
 
 	if err := p.template.ExecuteTemplate(res, "player_list_section", data); err != nil {
@@ -80,24 +79,23 @@ func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *ht
 }
 
 func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Request) {
-	locationName := chi.URLParam(req, "location_name")
-	playerName := ""
+	location := req.URL.Query().Get("location")
+    playerId := req.URL.Query().Get("id")
 
-	if err := json.NewDecoder(req.Body).Decode(&playerName); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
-		return
-	}
+	fmt.Println("location:", location, "id:", playerId)
+	// if err := json.NewDecoder(req.Body).Decode(&playerName); err != nil {
+	// 	http.Error(res, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
 	result := p.playerService.RemovePlayer(playerName, locationName)
 
-	if result.Err != nil {
-		http.Error(res, result.Err.Error(), result.StatusCode)
-		return
-	}
+	// if result.Err != nil {
+	// 	http.Error(res, result.Err.Error(), result.StatusCode)
+	// 	return
+	// }
 
-	res.Header().Add("Content-type", "application/json")
 	res.WriteHeader(200)
-	json.NewEncoder(res).Encode(result)
 }
 
 func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.Request) {
@@ -106,7 +104,7 @@ func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.
 		return
 	}
 
-	// 
+	//
 	location := req.FormValue("location")
 	playerId := req.FormValue("id")
 	firstName := req.FormValue("first")
