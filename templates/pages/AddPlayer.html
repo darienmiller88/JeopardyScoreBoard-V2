@@ -18,13 +18,17 @@
             hx-post="/players" 
             hx-target="#player-list" 
             hx-swap="beforeend"
-            hx-on::before-request="disableForm(this, 3000)"
+            hx-on::before-request="
+                if(event.detail.elt.tagName === 'FORM') {
+                    disableForm(this, 3000);
+                }
+            "
             hx-on::response-error="
                 showToast(event.detail.xhr.responseText, 'error', 3000);
                 enableForm(this, 3000);
             "
             hx-on::after-request="
-                if(event.detail.successful) {
+                if(event.detail.successful && event.detail.elt.tagName === 'FORM') {
                     showToast('Player added successfully!', 'success', 2000);
                     this.reset();
                     enableForm(this, 2000);
