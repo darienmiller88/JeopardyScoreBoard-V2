@@ -30,12 +30,17 @@
     width: 2.5rem;
     height: 2.5rem;
     color: white;
+    display: flex; /* Add this */
+    align-items: center; /* Add this */
+    justify-content: center; /* Add this */
 }
 
 .brand-text {
     font-size: 1.5rem;
     font-weight: 800;
     color: white;
+    margin: 0; /* Reset Bootstrap margin */
+    line-height: 1; /* Reset Bootstrap line-height */
 }
 
 .nav-menu {
@@ -43,6 +48,15 @@
     list-style: none;
     gap: 1.5rem;
     align-items: center;
+    margin: 0; /* Reset Bootstrap's ul margin */
+    padding: 0; /* Reset Bootstrap's ul padding */
+}
+
+.nav-menu li {
+    margin: 0; /* Reset Bootstrap's li margin */
+    padding: 0; /* Reset Bootstrap's li padding */
+    display: flex; /* Ensure flex for vertical centering */
+    align-items: center; /* Vertically center content */
 }
 
 .nav-menu a {
@@ -51,27 +65,35 @@
     font-size: 0.95rem;
     font-weight: 500;
     transition: color 0.3s ease;
+    display: inline-block; /* Reset Bootstrap's display */
+    margin: 0; /* Reset Bootstrap margin */
+    padding: 0; /* Reset Bootstrap padding if needed */
+    line-height: 1.5; /* Consistent line-height */
 }
 
 .nav-menu a:hover {
     color: var(--primary-glow);
 }
 
-.sign-out-btn {
-    padding: 0.5rem 1rem;
+.nav-menu .sign-out-btn {
+    padding: 0.5rem 1rem !important;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 0.5rem;
-    border: 1px solid var(--nav-border);
+    border: 2px solid var(--nav-border);
+    margin: 0;
+    display: inline-block; /* Ensure padding applies */
+    box-sizing: border-box; /* Include border in size calculation */
 }
 
 .nav-toggle { 
     display: none;
- }
+}
 
 .nav-toggle-label {
     display: none;
     cursor: pointer;
     padding: 1rem;
+    margin: 0; /* Reset Bootstrap margin */
 }
 
 .nav-toggle-label span,
@@ -85,8 +107,8 @@
     transition: all 0.3s ease;
 }
 
-.nav-toggle-label span::before { content: ""; top: 8px; }
-.nav-toggle-label span::after { content: ""; top: -10px; }
+.nav-toggle-label span::before { content: ""; position: absolute; top: 8px; }
+.nav-toggle-label span::after { content: ""; position: absolute; top: -10px; }
 
 @media (max-width: 768px) {
     .nav-toggle-label { display: block; }
@@ -104,6 +126,7 @@
         transform: scale(1, 0);
         transform-origin: top;
         transition: transform 0.3s ease;
+        margin: 0; /* Ensure no margin in mobile */
     }
 
     .nav-toggle:checked ~ .nav-menu {
