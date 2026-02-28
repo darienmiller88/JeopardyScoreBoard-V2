@@ -61,12 +61,28 @@
         </h3>
         <div id="player-list">
             {{ range .Players }}
-            <div class="player-card">
+            <div id="{{ .ID }}" class="player-card">
                 <div class="player-avatar">{{ .PlayerNameAbbrev }}</div>
                 <span class="player-name">{{ .PlayerName }}</span>
                 <div class="player-card-actions">
-                    <button class="btn-card btn-edit" data-bs-toggle="modal" data-bs-target="#editModal">✏️ Edit</button>
-                    <button class="btn-card btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal">🗑️ Delete</button>
+                    <button 
+                        class="btn-card btn-edit" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#editModal"
+                        data-player-id="{{ .ID }}"
+                        data-player-name="{{ .PlayerName }}"
+                        onclick="populateEditModal(this)">
+                        ✏️ Edit
+                    </button>
+                    <button 
+                        class="btn-card btn-delete" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#deleteModal"
+                        data-player-id="{{ .ID }}"
+                        data-player-name="{{ .PlayerName }}"
+                        onclick="populateDeleteModal(this)">
+                        🗑️ Delete
+                    </button>
                 </div>
             </div>
             {{ end }}
@@ -80,15 +96,31 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Modal title</h5>
+                    <h5 class="modal-title">Edit Player Name</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Modal body text goes here.</p>
+                    <form id="editPlayerForm">
+                        <input type="hidden" id="edit-player-id" name="id">
+                        
+                        <label>First Name</label>
+                        <input type="text" id="edit-first-name" name="first" minlength="2" maxlength="20" required>
+                        
+                        <label>Last Name</label>
+                        <input type="text" id="edit-last-name" name="last" minlength="2" maxlength="20" required>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button 
+                        id="confirm-edit-btn"
+                        type="button" 
+                        class="btn btn-primary"
+                        hx-include="#editPlayerForm"
+                        hx-swap="outerHTML"
+                        data-bs-dismiss="modal">
+                        Save changes
+                    </button>
                 </div>
             </div>
         </div>
@@ -104,14 +136,33 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <h5><span class="delete-warning">Are you sure?</span> They will also be removed from the game they are currently in.</h5>
+                    <h5>
+                        <span class="delete-warning">Are you sure you want to delete <span id="delete-player-name"></span>?</span> 
+                        They will also be removed from the game they are currently in.
+                    </h5>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary btn-delete" data-bs-dismiss="modal">Delete Player</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button 
+                        type="button" 
+                        id="confirm-delete-btn"
+                        class="btn btn-primary btn-delete"
+                        data-bs-dismiss="modal"
+                        hx-swap="outerHTML swap:0.5s"
+                        hx-on::after-request="
+                            if(event.detail.successful) {
+                                showToast('Player deleted successfully!', 'success', 2000)
+                            }
+                        "
+                        hx-on::response-error="showToast('Failed to delete player', 'error', 3000)">
+                        Delete Player
+                    </button>
                 </div>
             </div>
         </div>
+        <!-- end of modal -->
     </div>
+
+    <!-- end -->
 </div>
 {{ end }}
