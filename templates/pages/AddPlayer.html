@@ -164,9 +164,8 @@
                         id="confirm-delete-btn"
                         class="btn btn-primary btn-delete"
                         data-bs-dismiss="modal"
-                        hx-delete=""
                         hx-include="#editDeleteForm"
-                        hx-swap="outerHTML swap:0.5s"
+                        hx-swap="outerHTML"
                         hx-on::after-request="
                             if(event.detail.successful) {
                                 showToast('Player deleted successfully!', 'success', 2000)

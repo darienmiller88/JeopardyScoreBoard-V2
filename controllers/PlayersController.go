@@ -81,19 +81,12 @@ func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *ht
 func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Request) {
 	location := req.URL.Query().Get("location")
     playerId := req.URL.Query().Get("id")
+	result := p.playerService.RemovePlayer(playerId, location)
 
-	fmt.Println("location:", location, "id:", playerId)
-	// if err := json.NewDecoder(req.Body).Decode(&playerName); err != nil {
-	// 	http.Error(res, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
-
-	result := p.playerService.RemovePlayer(playerName, locationName)
-
-	// if result.Err != nil {
-	// 	http.Error(res, result.Err.Error(), result.StatusCode)
-	// 	return
-	// }
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
 
 	res.WriteHeader(200)
 }
