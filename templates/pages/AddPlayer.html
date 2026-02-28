@@ -61,7 +61,7 @@
         </h3>
         <div id="player-list">
             {{ range .Players }}
-            <div id="{{ .ID }}" class="player-card">
+            <div id="player-{{ .ID }}" class="player-card">
                 <div class="player-avatar">{{ .PlayerNameAbbrev }}</div>
                 <span class="player-name">{{ .PlayerName }}</span>
                 <div class="player-card-actions">
@@ -69,6 +69,7 @@
                         class="btn-card btn-edit" 
                         data-bs-toggle="modal" 
                         data-bs-target="#editModal"
+                        data-location="{{ $.SelectedLocation }}"
                         data-player-id="{{ .ID }}"
                         data-player-name="{{ .PlayerName }}"
                         onclick="populateEditModal(this)">
@@ -89,7 +90,7 @@
         </div>
     </div>
     
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="slide-toast"></div>
 
     <!-- Modal for editting player name -->
     <div id="editModal" class="modal" tabindex="-1">
@@ -101,8 +102,10 @@
                 </div>
                 <div class="modal-body">
                     <form id="editPlayerForm">
-                        <input type="hidden" id="edit-player-id" name="id">
-                        
+                        <!-- carry information for each card -->
+                        <input type="hidden" name="id" id="edit-player-id">
+                        <input type="hidden" name="location" id="edit-location">
+
                         <label>First Name</label>
                         <input type="text" id="edit-first-name" name="first" minlength="2" maxlength="20" required>
                         
@@ -116,8 +119,15 @@
                         id="confirm-edit-btn"
                         type="button" 
                         class="btn btn-primary"
+                        hx-put="/players"
                         hx-include="#editPlayerForm"
                         hx-swap="outerHTML"
+                        hx-on::response-error="showToast(event.detail.xhr.responseText, 'error', 3000)"
+                        hx-on::after-request="
+                            if(event.detail.successful) {
+                                showToast('Player updated successfully!', 'success', 2000)
+                            }
+                        "
                         data-bs-dismiss="modal">
                         Save changes
                     </button>

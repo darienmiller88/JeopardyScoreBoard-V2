@@ -49,12 +49,12 @@ function showToast(message, type = 'success', duration = 2000) {
     const icon = icons[type] || '✓';
     
     toast.innerHTML = `
-        <div class="toast-icon">${icon}</div>
+        <div class="slide-toast-icon">${icon}</div>
         <span>${message}</span>
-        <button class="toast-close" onclick="hideToast()">×</button>
+        <button class="slide-toast-close" onclick="hideToast()">×</button>
     `;
     
-    toast.className = 'toast ' + type;
+    toast.className = 'slide-toast ' + type;
     toast.classList.add('show');
     
     setTimeout(() => {
@@ -68,25 +68,30 @@ function hideToast() {
 }
 
 function populateEditModal(button) {
-    const playerId = button.dataset.playerId;
-    const names = button.dataset.playerName.split(" ");
+    const playerId = button.dataset.playerId
+    const location = button.dataset.location
+    const names = button.dataset.playerName.split(" ")
     const firstName = names[0]
     const lastName = names[1]
     
-    //populate the edit player name form with the name of the player
+    // populate these two hidden fields so the modal knows what player card clicked on them
     document.getElementById('edit-player-id').value = playerId;
+    document.getElementById('edit-location').value = location;
+
+    //populate the edit player name form with the name of the player
     document.getElementById('edit-first-name').value = firstName;
     document.getElementById('edit-last-name').value = lastName;
+
+    const editBtn = document.getElementById('confirm-edit-btn');
     
-    // Update the HTMX button with correct player ID
-    const saveBtn = document.getElementById('confirm-edit-btn');
-    saveBtn.setAttribute('hx-put', `/players/${playerId}`);
-    saveBtn.setAttribute('hx-target', `#${playerId}`)
+    // Update the button with target htmx attributes
+    editBtn.setAttribute('hx-target', `#player-${playerId}`)
 }
 
 function populateDeleteModal(button) {
-    const playerId = button.dataset.playerId;
-    const playerName = button.dataset.playerName;
+    const playerId = button.dataset.playerId
+    const playerName = button.dataset.playerName
+    const location = button.dataset.location
     
     //Add the player name to the delete player modal
     document.getElementById('delete-player-name').textContent = playerName;
@@ -94,8 +99,8 @@ function populateDeleteModal(button) {
     const deleteBtn = document.getElementById('confirm-delete-btn');
     
     // Update the delete button with correct URL and target htmx attributes
-    deleteBtn.setAttribute('hx-delete', `/players/${playerId}`);
-    deleteBtn.setAttribute('hx-target', `#${playerId}`)
+    deleteBtn.setAttribute('hx-delete', `/players/${playerId}/location/${location}`);
+    deleteBtn.setAttribute('hx-target', `#player-${playerId}`)
 }
 
 function savePlayerEdit() {

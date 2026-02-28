@@ -23,9 +23,9 @@ func (p *PlayersController) Init(service services.PlayerService) {
 	p.playerService = service
 
 	p.Router.Get("/by-location", p.GetAllPlayersFromOneLocation)
-	p.Router.Put("/{location_name}", p.UpdatePlayerName)
+	p.Router.Put("/", p.UpdatePlayerName)
+	p.Router.Delete("/{id}/location/{location_name}", p.RemovePlayer)
 	p.Router.Post("/", p.AddPlayerToLocation)
-	p.Router.Delete("/{location_name}", p.RemovePlayer)
 
 	t, err := template.ParseGlob("templates/partials/*.html")
 
@@ -101,25 +101,27 @@ func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Requ
 }
 
 func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.Request) {
-	locationName := chi.URLParam(req, "location_name")
-	names := struct {
-		OldPlayerName string `json:"old_player_name"`
-		NewPlayerName string `json:"new_player_name"`
-	}{}
-
-	if err := json.NewDecoder(req.Body).Decode(&names); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+	if err := req.ParseForm(); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName, "", locationName)
+	// 
+	location := req.FormValue("location")
+	playerId := req.FormValue("id")
+	firstName := req.FormValue("first")
+	lastName := req.FormValue("last")
 
-	if result.Err != nil {
-		http.Error(res, result.Err.Error(), result.StatusCode)
-		return
-	}
+	fmt.Println(location, playerId, "name:", firstName, lastName)
 
-	res.Header().Add("Content-type", "application/json")
+	// result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName, "", locationName)
+
+	// if result.Err != nil {
+	// 	http.Error(res, result.Err.Error(), result.StatusCode)
+	// 	return
+	// }
+
+	// res.Header().Add("Content-type", "application/json")
 	res.WriteHeader(200)
-	json.NewEncoder(res).Encode(result)
+	// json.NewEncoder(res).Encode(result)
 }

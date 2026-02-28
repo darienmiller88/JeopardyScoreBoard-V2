@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
 
 	"JeopardyScoreBoardV2/models"
@@ -10,7 +9,7 @@ import (
 )
 
 type PlayerService interface {
-	UpdatePlayerName(oldPlayerName string, firstName string, lastName string, locationName string) models.Result[models.Player]
+	UpdatePlayerName(oldPlayerId string, firstName string, lastName string, locationName string) models.Result[models.Player]
 	AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player]
 	RemovePlayer(playerName string, locationName string) models.Result[models.Player]
 	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
@@ -22,7 +21,7 @@ type PlayerServiceImpl struct {
 }
 
 // Update a players old name to be a new name.
-func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, firstName string, lastName string, locationName string) models.Result[models.Player] {
+func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerId string, firstName string, lastName string, locationName string) models.Result[models.Player] {
 	player := models.Player{}
 
 	//Set the player name to be the first name plus last name
@@ -33,16 +32,11 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerName string, firstName str
 		return utils.GetResult(err, http.StatusUnprocessableEntity, player)
 	}
 
-	//Ensure the new name and old name are different.
-	if oldPlayerName == player.PlayerName {
-		return utils.GetResult(fmt.Errorf("old and new names must be different"), http.StatusUnprocessableEntity, player)
-	}
-
 	//After confirming the following:
 	//1. The new name is properly formatted
 	//2. The old and new names are different
 	//Update the players old name to be the new name.
-	return p.PlayerRepository.UpdatePlayerName(oldPlayerName, player.PlayerName, locationName)
+	return p.PlayerRepository.UpdatePlayerName(oldPlayerId, player.PlayerName, locationName)
 }
 
 func (p *PlayerServiceImpl) AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player] {
