@@ -34,7 +34,6 @@ func (p *PlayerServiceImpl) UpdatePlayerName(oldPlayerId string, firstName strin
 
 	//After confirming the following:
 	//1. The new name is properly formatted
-	//2. The old and new names are different
 	//Update the players old name to be the new name.
 	return p.PlayerRepository.UpdatePlayerName(oldPlayerId, player.PlayerName, locationName)
 }

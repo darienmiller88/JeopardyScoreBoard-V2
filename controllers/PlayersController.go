@@ -97,22 +97,18 @@ func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.
 		return
 	}
 
-	//
 	location := req.FormValue("location")
 	playerId := req.FormValue("id")
 	firstName := req.FormValue("first")
 	lastName := req.FormValue("last")
+	result := p.playerService.UpdatePlayerName(playerId, firstName, lastName, location)
 
-	fmt.Println(location, playerId, "name:", firstName, lastName)
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
 
-	// result := p.playerService.UpdatePlayerName(names.OldPlayerName, names.NewPlayerName, "", locationName)
-
-	// if result.Err != nil {
-	// 	http.Error(res, result.Err.Error(), result.StatusCode)
-	// 	return
-	// }
-
-	// res.Header().Add("Content-type", "application/json")
-	res.WriteHeader(200)
-	// json.NewEncoder(res).Encode(result)
+	if err := p.template.ExecuteTemplate(res, "player_card", result.ResultData); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }

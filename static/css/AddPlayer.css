@@ -242,6 +242,44 @@
 }
 
 
+
+/* Edit Modal Form Styling */
+#editPlayerForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#editPlayerForm label {
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 600;
+    /* margin-bottom: 0.25rem; */
+    display: block;
+}
+
+#editPlayerForm input[type="text"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--primary);
+    border-radius: 0.5rem;
+    color: var(--primary);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+}
+
+#editPlayerForm input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+#editPlayerForm input[type="text"]::placeholder {
+    color: var(--text-dim);
+}
+
+
 /* for modals */
 .delete-warning{
     color: var(--danger);
