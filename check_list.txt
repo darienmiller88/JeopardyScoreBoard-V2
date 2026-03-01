@@ -93,10 +93,10 @@ Frontend
 
 📄 Page Templates - AddPlayer
 
-[] - Build form with HTMX hx-post="/players"
-[] - Player name input with validation (Alpine.js for client-side, HTMX for server validation)
-[] - Location selector dropdown
-[] - Success/error message display area (hx-target="#feedback")
+[x] - Build form with HTMX hx-post="/players"
+[x] - Player name input with validation (Alpine.js for client-side, HTMX for server validation)
+[x] - Location selector dropdown
+[x] - Success/error message display area (hx-target="#feedback")
 [] - Option: Auto-dismiss success message after 3s (Alpine.js setTimeout)
 
 

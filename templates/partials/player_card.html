@@ -1,10 +1,28 @@
 {{define "player_card"}}
-<div class="player-card">
-    <div class="player-avatar">{{ .PlayerNameAbbrev }}</div>
-    <span class="player-name">{{ .PlayerName }}</span>
+<div id="player-{{ .Player.ID }}" class="player-card">
+    <div class="player-avatar">{{ .Player.PlayerNameAbbrev }}</div>
+    <span class="player-name">{{ .Player.PlayerName }}</span>
     <div class="player-card-actions">
-        <button class="btn-card btn-edit">✏️ Edit</button>
-        <button class="btn-card btn-delete">🗑️ Delete</button>
+        <button 
+            class="btn-card btn-edit" 
+            data-bs-toggle="modal" 
+            data-bs-target="#editModal"
+            data-location="{{ $.SelectedLocation }}"
+            data-player-id="{{ .Player.ID }}"
+            data-player-name="{{ .Player.PlayerName }}"
+            onclick="populateEditModal(this)">
+            ✏️ Edit
+        </button>
+        <button 
+            class="btn-card btn-delete" 
+            data-bs-toggle="modal" 
+            data-bs-target="#deleteModal"
+            data-player-id="{{ .Player.ID }}"
+            data-location="{{ $.SelectedLocation }}"
+            data-player-name="{{ .Player.PlayerName }}"
+            onclick="populateDeleteModal(this)">
+            🗑️ Delete
+        </button>
     </div>
 </div>
 {{ end }}

@@ -1,20 +1,34 @@
 {{ define "player_list_section" }}
 <div id="player-list-section-id" class="player-list-section">
     <h3 class="player-list-header">
-        {{ if .HasPlayers }}
         👥 Players at {{ .SelectedLocation }}
-        {{ else}}
-            No Players added to {{ .SelectedLocation }}
-        {{ end }}
     </h3>
     <div id="player-list">
         {{ range .Players }}
-        <div class="player-card">
+        <div id="player-{{ .ID }}" class="player-card">
             <div class="player-avatar">{{ .PlayerNameAbbrev }}</div>
             <span class="player-name">{{ .PlayerName }}</span>
             <div class="player-card-actions">
-                <button class="btn-card btn-edit">✏️ Edit</button>
-                <button class="btn-card btn-delete">🗑️ Delete</button>
+                <button 
+                    class="btn-card btn-edit" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#editModal"
+                    data-location="{{ $.SelectedLocation }}"
+                    data-player-id="{{ .ID }}"
+                    data-player-name="{{ .PlayerName }}"
+                    onclick="populateEditModal(this)">
+                    ✏️ Edit
+                </button>
+                <button 
+                    class="btn-card btn-delete" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#deleteModal"
+                    data-player-id="{{ .ID }}"
+                    data-location="{{ $.SelectedLocation }}"
+                    data-player-name="{{ .PlayerName }}"
+                    onclick="populateDeleteModal(this)">
+                    🗑️ Delete
+                </button>
             </div>
         </div>
         {{ end }}

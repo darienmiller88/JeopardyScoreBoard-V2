@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -39,8 +38,6 @@ func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter
 	location := req.URL.Query().Get("location")
 	result := p.playerService.GetPlayersFromLocation(location)
 
-	fmt.Println("location:", location)
-
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)
 		return
@@ -66,21 +63,26 @@ func (p *PlayersController) AddPlayerToLocation(res http.ResponseWriter, req *ht
 	locationName := req.FormValue("location")
 	firstName := req.FormValue("first")
 	lastName := req.FormValue("last")
+
 	result := p.playerService.AddPlayerToLocation(locationName, firstName, lastName)
+	data := template.FuncMap{
+		"Player":           result.ResultData,
+		"SelectedLocation": locationName,
+	}
 
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)
 		return
 	}
 
-	if err := p.template.ExecuteTemplate(res, "player_card", result.ResultData); err != nil {
+	if err := p.template.ExecuteTemplate(res, "player_card", data); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (p *PlayersController) RemovePlayer(res http.ResponseWriter, req *http.Request) {
 	location := req.URL.Query().Get("location")
-    playerId := req.URL.Query().Get("id")
+	playerId := req.URL.Query().Get("id")
 	result := p.playerService.RemovePlayer(playerId, location)
 
 	if result.Err != nil {
@@ -103,12 +105,17 @@ func (p *PlayersController) UpdatePlayerName(res http.ResponseWriter, req *http.
 	lastName := req.FormValue("last")
 	result := p.playerService.UpdatePlayerName(playerId, firstName, lastName, location)
 
+	data := template.FuncMap{
+		"Player":           result.ResultData,
+		"SelectedLocation": location,
+	}
+
 	if result.Err != nil {
 		http.Error(res, result.Err.Error(), result.StatusCode)
 		return
 	}
 
-	if err := p.template.ExecuteTemplate(res, "player_card", result.ResultData); err != nil {
+	if err := p.template.ExecuteTemplate(res, "player_card", data); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
