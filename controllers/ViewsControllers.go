@@ -94,8 +94,9 @@ func (v *ViewsController) AddPlayerPage(res http.ResponseWriter, req *http.Reque
 	}
 
 	data := map[string]any{
-		"Locations": locationsResult.ResultData,
-		"Players": playersResult.ResultData,
+		"Players":          playersResult.ResultData,
+		"Locations":        locationsResult.ResultData,
+		"HasPlayers":       len(playersResult.ResultData) > 0,
 		"SelectedLocation": selectedLocation,
 	}
 

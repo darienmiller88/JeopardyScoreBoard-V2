@@ -1,7 +1,11 @@
 {{ define "player_list_section" }}
 <div id="player-list-section-id" class="player-list-section">
     <h3 class="player-list-header">
+        {{ if .HasPlayers }}
         👥 Players at {{ .SelectedLocation }}
+        {{ else }}
+        No players at {{ .SelectedLocation }}
+        {{ end}}
     </h3>
     <div id="player-list">
         {{ range .Players }}

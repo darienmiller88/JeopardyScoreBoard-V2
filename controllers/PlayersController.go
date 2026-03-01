@@ -45,8 +45,8 @@ func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter
 
 	data := template.FuncMap{
 		"Players":          result.ResultData,
-		"SelectedLocation": location,
 		"HasPlayers":       len(result.ResultData) > 0,
+		"SelectedLocation": location,
 	}
 
 	if err := p.template.ExecuteTemplate(res, "player_list_section", data); err != nil {
