@@ -1,7 +1,7 @@
 /* ViewGames.css */
 
 .page-wrapper {
-    max-width: 32rem;
+    max-width: 36rem;
     margin: 0 auto;
 }
 
@@ -93,4 +93,11 @@
     flex: 1;
     background: var(--danger);
     color: white;
+}
+
+@media (max-width: 540px) {
+    .page-wrapper {
+        max-width: 32rem;
+        margin: 0 auto;
+    }
 }
