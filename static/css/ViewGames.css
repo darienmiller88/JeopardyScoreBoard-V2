@@ -17,12 +17,21 @@
 
 /* Winner Section */
 .winner-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
     text-align: center;
     margin-bottom: 1.5rem;
 }
 
 .star-icon {
     font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.winner-info {
+    min-width: 0;
 }
 
 .winner-label {
@@ -33,6 +42,9 @@
 
 .winner-name {
     font-size: 2.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .winner-score {
