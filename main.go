@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -48,7 +49,7 @@ func main() {
 
 	// encryptNames(database.GetDB(), encryptionService)
 	// addPlayers(database.GetDB(), encryptionService)
-	addSavedGames(database.GetDB(), encryptionService)
+	// addSavedGames(database.GetDB(), encryptionService)
 
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
@@ -59,7 +60,7 @@ func main() {
 
 	//Finally, listen and serve on the port in the env, which is 8080 on local machine.
 	fmt.Println("Listening on Port:", os.Getenv("PORT"))
-	// http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router)
+	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router)
 }
 
 func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
@@ -70,6 +71,8 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 	}
 
 	games := []struct{
+		CreatedAt  time.Time `json:"created_at"`
+		UpdatedAt  time.Time `json:"updated_at"`
 		PlayerName string `json:"player"`
 		Location   string `json:"location_name"`
 		TotalPoints int   `json:"total_points"`
@@ -92,8 +95,18 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 		encrypted, _ := es.Encrypt(game.Winner.Username)	
 		hash := encryption.NameHash(game.Winner.Username)
 
-		_, err := db.Exec(`INSERT INTO savedgames 
-			(location_id, 
+		var playerID int
+		err := db.QueryRow(
+			"SELECT id FROM players WHERE player_name_hash=$1 AND location_id=(SELECT id FROM locations WHERE location_name=$2)",
+			hash,
+			game.Location,
+		).Scan(&playerID)
+
+		_, err = db.Exec(`INSERT INTO savedgames 
+			(
+			created_at,
+			updated_at,
+			location_id, 
 			winning_player_id, 
 			winning_player_name_encrypted, 
 			winning_player_name_hash, 
@@ -101,15 +114,19 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 			average_score
 			)
 			VALUES(
-				(SELECT id FROM locations WHERE location_name=$1),
-				(SELECT id FROM players WHERE player_name_hash=$2),
-				$3,
+				$1,
+				$2,
+				(SELECT id FROM locations WHERE location_name=$3),
 				$4,
 				$5,
-				$6
+				$6,
+				$7,
+				$8
 			)`,
+			game.CreatedAt,
+			game.UpdatedAt,
 			game.Location,
-			hash,
+			playerID,
 			encrypted,
 			hash,
 			game.TotalPoints,
@@ -121,6 +138,8 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 		}
 
 	}
+
+	fmt.Println("All games added successfully")
 }
 
 func addPlayers(db *sqlx.DB, es *encryption.EncryptionService){
