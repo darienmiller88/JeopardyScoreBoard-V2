@@ -1,0 +1,2 @@
+ALTER TABLE savedgames
+DROP CONSTRAINT uq_savedgames_winner_hash;

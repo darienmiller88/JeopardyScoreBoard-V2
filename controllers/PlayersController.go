@@ -20,6 +20,7 @@ func (p *PlayersController) Init(service services.PlayerService) {
 	p.Router = chi.NewRouter()
 	p.playerService = service
 
+	p.Router.Get("/", p.GetAllPlayers)
 	p.Router.Get("/by-location", p.GetAllPlayersFromOneLocation)
 	p.Router.Put("/", p.UpdatePlayerName)
 	p.Router.Delete("/", p.RemovePlayer)
@@ -32,6 +33,23 @@ func (p *PlayersController) Init(service services.PlayerService) {
 	}
 
 	p.template = t
+}
+
+func (p *PlayersController) GetAllPlayers(res http.ResponseWriter, req *http.Request){
+	result := p.playerService.GetAllPlayersFromAllLocations()
+
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	data := template.FuncMap{
+		"Players":          result.ResultData,
+		"HasPlayers":       len(result.ResultData) > 0,
+		"SelectedLocation": "Elmwood",
+	}
+
+	p.template.ExecuteTemplate(res, "player_list_section", data)
 }
 
 func (p *PlayersController) GetAllPlayersFromOneLocation(res http.ResponseWriter, req *http.Request) {
