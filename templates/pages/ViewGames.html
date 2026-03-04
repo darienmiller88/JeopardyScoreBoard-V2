@@ -11,52 +11,187 @@
 <div class="page-wrapper">
     <h1 class="gradient-text page-title">Saved Games</h1>
     
-    <div class="glass game-card">
-        <div class="winner-section">
-            <span class="star-icon">⭐</span>
-            <div class="winner-info">
-                <p class="winner-label">WINNER</p>
-                <h2 class="winner-name">Clark Kent</h2>
-                <div class="winner-score">7009</div>
+    <div class="saved-games">
+        <div class="glass game-card">
+            <div class="winner-section">
+                <span class="star-icon">⭐</span>
+                <div class="winner-info">
+                    <p class="winner-label">WINNER</p>
+                    <h2 class="winner-name">Clark Kent</h2>
+                    <div class="winner-score">7009</div>
+                </div>
+                <span class="star-icon">⭐</span>
             </div>
-            <span class="star-icon">⭐</span>
+    
+            <div class="stats-grid">
+                <div class="glass stat-box">
+                    <div class="stat-value">10509</div>
+                    <div class="stat-label">TOTAL POINTS</div>
+                </div>
+                <div class="glass stat-box">
+                    <div class="stat-value">3503</div>
+                    <div class="stat-label">AVERAGE</div>
+                </div>
+            </div>
+    
+            <div class="action-row">
+                <button 
+                    class="btn btn-primary" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#viewPlayerGamesModal"
+                >View Players</button>
+                <button 
+                    class="btn btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteGameModal"
+                >Delete Game</button>
+            </div>
+        </div>
+        <div class="glass game-card">
+            <div class="winner-section">
+                <span class="star-icon">⭐</span>
+                <div class="winner-info">
+                    <p class="winner-label">WINNER</p>
+                    <h2 class="winner-name">Team Lawrence</h2>
+                    <div class="winner-score">5009</div>
+                </div>
+                <span class="star-icon">⭐</span>
+            </div>
+    
+            <div class="stats-grid">
+                <div class="glass stat-box">
+                    <div class="stat-value">11409</div>
+                    <div class="stat-label">TOTAL POINTS</div>
+                </div>
+                <div class="glass stat-box">
+                    <div class="stat-value">4503</div>
+                    <div class="stat-label">AVERAGE</div>
+                </div>
+            </div>
+    
+            <div class="action-row">
+                <button 
+                    class="btn btn-primary" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#viewTeamGamesModal"
+                >View Teams</button>
+                <button 
+                    class="btn btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteGameModal"
+                >Delete Game</button>
+            </div>
+        </div>
+        <div class="glass game-card">
+            <div class="winner-section">
+                <span class="star-icon">⭐</span>
+                <div class="winner-info">
+                    <p class="winner-label">WINNER</p>
+                    <h2 class="winner-name">Clark Kent</h2>
+                    <div class="winner-score">7009</div>
+                </div>
+                <span class="star-icon">⭐</span>
+            </div>
+    
+            <div class="stats-grid">
+                <div class="glass stat-box">
+                    <div class="stat-value">10509</div>
+                    <div class="stat-label">TOTAL POINTS</div>
+                </div>
+                <div class="glass stat-box">
+                    <div class="stat-value">3503</div>
+                    <div class="stat-label">AVERAGE</div>
+                </div>
+            </div>
+    
+            <div class="action-row">
+                <button 
+                    class="btn btn-primary" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#viewPlayerGamesModal"
+                >View Players</button>
+                <button 
+                    class="btn btn-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteGameModal"
+                >Delete Game</button>
+            </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="glass stat-box">
-                <div class="stat-value">10509</div>
-                <div class="stat-label">TOTAL POINTS</div>
-            </div>
-            <div class="glass stat-box">
-                <div class="stat-value">3503</div>
-                <div class="stat-label">AVERAGE</div>
-            </div>
-        </div>
-
-        <div class="action-row">
-            <button 
-                class="btn btn-primary" 
-                data-bs-toggle="modal" 
-                data-bs-target="#viewGamesModal"
-            >View Players</button>
-            <button 
-                class="btn btn-danger"
-                data-bs-toggle="modal"
-                data-bs-target="#deleteGameModal"
-            >Delete Game</button>
-        </div>
+        
+        <!-- End of saved games -->
     </div>
 
-    <!-- Modal for Viewing Game -->
-    <div id="viewGamesModal" class="modal" tabindex="-1">
+    <!-- View team game -->
+    <div id="viewTeamGamesModal" class="modal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">View Game</h5>
+                    <h4 class="modal-title">View Game</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <h3 class="player-name-list-title">
+                    <h3 class="list-title">
+                        Teams
+                    </h3>
+                    <div class="teams">
+                        <div class="team">
+                            <h4 class="team-name">Team Elmwood</h4>
+                            <div class="player-names">
+                                <div class="player-item">
+                                    <span class="player-number">1</span>
+                                    <span class="player-item-name">Clark Kent</span>
+                                </div>
+                                <div class="player-item">
+                                    <span class="player-number">2</span>
+                                    <span class="player-item-name">Clark Kent</span>
+                                </div>
+                                <div class="player-item">
+                                    <span class="player-number">3</span>
+                                    <span class="player-item-name">Clark Kent</span>
+                                </div>
+                                
+                            </div>
+    
+                        </div>
+                        <div class="team">
+                            <h4 class="team-name">Team Lawrence</h4>
+                            <div class="player-names">
+                                <div class="player-item">
+                                    <span class="player-number">1</span>
+                                    <span class="player-item-name">Clark Kent</span>
+                                </div>
+                                <div class="player-item">
+                                    <span class="player-number">2</span>
+                                    <span class="player-item-name">Clark Kent</span>
+                                </div>
+                                <div class="player-item">
+                                    <span class="player-number">3</span>
+                                    <span class="player-item-name">Clark Kent</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <!-- end of modal -->
+    </div>
+
+
+    <!-- Modal for Viewing Game -->
+    <div id="viewPlayerGamesModal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">View Game</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h3 class="list-title">
                         Players
                     </h3>
                     <div class="player-names">
@@ -108,8 +243,8 @@
                 </div>
                 <div class="modal-body">
                     <h5>
-                        <span class="delete-warning">Are you sure you want to delete this game?</span> 
-                        They will also be removed from the game they are currently in.
+                        Are you sure you want to delete this game?
+                            You will NOT be able to recover it.
                     </h5>
 
                 </div>

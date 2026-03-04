@@ -1,7 +1,7 @@
 /* ViewGames.css */
 
 .page-wrapper {
-    max-width: 32rem;
+    max-width: 42rem;
     margin: 0 auto;
 }
 
@@ -11,8 +11,15 @@
     margin-bottom: 2rem;
 }
 
+.saved-games{
+    padding: 0.8rem 1.5rem;
+    max-height: 65vh;
+    overflow-y: scroll;
+}
+
 .game-card {
     border: 1px solid rgba(250, 204, 21, 0.4);
+    margin-bottom: 1rem;
 }
 
 /* Winner Section */
@@ -95,9 +102,25 @@
     color: white;
 }
 
+/* Teams list */
+
+.teams{
+    max-height: 15rem;
+    overflow-y: scroll;
+}
+
+.team{
+    margin-bottom: 0.8rem;
+}
+
+.team .team-name{
+    font-style: italic;
+    color: var(--primary-glow);
+}
+
 /* Player Names List */
 
-.player-name-list-title{
+.list-title{
     text-align: center;
     text-decoration: underline;
     font-weight: bold;
@@ -106,7 +129,7 @@
 .player-names {
     display: flex;
     flex-direction: column;
-    max-height: 10rem;
+    max-height: 12rem;
     overflow-y: auto;
     overflow-x: hidden;
 }
