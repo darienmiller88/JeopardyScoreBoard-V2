@@ -49,7 +49,7 @@ func main() {
 
 	// encryptNames(database.GetDB(), encryptionService)
 	// addPlayers(database.GetDB(), encryptionService)
-	// addSavedGames(database.GetDB(), encryptionService)
+	addSavedGames(database.GetDB(), encryptionService)
 
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
@@ -136,6 +136,26 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 		if err != nil {
 			panic(err)
 		}
+
+		// for _, player := range game.Players {
+		// 	_, err := db.Exec(
+		// 		`
+		// 			INSERT INTO savedgamesplayers
+		// 			(
+		// 				created_at,
+		// 				updated_at,
+		// 				player_id,
+		// 				saved_game_id,
+		// 				player_score,
+
+		// 			)
+		// 		`,
+		// 	)
+
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
+		// }
 
 	}
 

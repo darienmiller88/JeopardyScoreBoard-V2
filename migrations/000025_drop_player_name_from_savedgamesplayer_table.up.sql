@@ -1,0 +1,2 @@
+ALTER TABLE savedgamesplayers
+DROP COLUMN player_name
