@@ -60,6 +60,21 @@
     color: var(--success);
 }
 
+/* Game Location */
+.game-location {
+    text-align: center;
+    font-size: 1.1rem;
+    letter-spacing: 0.08rem;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+}
+
+.game-location span {
+    color: var(--primary);
+    font-weight: 600;
+}
+
 /* Stats Grid */
 .stats-grid {
     display: grid;
