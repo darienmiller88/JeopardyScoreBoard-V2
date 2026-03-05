@@ -21,11 +21,12 @@
                 <div class="winner-info">
                     <p class="winner-label">WINNER</p>
                     <h2 class="winner-name">{{ .WinningPlayerName }}</h2>
-                    <div class="winner-score">7009</div>
+                    <div class="winner-score">{{ .WinningPlayerScore }}</div>
                 </div>
                 <span class="star-icon">⭐</span>
             </div>
-            <p class="game-location">Location: <span>{{ .Location }}</span></p>
+            <p class="game-location">Location: <span>{{ .LocationName }}</span></p>
+            <p class="game-date">Date Played: <span>{{ .CreatedAt.Format "1/2/2006, 3:04 PM" }}</span></p>
             <div class="stats-grid">
                 <div class="glass stat-box">
                     <div class="stat-value">{{ .TotalPoints }}</div>

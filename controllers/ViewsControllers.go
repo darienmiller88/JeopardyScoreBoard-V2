@@ -20,11 +20,12 @@ type ViewsController struct{
 	PlayerService    services.PlayerService
 }
 
-func (v *ViewsController) Init(LocationService services.LocationService, PlayerService services.PlayerService){
+func (v *ViewsController) Init(LocationService services.LocationService, PlayerService services.PlayerService, SavedGameService services.SaveGameService){
 	v.Router    = chi.NewRouter()
 	v.templates = make(map[string]*template.Template)
 	v.LocationService = LocationService
 	v.PlayerService = PlayerService
+	v.SavedGameService = SavedGameService
 
 	//Initialize template map
 	v.InitTemplateMap()

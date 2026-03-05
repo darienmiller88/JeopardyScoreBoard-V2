@@ -26,6 +26,13 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 		&services.PlayerServiceImpl{ 
 			PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
 		},
+		&services.SaveGameServiceImpl{
+			LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
+			SavedGameRepository: repositories.GetSqlSavedGameRepository(db, encryptionService),
+			PlayerRepository: repositories.GetSqlPlayerRepository(db,encryptionService),
+			TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
+			EncryptionService: encryptionService,
+		},
 	)
 
 	//Initialize the controllers, and inject the service and repo implementation

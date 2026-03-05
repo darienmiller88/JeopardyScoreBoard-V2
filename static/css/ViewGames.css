@@ -29,7 +29,7 @@
     justify-content: center;
     gap: 1rem;
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .star-icon {
@@ -66,11 +66,26 @@
     font-size: 1.1rem;
     letter-spacing: 0.08rem;
     color: var(--text-dim);
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.3rem;
     text-transform: uppercase;
 }
 
 .game-location span {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Game Date */
+.game-date {
+    text-align: center;
+    font-size: 1.1rem;
+    letter-spacing: 0.08rem;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+}
+
+.game-date span {
     color: var(--primary);
     font-weight: 600;
 }

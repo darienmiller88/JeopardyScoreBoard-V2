@@ -20,6 +20,8 @@ type SavedGame struct {
 	LocationId                 int           `json:"location_id" db:"location_id"`
 
 
+	//These fields are added to this model through joins with locations and savedgamesplayers.
+	WinningPlayerScore         int            `db:"winning_player_score"`
 	LocationName               string         `db:"location_name"`
 
 	//This will be used to determine which array gets filled: Teams or Players

@@ -167,10 +167,19 @@ const(
 	// Get Saved games
 	/////////////////////////////
 	
-	//Get all saved games
+	//Get all saved games with the location name and winning player score
 	GetAllSavedGames string = `
-		SELECT savedgames.*, locations.location_name FROM savedgames 
-		JOIN locations ON savedgames.location_id=locations.id;
+		SELECT 
+			sg.*,
+			l.location_name,
+			sgp.player_score AS winning_player_score
+		FROM savedgames sg
+		JOIN locations l 
+			ON sg.location_id = l.id
+		JOIN savedgamesplayers sgp
+			ON sgp.saved_game_id = sg.id 
+			AND sgp.player_id = sg.winning_player_id
+		ORDER BY sg.created_at DESC;
 	`
 
 	//Get all saved games from a certain location
