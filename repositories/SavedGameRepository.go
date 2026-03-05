@@ -37,6 +37,11 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
 		return utils.GetResult(err, http.StatusInternalServerError, []models.SavedGame{})
 	}
 
+	if len(savedGames) == 0 {
+        return utils.GetResult(nil, http.StatusOK, savedGames)
+    }
+
+
 	result := s.getSavedGamesWithDecryptedWinningPlayerName(savedGames)
 
 	if result.Err != nil {
