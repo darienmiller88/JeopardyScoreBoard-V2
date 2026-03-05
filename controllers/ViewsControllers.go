@@ -115,7 +115,7 @@ func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
 	}
 
 	data := template.FuncMap{
-		"Games": result.ResultData,
+		"Games": []string{},
 	}
 
 	if err := v.templates["ViewGames"].Execute(res, data); err != nil{

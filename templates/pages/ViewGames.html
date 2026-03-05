@@ -11,6 +11,7 @@
 <div class="page-wrapper">
     <h1 class="gradient-text page-title">Saved Games</h1>
     
+{{ if .Games }}
     <div class="saved-games">
     {{ range .Games }}
 
@@ -90,6 +91,9 @@
     {{ end }}
         <!-- End of saved games -->
     </div>
+{{ else }}
+<div class="no-games">No games saved</div>
+{{ end }}
 
     <!-- View team game -->
     <div id="viewTeamGamesModal" class="modal" tabindex="-1">
