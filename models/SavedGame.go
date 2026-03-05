@@ -19,6 +19,9 @@ type SavedGame struct {
 	WinningPlayerId            sql.NullInt32 `db:"winning_player_id"`
 	LocationId                 int           `json:"location_id" db:"location_id"`
 
+
+	LocationName               string         `db:"location_name"`
+
 	//This will be used to determine which array gets filled: Teams or Players
 	IsPlayerGame      bool	  `json:"is_player_game" db:"-"`
 	

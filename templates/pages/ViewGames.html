@@ -12,24 +12,27 @@
     <h1 class="gradient-text page-title">Saved Games</h1>
     
     <div class="saved-games">
-        <div class="glass game-card">
+    {{ range .Games }}
+
+        {{ if .IsPlayerGame }}
+        <div id="{{ .ID }}" class="glass game-card">
             <div class="winner-section">
                 <span class="star-icon">⭐</span>
                 <div class="winner-info">
                     <p class="winner-label">WINNER</p>
-                    <h2 class="winner-name">Clark Kent</h2>
+                    <h2 class="winner-name">{{ .WinningPlayerName }}</h2>
                     <div class="winner-score">7009</div>
                 </div>
                 <span class="star-icon">⭐</span>
             </div>
-            <p class="game-location">Location: <span>Elmwood</span></p>
+            <p class="game-location">Location: <span>{{ .Location }}</span></p>
             <div class="stats-grid">
                 <div class="glass stat-box">
-                    <div class="stat-value">10509</div>
+                    <div class="stat-value">{{ .TotalPoints }}</div>
                     <div class="stat-label">TOTAL POINTS</div>
                 </div>
                 <div class="glass stat-box">
-                    <div class="stat-value">3503</div>
+                    <div class="stat-value">{{ .AveragePoints }}</div>
                     <div class="stat-label">AVERAGE</div>
                 </div>
             </div>
@@ -47,6 +50,7 @@
                 >Delete Game</button>
             </div>
         </div>
+        {{ else }}
         <div class="glass game-card">
             <div class="winner-section">
                 <span class="star-icon">⭐</span>
@@ -68,7 +72,6 @@
                     <div class="stat-label">AVERAGE</div>
                 </div>
             </div>
-    
             <div class="action-row">
                 <button 
                     class="btn btn-primary" 
@@ -82,43 +85,8 @@
                 >Delete Game</button>
             </div>
         </div>
-        <div class="glass game-card">
-            <div class="winner-section">
-                <span class="star-icon">⭐</span>
-                <div class="winner-info">
-                    <p class="winner-label">WINNER</p>
-                    <h2 class="winner-name">Clark Kent</h2>
-                    <div class="winner-score">7009</div>
-                </div>
-                <span class="star-icon">⭐</span>
-            </div>
-            <p class="game-location">Location: <span>Elmwood</span></p>
-            <div class="stats-grid">
-                <div class="glass stat-box">
-                    <div class="stat-value">10509</div>
-                    <div class="stat-label">TOTAL POINTS</div>
-                </div>
-                <div class="glass stat-box">
-                    <div class="stat-value">3503</div>
-                    <div class="stat-label">AVERAGE</div>
-                </div>
-            </div>
-    
-            <div class="action-row">
-                <button 
-                    class="btn btn-primary" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#viewPlayerGamesModal"
-                >View Players</button>
-                <button 
-                    class="btn btn-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteGameModal"
-                >Delete Game</button>
-            </div>
-        </div>
-
-        
+        {{ end }}
+    {{ end }}
         <!-- End of saved games -->
     </div>
 

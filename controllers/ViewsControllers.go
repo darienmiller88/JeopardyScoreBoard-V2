@@ -106,9 +106,18 @@ func (v *ViewsController) AddPlayerPage(res http.ResponseWriter, req *http.Reque
 }
 
 func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
+	result := v.SavedGameService.GetAllSavedGames()
 
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	if err := v.templates["ViewGames"].Execute(res, nil); err != nil{
+	data := template.FuncMap{
+		"Games": result.ResultData,
+	}
+
+	if err := v.templates["ViewGames"].Execute(res, data); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }

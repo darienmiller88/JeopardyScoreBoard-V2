@@ -131,6 +131,8 @@ const(
 		WHERE locations.location_name=$1
 	`
 
+	
+
 	//////////////////////
 	//Get Teams queries
 	//////////////////////
@@ -167,7 +169,8 @@ const(
 	
 	//Get all saved games
 	GetAllSavedGames string = `
-		SELECT * FROM savedgames
+		SELECT savedgames.*, locations.location_name FROM savedgames 
+		JOIN locations ON savedgames.location_id=locations.id;
 	`
 
 	//Get all saved games from a certain location

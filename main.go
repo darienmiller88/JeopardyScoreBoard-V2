@@ -49,7 +49,7 @@ func main() {
 
 	// encryptNames(database.GetDB(), encryptionService)
 	// addPlayers(database.GetDB(), encryptionService)
-	addSavedGames(database.GetDB(), encryptionService)
+	// addSavedGames(database.GetDB(), encryptionService)
 
 	//Afterwards, mount that router onto this one.
 	router.Mount("/", index.Router)
@@ -95,14 +95,29 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 		encrypted, _ := es.Encrypt(game.Winner.Username)	
 		hash := encryption.NameHash(game.Winner.Username)
 
-		var playerID int
+		var locationID int
 		err := db.QueryRow(
-			"SELECT id FROM players WHERE player_name_hash=$1 AND location_id=(SELECT id FROM locations WHERE location_name=$2)",
-			hash,
+			"SELECT id FROM locations WHERE location_name=$1",
 			game.Location,
+		).Scan(&locationID)
+
+		if err != nil {
+			panic(fmt.Errorf("location not found: %s", game.Location))
+		}
+
+		var playerID int
+		err = db.QueryRow(
+			"SELECT id FROM players WHERE player_name_hash=$1 AND location_id=$2",
+			hash,
+			locationID,
 		).Scan(&playerID)
 
-		_, err = db.Exec(`INSERT INTO savedgames 
+		if err != nil {
+			panic(fmt.Errorf("player not found: %s at location %s", hash, game.Location))
+		}
+
+		savedGameId := 0
+		err = db.QueryRow(`INSERT INTO savedgames 
 			(
 			created_at,
 			updated_at,
@@ -116,46 +131,79 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 			VALUES(
 				$1,
 				$2,
-				(SELECT id FROM locations WHERE location_name=$3),
+				$3,
 				$4,
 				$5,
 				$6,
 				$7,
 				$8
-			)`,
+			) RETURNING id
+			`,
 			game.CreatedAt,
 			game.UpdatedAt,
-			game.Location,
+			locationID,
 			playerID,
 			encrypted,
 			hash,
 			game.TotalPoints,
 			game.AveragePoints,
-		)
+		).Scan(&savedGameId)
 
 		if err != nil {
-			panic(err)
+			panic(fmt.Errorf("saved game err:%v", err))
 		}
 
-		// for _, player := range game.Players {
-		// 	_, err := db.Exec(
-		// 		`
-		// 			INSERT INTO savedgamesplayers
-		// 			(
-		// 				created_at,
-		// 				updated_at,
-		// 				player_id,
-		// 				saved_game_id,
-		// 				player_score,
+		for _, player := range game.Players {
+			encrypted, _ = es.Encrypt(player.PlayerName)	
+			hash = encryption.NameHash(player.PlayerName)
 
-		// 			)
-		// 		`,
-		// 	)
+			var playerID int
+			err := db.QueryRow(
+				"SELECT id FROM players WHERE player_name_hash=$1",
+				hash,
+			).Scan(&playerID)
 
-		// 	if err != nil {
-		// 		panic(err)
-		// 	}
-		// }
+			if err != nil {
+				fmt.Println("player:", player.PlayerName, "doesnt exist for some reason at location", locationID)
+				panic(fmt.Errorf("player err:%v", err))
+			}
+
+			_, err = db.Exec(
+				`
+					INSERT INTO savedgamesplayers
+					(
+						created_at,
+						updated_at,
+						player_id,
+						saved_game_id,
+						player_score,
+						player_name_encrypted,
+						player_name_hash
+					)
+					VALUES
+					(
+						$1,
+						$2,
+						$3,
+						$4,
+						$5,
+						$6,
+						$7
+					)
+				`,
+				game.CreatedAt,
+				game.UpdatedAt,
+				playerID,
+				savedGameId,
+				player.Score,
+				encrypted,
+				hash,
+			)
+
+			if err != nil {
+				panic(fmt.Errorf("player insertion err:%v", err))
+			}
+		}
 
 	}
 

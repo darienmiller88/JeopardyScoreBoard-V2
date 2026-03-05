@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+type PlayerDTO struct{
+	ID         int
+	Score      int
+	PlayerName string
+}
+
 type Player struct {
 	ID        			int            `db:"id"`
 	CreatedAt  			time.Time      `db:"created_at"`

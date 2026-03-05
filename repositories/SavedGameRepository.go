@@ -43,6 +43,54 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
 		return utils.GetResult(result.Err, result.StatusCode, []models.SavedGame{})
 	}
 
+	 // Collect IDs
+    ids := []int{}
+    for _, sg := range savedGames {
+        ids = append(ids, sg.ID)
+    }
+
+    // Fetch players
+    query, args, err := sqlx.In(`
+        SELECT saved_game_id, player_id, player_score,
+               player_name_encrypted, player_name_hash
+        FROM savedgamesplayers
+        WHERE saved_game_id IN (?)
+    `, ids)
+
+    if err != nil {
+        return utils.GetResult(err, http.StatusInternalServerError, []models.SavedGame{})
+    }
+
+    query = s.db.Rebind(query)
+    savedGamesPlayers := []models.SavedGamePlayer{}
+
+    if err := s.db.Select(&savedGamesPlayers, query, args...); err != nil {
+        return utils.GetResult(err, http.StatusInternalServerError, []models.SavedGame{})
+    }
+
+    playersByGame := make(map[int][]models.Player)
+
+    for _, sgPlayer := range savedGamesPlayers {
+        decrypted, _ := s.encryptionService.Decrypt(sgPlayer.NameEncrypted)
+        player       := models.Player{
+            ID:         sgPlayer.PlayerID,
+            Score:      sgPlayer.PlayerScore,
+            PlayerName: decrypted,
+        }
+
+        playersByGame[sgPlayer.SavedGameID] = append(playersByGame[sgPlayer.SavedGameID], player)
+    }
+
+    for i := range savedGames {
+        savedGames[i].Players = playersByGame[savedGames[i].ID]
+
+		//Set the flag to true for each game that is a player based game. If not, the flag is set to 
+		//false for a team based game.
+		if savedGames[i].WinningPlayerId.Valid {
+			savedGames[i].IsPlayerGame = true
+		}
+    }
+
 	return utils.GetResult(nil, http.StatusOK, savedGames)
 }
 
