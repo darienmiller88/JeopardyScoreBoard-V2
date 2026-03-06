@@ -15,6 +15,10 @@ type TeamsController struct {
 
 func (t *TeamsController) Init(teamService services.TeamService) {
 	t.Router = chi.NewRouter()	
+
+	//Add chi routes here
+
+
 	templ, err := template.ParseGlob("templates/partials/*.html")
 
 	if err != nil {

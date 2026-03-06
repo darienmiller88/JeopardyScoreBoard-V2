@@ -27,8 +27,62 @@
             <button class="btn score-counter__btn-increment">+</button>
         </div>
 
-        <button class="btn team-card__btn-view-players">View Players</button>
+        <button 
+            class="btn team-card__btn-view-players"
+            data-bs-toggle="modal" 
+            data-bs-target="#viewTeamPlayersModal"        
+        >View Players</button>
         <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
+    </div>
+    <div class="glass team-card">
+        <h2 class="team-card__name">Lawrence</h2>
+        <div class="team-card__actions">
+            <button class="btn btn-reset">Reset</button>
+            <button class="btn btn-clear">Clear</button>
+        </div>
+
+        <div class="glass score-counter">
+            <button class="btn score-counter__btn-decrement">-</button>
+            <span class="score-counter__value">60000</span>
+            <button class="btn score-counter__btn-increment">+</button>
+        </div>
+
+        <button 
+            class="btn team-card__btn-view-players"
+            data-bs-toggle="modal" 
+            data-bs-target="#viewTeamPlayersModal"    
+        >View Players</button>
+        <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
+    </div>
+
+    <div id="viewTeamPlayersModal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">View Team Players</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h3 class="list-title">
+                        Players
+                    </h3>
+                    <div id="team-players" class="player-names">
+                        <div class="player-item">
+                            <span class="player-number">1</span>
+                            <span class="player-item-name">Clark Kent</span>
+                        </div>
+                        <div class="player-item">
+                            <span class="player-number">2</span>
+                            <span class="player-item-name">Clark Kent</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <!-- end of modal -->
     </div>
 </div>
 {{ end }}
