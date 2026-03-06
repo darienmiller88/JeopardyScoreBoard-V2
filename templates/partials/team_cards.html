@@ -1,0 +1,29 @@
+{{ define "team_cards" }}
+<div class="team-grid">
+    {{ range . }}
+    <div class="glass team-card">
+        <h2 class="team-card__name">{{ .TeamName }}</h2>
+        <div class="team-card__actions">
+            <button class="btn btn-reset">Reset</button>
+            <button class="btn btn-clear">Clear</button>
+        </div>
+
+        <div class="glass score-counter">
+            <button class="btn score-counter__btn-decrement">-</button>
+            <span class="score-counter__value">{{ .Score }}</span>
+            <button class="btn score-counter__btn-increment">+</button>
+        </div>
+
+        <button 
+            class="btn team-card__btn-view-players"
+            data-bs-toggle="modal" 
+            data-bs-target="#viewTeamPlayersModal"
+            hx-get="/"        
+            hx-target="#team-players"
+            hx-swap="outerHTML"
+        >View Players</button>
+        <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
+    </div>
+    {{ end }}
+</div>
+{{ end }}
