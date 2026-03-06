@@ -1,10 +1,10 @@
 {{ define "team_players" }}
-    {{ range $i, $player := .Players }}
-    <div id="team-players" class="player-names">
-        <div class="player-item">
-            <span class="player-number">1</span>
-            <span class="player-item-name">{{ . }}</span>
-        </div>
+<div id="team-players" class="player-names">
+    {{ range $i, $player := . }}
+    <div class="player-item">
+        <span class="player-number">{{ $i }}</span>
+        <span class="player-item-name">{{ . }}</span>
     </div>
     {{ end }}
+</div>
 {{ end }}

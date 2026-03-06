@@ -5,6 +5,7 @@ import (
 	"JeopardyScoreBoardV2/services"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -21,6 +22,7 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 
 	//Add chi routes here
 	t.Teams = append(t.Teams, models.Team{
+		ID: 0,
 		TeamName: "Elmwood",
 		Score: 0,
 		PlayerNames: []string{
@@ -35,6 +37,7 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 			"William Branch",
 		},
 	}, models.Team{
+		ID: 1,
 		TeamName: "Lawrence",
 		Score: 0,
 		PlayerNames: []string{
@@ -51,6 +54,7 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	})
 
 	t.Router.Get("/", t.GetTeams)
+	t.Router.Get("/{id}", t.GetTeamPlayersByTeamId)
 
 	templ, err := template.ParseGlob("templates/partials/*.html")
 
@@ -68,6 +72,12 @@ func (t *TeamsController) GetTeams(res http.ResponseWriter, req *http.Request) {
 }
 
 func (t *TeamsController) GetTeamPlayersByTeamId(res http.ResponseWriter, req *http.Request) {
-	chi.URLParam(req, "id")
-	// t.template.ExecuteTemplate(res, "")
+	id := chi.URLParam(req, "id")
+	idInt, _ := strconv.Atoi(id)
+
+	team := t.Teams[idInt]
+
+	if err := t.template.ExecuteTemplate(res, "team_players", team.PlayerNames); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
