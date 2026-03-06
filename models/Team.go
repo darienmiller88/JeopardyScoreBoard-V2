@@ -11,5 +11,6 @@ type Team struct{
 	LocationID int        `db:"location_id"`
 	Score      int        `db:"-"` 
 	Players    []Player   `db:"-"`
+	PlayerNames []string  `db:"-"`
 	TeamName   string     `db:"-"`
 }

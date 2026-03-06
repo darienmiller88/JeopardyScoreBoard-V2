@@ -20,48 +20,15 @@
     <button class="btn btn-reset-all">Reset All Points</button>
 </div>
 
-<div class="team-grid">
-    <div class="glass team-card">
-        <h2 class="team-card__name">Lawrence</h2>
-        <div class="team-card__actions">
-            <button class="btn btn-reset">Reset</button>
-            <button class="btn btn-clear">Clear</button>
-        </div>
-
-        <div class="glass score-counter">
-            <button class="btn score-counter__btn-decrement">-</button>
-            <span class="score-counter__value">0</span>
-            <button class="btn score-counter__btn-increment">+</button>
-        </div>
-
-        <button 
-            class="btn team-card__btn-view-players"
-            data-bs-toggle="modal" 
-            data-bs-target="#viewTeamPlayersModal"        
-        >View Players</button>
-        <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
-    </div>
-    <div class="glass team-card">
-        <h2 class="team-card__name">Lawrence</h2>
-        <div class="team-card__actions">
-            <button class="btn btn-reset">Reset</button>
-            <button class="btn btn-clear">Clear</button>
-        </div>
-
-        <div class="glass score-counter">
-            <button class="btn score-counter__btn-decrement">-</button>
-            <span class="score-counter__value">60000</span>
-            <button class="btn score-counter__btn-increment">+</button>
-        </div>
-
-        <button 
-            class="btn team-card__btn-view-players"
-            data-bs-toggle="modal" 
-            data-bs-target="#viewTeamPlayersModal"    
-        >View Players</button>
-        <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
-    </div>
-
+<div 
+    id="teams-target"
+    class="team-grid"
+    hx-get="/teams"
+    hx-swap="outerHTML"
+    hx-target="#teams-target"
+    hx-trigger="load"
+>
+    
 </div>
 
 <!-- View team players modal -->
@@ -77,14 +44,6 @@
                     Players
                 </h3>
                 <div id="team-players" class="player-names">
-                    <div class="player-item">
-                        <span class="player-number">1</span>
-                        <span class="player-item-name">Clark Kent</span>
-                    </div>
-                    <div class="player-item">
-                        <span class="player-number">2</span>
-                        <span class="player-item-name">Clark Kent</span>
-                    </div>
                 </div>
             </div>
             <div class="modal-footer">
