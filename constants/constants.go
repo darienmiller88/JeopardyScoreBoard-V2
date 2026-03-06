@@ -193,6 +193,7 @@ const(
 
 	GetAllPlayersFromSavedGame string = `
 		SELECT * FROM savedgamesplayers WHERE saved_game_id=$1
+		ORDER BY player_score DESC
 	`
 
 	/////////////////////////////

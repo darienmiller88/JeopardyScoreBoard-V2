@@ -4,6 +4,7 @@ import (
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/services"
 	"encoding/json"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -12,6 +13,7 @@ import (
 
 type SavedGamesController struct {
 	Router          *chi.Mux
+	template        *template.Template
 	savedGameService services.SaveGameService
 }
 
@@ -24,10 +26,28 @@ func (s *SavedGamesController) Init(service services.SaveGameService) {
 	s.Router.Post("/", s.AddSavedGame)
 	s.Router.Get("/{location_name}", s.GetAllSavedGamesFromLocation)
 	s.Router.Delete("/{id}", s.DeleteSavedGame)
+
+	t, err := template.ParseGlob("templates/partials/*.html")
+
+	if err != nil {
+		panic(err)
+	}
+
+	s.template = t
 }
 
 func (s *SavedGamesController) GetAllPlayersFromSavedGame(res http.ResponseWriter, req *http.Request){
-	
+	id := chi.URLParam(req, "id")
+	result := s.savedGameService.GetAllPlayersFromSavedGame(id)
+
+	if result.Err != nil {
+		http.Error(res, result.Err.Error(), result.StatusCode)
+		return
+	}
+
+	res.Header().Add("Content-type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(result)
 }
 
 func (s *SavedGamesController) GetAllSavedGames(res http.ResponseWriter, req *http.Request){

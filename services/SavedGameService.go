@@ -11,7 +11,7 @@ import (
 
 type SaveGameService interface{
 	GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]
-	GetAllPlayersFromSavedGame(savedGameId string)    models.Result[[]models.Player]
+	GetAllPlayersFromSavedGame(savedGameId string)    models.Result[[]models.PlayerDTO]
 	AddSavedGame(savedGame models.SavedGame)          models.Result[models.SavedGame]
 	DeleteSavedGame(savedGameId int)                  models.Result[string]
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
@@ -25,7 +25,7 @@ type SaveGameServiceImpl struct{
 	EncryptionService   *encryption.EncryptionService 
 }
 
-func (s *SaveGameServiceImpl) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.Player]{
+func (s *SaveGameServiceImpl) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.PlayerDTO]{
 	return s.SavedGameRepository.GetAllPlayersFromSavedGame(savedGameId)
 }
 

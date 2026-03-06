@@ -22,7 +22,7 @@ type SavedGameRepository interface {
 	GetAllSavedGamesDB() models.Result[[]models.SavedGame]
 
 	//Get all players from a single saved game
-	GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.Player]
+	GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.PlayerDTO]
 
 	//Get all saved games by id
 	GetSavedGameById(savedGameId int) models.Result[models.SavedGame]
@@ -39,11 +39,22 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB, 	encryptionService *encryption.En
 }
 
 //Get all players from a single saved game
-func (s *sqlSavedGameRepository) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.Player]{
-	players := []models.Player{}
+func (s *sqlSavedGameRepository) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.PlayerDTO]{
+	playersFromSavedGame := []models.SavedGamePlayer{}
 
-	if err := s.db.Select(&players, constants.GetAllPlayersFromSavedGame, savedGameId); err != nil {
-		return utils.GetResult(err, http.StatusInternalServerError, []models.Player{})
+	if err := s.db.Select(&playersFromSavedGame, constants.GetAllPlayersFromSavedGame, savedGameId); err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, []models.PlayerDTO{})
+	}
+	
+	players := []models.PlayerDTO{}
+
+	for _, player := range playersFromSavedGame {
+		decryptedName, _ := s.encryptionService.Decrypt(player.NameEncrypted)
+		players = append(players, models.PlayerDTO{
+			ID: player.PlayerID,
+			Score: player.PlayerScore,
+			PlayerName: decryptedName,
+		})
 	}
 
 	return utils.GetResult(nil, http.StatusOK, players)
@@ -102,7 +113,7 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
             PlayerName: decrypted,
         }
 
-        playersByGame[sgPlayer.SavedGameID] = append(playersByGame[sgPlayer.SavedGameID], player)
+        playersByGame[sgPlayer.ID] = append(playersByGame[sgPlayer.ID], player)
     }
 
     for i := range savedGames {
