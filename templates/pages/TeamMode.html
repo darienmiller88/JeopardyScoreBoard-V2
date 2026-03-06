@@ -10,6 +10,13 @@
 {{ define "content" }}
 <div class="team-page-header">
     <h1 class="gradient-text">Team Battle</h1>
+     <div class="team-page-header__select-row">
+        <select class="team-card__select">
+            <option value="">Select Player</option>
+            <option value="1">Clark Kent</option>
+        </select>
+        <button class="team-card__btn-assign">Assign</button>
+    </div>
     <button class="btn btn-reset-all">Reset All Points</button>
 </div>
 
@@ -55,34 +62,39 @@
         <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
     </div>
 
-    <div id="viewTeamPlayersModal" class="modal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">View Team Players</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h3 class="list-title">
-                        Players
-                    </h3>
-                    <div id="team-players" class="player-names">
-                        <div class="player-item">
-                            <span class="player-number">1</span>
-                            <span class="player-item-name">Clark Kent</span>
-                        </div>
-                        <div class="player-item">
-                            <span class="player-number">2</span>
-                            <span class="player-item-name">Clark Kent</span>
-                        </div>
+</div>
+
+<!-- View team players modal -->
+<div id="viewTeamPlayersModal" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">View Team Players</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h3 class="list-title">
+                    Players
+                </h3>
+                <div id="team-players" class="player-names">
+                    <div class="player-item">
+                        <span class="player-number">1</span>
+                        <span class="player-item-name">Clark Kent</span>
+                    </div>
+                    <div class="player-item">
+                        <span class="player-number">2</span>
+                        <span class="player-item-name">Clark Kent</span>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
-        <!-- end of modal -->
     </div>
+    <!-- end of modal -->
+</div>
+<div class="team-page-footer">
+    <button class="btn team-page__btn-save">Save Game</button>
 </div>
 {{ end }}
