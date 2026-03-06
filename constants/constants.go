@@ -191,6 +191,10 @@ const(
 		SELECT * FROM savedgames WHERE id=$1
 	`
 
+	GetAllPlayersFromSavedGame string = `
+		SELECT * FROM savedgamesplayers WHERE saved_game_id=$1
+	`
+
 	/////////////////////////////
 	//UPDATE
 	/////////////////////////////

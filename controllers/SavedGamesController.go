@@ -19,10 +19,15 @@ func (s *SavedGamesController) Init(service services.SaveGameService) {
 	s.Router = chi.NewRouter()
 	s.savedGameService = service
 
+	s.Router.Get("/{id}/players", s.GetAllPlayersFromSavedGame)
 	s.Router.Get("/", s.GetAllSavedGames)
 	s.Router.Post("/", s.AddSavedGame)
 	s.Router.Get("/{location_name}", s.GetAllSavedGamesFromLocation)
 	s.Router.Delete("/{id}", s.DeleteSavedGame)
+}
+
+func (s *SavedGamesController) GetAllPlayersFromSavedGame(res http.ResponseWriter, req *http.Request){
+	
 }
 
 func (s *SavedGamesController) GetAllSavedGames(res http.ResponseWriter, req *http.Request){

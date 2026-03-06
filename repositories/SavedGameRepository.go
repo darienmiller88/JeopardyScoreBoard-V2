@@ -12,10 +12,19 @@ import (
 )
 
 type SavedGameRepository interface {
-	GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame]
 	AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame]
 	DeleteSavedGameDB(savedGameId int) models.Result[string]
+	
+	//Get all saved games from a single location
+	GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame]
+
+	//get all saved games with all players who particiapted in each game
 	GetAllSavedGamesDB() models.Result[[]models.SavedGame]
+
+	//Get all players from a single saved game
+	GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.Player]
+
+	//Get all saved games by id
 	GetSavedGameById(savedGameId int) models.Result[models.SavedGame]
 }
 
@@ -29,7 +38,18 @@ func GetSqlSavedGameRepository(newDB *sqlx.DB, 	encryptionService *encryption.En
 	return &sqlSavedGameRepository{db: newDB, encryptionService: encryptionService}
 }
 
-// Get all Saved games from database.
+//Get all players from a single saved game
+func (s *sqlSavedGameRepository) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.Player]{
+	players := []models.Player{}
+
+	if err := s.db.Select(&players, constants.GetAllPlayersFromSavedGame, savedGameId); err != nil {
+		return utils.GetResult(err, http.StatusInternalServerError, []models.Player{})
+	}
+
+	return utils.GetResult(nil, http.StatusOK, players)
+}
+
+// Get all Saved games from database with players.
 func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
 	savedGames := []models.SavedGame{}
 
