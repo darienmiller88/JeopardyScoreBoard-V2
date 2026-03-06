@@ -17,13 +17,6 @@
     overflow-y: scroll;
 }
 
-.no-games{
-    text-align: center;
-    color: var(--text-dim);
-    font-weight: bold;
-    font-size: 1.4rem;
-}
-
 .game-card {
     border: 1px solid rgba(250, 204, 21, 0.4);
     margin-bottom: 1rem;
@@ -70,10 +63,10 @@
 /* Game Location */
 .game-location {
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 0.8rem;
     letter-spacing: 0.08rem;
     color: var(--text-dim);
-    margin-bottom: 0.3rem;
+    margin-bottom: 1.5rem;
     text-transform: uppercase;
 }
 
@@ -85,7 +78,7 @@
 /* Game Date */
 .game-date {
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 0.8rem;
     letter-spacing: 0.08rem;
     color: var(--text-dim);
     margin-bottom: 1.5rem;
@@ -203,7 +196,21 @@
     color: #29b6f6;
 }
 
-.player-names .player-item:hover .player-item-name {
+.player-names .player-item:hover .player-item-score {
+    margin-left: auto;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--success);
+    flex-shrink: 0;
+    transition: color 0.2s ease, font-size 0.2s ease;
+}
+
+.player-names .player-item:hover .player-item-score {
+    color: white;
+    font-size: 1.05rem;
+}
+
+.player-item-name {
     font-size: 1.1rem;
     font-weight: 700;
 }
@@ -221,6 +228,20 @@
     font-weight: 700;
     flex-shrink: 0;
     transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.player-item-score {
+    margin-left: auto;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--success);
+    flex-shrink: 0;
+    transition: color 0.2s ease, font-size 0.2s ease;
+}
+
+.player-names .player-item:hover .player-item-score {
+    color: white;
+    font-size: 1.05rem;
 }
 
 .player-item-name {

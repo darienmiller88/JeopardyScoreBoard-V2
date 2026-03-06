@@ -45,7 +45,7 @@
                     class="btn btn-primary" 
                     data-bs-toggle="modal" 
                     data-bs-target="#viewPlayerGamesModal"
-                    hx-get="/savedgames/{{ .ID }}/players"
+                    
                 >View Players</button>
                 <button 
                     class="btn btn-danger"
@@ -97,7 +97,7 @@
 <div class="no-games">No games saved</div>
 {{ end }}
 
-    <!-- View team game -->
+    <!-- View team game modal -->
     <div id="viewTeamGamesModal" class="modal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -173,10 +173,12 @@
                         <div class="player-item">
                             <span class="player-number">1</span>
                             <span class="player-item-name">Clark Kent</span>
+                            <span class="player-item-score">2000</span>
                         </div>
                         <div class="player-item">
                             <span class="player-number">2</span>
                             <span class="player-item-name">Clark Kent</span>
+                            <span class="player-item-score">7700</span>
                         </div>
                     </div>
                 </div>
