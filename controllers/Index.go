@@ -15,6 +15,7 @@ type Index struct{
 	locationsController LocationsController
 	playersController PlayersController
 	savedGamesController SavedGamesController
+	teamController TeamsController
 }
 
 func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.EncryptionService){
@@ -47,6 +48,9 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
 		EncryptionService: encryptionService,
 	})
+	i.teamController.Init(&services.TeamServiceImpl{
+		TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
+	})
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router
 	//in main.go
@@ -54,4 +58,5 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 	i.Router.Mount("/locations", i.locationsController.Router)
 	i.Router.Mount("/players", i.playersController.Router)
 	i.Router.Mount("/savedgames", i.savedGamesController.Router)
+	i.Router.Mount("/teams", i.teamController.Router)
 }

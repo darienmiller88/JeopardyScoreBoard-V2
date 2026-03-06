@@ -1,3 +1,105 @@
-h1{
-    color: purple;
+/* ── Team Battle Page ─────────────────────────────────── */
+
+.team-page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.team-page-header h1 {
+    font-size: 3rem;
+}
+
+.team-page-header .btn-reset-all {
+    background: var(--danger);
+    color: white;
+    margin-top: 1rem;
+}
+
+/* ── Team Grid ────────────────────────────────────────── */
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    gap: 1.5rem;
+}
+
+/* ── Team Card ────────────────────────────────────────── */
+
+.team-card {
+    border: 2px solid rgba(34, 211, 238, 0.3);
+}
+
+.team-card__name {
+    text-align: center;
+    font-size: 2rem;
+    color: var(--primary);
+}
+
+/* Reset / Clear button row */
+.team-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.team-card__actions .btn-reset {
+    flex: 1;
+    background: var(--success);
+    color: white;
+    font-size: 0.8rem;
+}
+
+.team-card__actions .btn-clear {
+    flex: 1;
+    background: #475569;
+    color: white;
+    font-size: 0.8rem;
+}
+
+/* ── Score Counter ────────────────────────────────────── */
+
+.score-counter {
+    background: rgba(0, 0, 0, 0.4);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.score-counter__btn-decrement {
+    background: var(--danger);
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.score-counter__value {
+    font-size: 4rem;
+    font-weight: 800;
+}
+
+.score-counter__btn-increment {
+    background: var(--primary);
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    font-size: 1.5rem;
+    color: #000;
+}
+
+/* ── Team Card Footer Buttons ─────────────────────────── */
+
+.team-card__btn-view-players {
+    width: 100%;
+    background: rgba(56, 189, 248, 0.1);
+    color: white;
+    border: 1px solid var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.team-card__btn-add-player {
+    width: 100%;
 }

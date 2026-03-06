@@ -8,27 +8,27 @@
 {{ end }}
 
 {{ define "content" }}
-<div style="text-align: center; margin-bottom: 2rem;">
-    <h1 class="gradient-text" style="font-size: 3rem;">Team Battle</h1>
-    <button class="btn" style="background: var(--danger); color: white; margin-top: 1rem;">Reset All Points</button>
+<div class="team-page-header">
+    <h1 class="gradient-text">Team Battle</h1>
+    <button class="btn btn-reset-all">Reset All Points</button>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1.5rem;">
-    <div class="glass" style="border: 2px solid rgba(34, 211, 238, 0.3);">
-        <h2 style="text-align: center; font-size: 2rem; color: var(--primary);">Lawrence</h2>
-        <div style="display: flex; gap: 0.5rem; margin: 1rem 0;">
-            <button class="btn" style="flex: 1; background: var(--success); color: white; font-size: 0.8rem;">Reset</button>
-            <button class="btn" style="flex: 1; background: #475569; color: white; font-size: 0.8rem;">Clear</button>
-        </div>
-        
-        <div class="glass" style="background: rgba(0,0,0,0.4); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
-            <button class="btn" style="background: var(--danger); width: 3.5rem; height: 3.5rem; border-radius: 1rem; font-size: 1.5rem; color: white;">-</button>
-            <span style="font-size: 4rem; font-weight: 800;">0</span>
-            <button class="btn" style="background: var(--primary); width: 3.5rem; height: 3.5rem; border-radius: 1rem; font-size: 1.5rem; color: #000;">+</button>
+<div class="team-grid">
+    <div class="glass team-card">
+        <h2 class="team-card__name">Lawrence</h2>
+        <div class="team-card__actions">
+            <button class="btn btn-reset">Reset</button>
+            <button class="btn btn-clear">Clear</button>
         </div>
 
-        <button class="btn" style="width: 100%; background: rgba(56, 189, 248, 0.1); color: white; border: 1px solid var(--primary); margin-bottom: 0.5rem;">View Players</button>
-        <button class="btn btn-primary" style="width: 100%;">Add Player to Team</button>
+        <div class="glass score-counter">
+            <button class="btn score-counter__btn-decrement">-</button>
+            <span class="score-counter__value">0</span>
+            <button class="btn score-counter__btn-increment">+</button>
+        </div>
+
+        <button class="btn team-card__btn-view-players">View Players</button>
+        <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
     </div>
 </div>
 {{ end }}
