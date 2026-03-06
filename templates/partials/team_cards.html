@@ -9,7 +9,12 @@
         </div>
 
         <div class="glass score-counter">
-            <button class="btn score-counter__btn-decrement">-</button>
+            <button 
+                class="btn score-counter__btn-decrement"
+                hx-post="/teams/{{ .ID }}/minus-points"
+                hx-target="#score-{{ .ID }}"
+                hx-swap="outerHTML"
+            >-</button>
             <span id="score-{{ .ID }}" class="score-counter__value">{{ .Score }}</span>
             <button 
                 class="btn score-counter__btn-increment"
