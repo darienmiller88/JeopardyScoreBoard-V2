@@ -27,7 +27,9 @@ func (s *SavedGamesController) Init(service services.SaveGameService) {
 	s.Router.Get("/{location_name}", s.GetAllSavedGamesFromLocation)
 	s.Router.Delete("/{id}", s.DeleteSavedGame)
 
-	t, err := template.ParseGlob("templates/partials/*.html")
+	t, err := template.New("").Funcs(template.FuncMap{
+		"add": func(a, b int) int { return a + b },
+	}).ParseGlob("templates/partials/*.html")
 
 	if err != nil {
 		panic(err)
@@ -45,9 +47,13 @@ func (s *SavedGamesController) GetAllPlayersFromSavedGame(res http.ResponseWrite
 		return
 	}
 
-	res.Header().Add("Content-type", "application/json")
-	res.WriteHeader(200)
-	json.NewEncoder(res).Encode(result)
+	data := map[string]any{
+		"Players": result.ResultData,
+	}
+
+	if err := s.template.ExecuteTemplate(res, "player_names", data); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (s *SavedGamesController) GetAllSavedGames(res http.ResponseWriter, req *http.Request){

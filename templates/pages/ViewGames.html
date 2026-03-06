@@ -45,7 +45,9 @@
                     class="btn btn-primary" 
                     data-bs-toggle="modal" 
                     data-bs-target="#viewPlayerGamesModal"
-                    
+                    hx-get="/savedgames/{{ .ID }}/players"
+                    hx-target="#player-names-for-player-modal"
+                    hx-swap="outerHTML"
                 >View Players</button>
                 <button 
                     class="btn btn-danger"
@@ -170,16 +172,6 @@
                         Players
                     </h3>
                     <div id="player-names-for-player-modal" class="player-names">
-                        <div class="player-item">
-                            <span class="player-number">1</span>
-                            <span class="player-item-name">Clark Kent</span>
-                            <span class="player-item-score">2000</span>
-                        </div>
-                        <div class="player-item">
-                            <span class="player-number">2</span>
-                            <span class="player-item-name">Clark Kent</span>
-                            <span class="player-item-score">7700</span>
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
