@@ -71,8 +71,14 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 func (t *TeamsController) AddPoints(res http.ResponseWriter, req *http.Request) {
 	id := chi.URLParam(req, "id")
 	idInt, _ := strconv.Atoi(id)
+	points, _ := strconv.Atoi(req.FormValue("points"))
 
-	t.Teams[idInt].Score += 100
+	// fallback if input is empty
+    if points == 0 { 
+		points = 100 
+	} 
+
+	t.Teams[idInt].Score += points
 
 	t.template.ExecuteTemplate(res, "score", struct {
 		ID    int
@@ -84,7 +90,12 @@ func (t *TeamsController) MinusPoints(res http.ResponseWriter, req *http.Request
 	id := chi.URLParam(req, "id")
 	idInt, _ := strconv.Atoi(id)
 
-	t.Teams[idInt].Score -= 100
+	points, _ := strconv.Atoi(req.FormValue("points"))
+    if points == 0 { 
+		points = 100 
+	}
+
+	t.Teams[idInt].Score -= points
 
 	t.template.ExecuteTemplate(res, "score", struct {
 		ID    int
