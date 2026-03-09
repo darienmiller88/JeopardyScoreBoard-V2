@@ -79,6 +79,8 @@
 
 .team-card__points-input {
     flex: 1;
+    font-size: 1.5rem;
+    padding: 0.2rem;
     text-align: center;
 }
 
@@ -90,7 +92,6 @@
     border: none;
     font-size: 1.25rem;
     font-weight: 700;
-    flex-shrink: 0;
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
@@ -254,4 +255,10 @@
         max-width: 32rem;
         margin: 0 auto;
     }
+
+    .team-card__points-btn-minus,
+    .team-card__points-btn-plus {
+        width: 4rem;
+    }
+
 }
