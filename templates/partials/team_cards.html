@@ -9,39 +9,45 @@
         </div>
 
         <div class="glass score-counter">
+            <span id="score-{{ .ID }}" class="score-counter__value">{{ .Score }}</span>
+        </div>
+
+        <div class="team-card__points-row">
             <button 
-                class="btn score-counter__btn-decrement"
+                class=" team-card__points-btn-minus"
                 hx-post="/teams/{{ .ID }}/minus-points"
                 hx-target="#score-{{ .ID }}"
                 hx-swap="outerHTML"
+                hx-include="#points-input-{{ .ID }}"
             >-</button>
-            <span id="score-{{ .ID }}" class="score-counter__value">{{ .Score }}</span>
+            <input 
+                id="points-input-{{ .ID }}"
+                name="points"
+                type="number"
+                class="team-card__points-input"
+                placeholder="Points"
+                min="0"
+            />
             <button 
-                class="btn score-counter__btn-increment"
+                class=" team-card__points-btn-plus"
                 hx-post="/teams/{{ .ID }}/add-points"
                 hx-target="#score-{{ .ID }}"
                 hx-swap="outerHTML"
+                hx-include="#points-input-{{ .ID }}"
             >+</button>
         </div>
 
-        <input 
-            id="points-input-{{ .ID }}"
-            name="points"
-            type="number"
-            class="team-card__points-input"
-            placeholder="Points"
-            min="0"
-        />
-
-        <button 
-            class="btn team-card__btn-view-players"
-            data-bs-toggle="modal" 
-            data-bs-target="#viewTeamPlayersModal"
-            hx-get="/teams/{{ .ID }}"        
-            hx-target="#team-players"
-            hx-swap="outerHTML"
-        >View Players</button>
-        <button class="btn btn-primary team-card__btn-add-player">Add Player to Team</button>
+        <div class="team-card__footer">
+            <button 
+                class="btn team-card__btn-view-players"
+                data-bs-toggle="modal" 
+                data-bs-target="#viewTeamPlayersModal"
+                hx-get="/teams/{{ .ID }}"        
+                hx-target="#team-players"
+                hx-swap="outerHTML"
+            >View Players</button>
+            <button class="btn btn-primary team-card__btn-add-player">Add Player</button>
+        </div>
     </div>
     {{ end }}
 </div>
