@@ -19,6 +19,7 @@ import (
 	"JeopardyScoreBoardV2/encryption"
 )
 
+//push from work laptop
 func main() {
 	//Load env file immediately at the start of the program
 	godotenv.Load()
