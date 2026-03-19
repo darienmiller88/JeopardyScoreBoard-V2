@@ -61,8 +61,8 @@ func main() {
 	router.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	//Finally, listen and serve on the port in the env, which is 8080 on local machine.
-	// fmt.Println("Listening on Port:", os.Getenv("PORT"))
-	// http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router)
+	fmt.Println("Listening on Port:", os.Getenv("PORT"))
+	http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router)
 }
 
 func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
