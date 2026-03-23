@@ -75,7 +75,7 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 	games := []struct{
 		CreatedAt  time.Time `json:"created_at"`
 		UpdatedAt  time.Time `json:"updated_at"`
-		PlayerName string `json:"player"`
+		// PlayerName string `json:"player"`
 		Location   string `json:"location_name"`
 		TotalPoints int   `json:"total_points"`
 		AveragePoints float64 `json:"average_points"`
@@ -115,7 +115,7 @@ func addSavedGames(db *sqlx.DB, es *encryption.EncryptionService){
 		).Scan(&playerID)
 
 		if err != nil {
-			panic(fmt.Errorf("player not found: %s at location %s", hash, game.Location))
+			panic(fmt.Errorf("player not found: %s at location %s", game.Winner.Username, game.Location))
 		}
 
 		savedGameId := 0
