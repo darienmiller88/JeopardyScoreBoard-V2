@@ -55,10 +55,12 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 		locationName,
 	).Scan(&player.ID, &player.CreatedAt, &player.UpdatedAt, &player.LocationID)
 
+	uqvio := "23505"  // unique_violation, player name already exists for this location
+
 	if err != nil {
 		if pgErr, ok := err.(*pq.Error); ok {
 			switch string(pgErr.Code) {
-				case "23505": // unique_violation
+				case uqvio: // unique_violation
 					return utils.GetResult(
 						fmt.Errorf("player name '%s' already taken in this location", player.PlayerName),
 						http.StatusConflict,
@@ -142,7 +144,6 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerId string, newPlayerName
 
 // Remove a single player from a given location.
 func (s *sqlPlayerRepository) RemovePlayer(playerId string, locationName string) models.Result[models.Player] {
-	//Search for a player by their hash rather than their actual name
 	result, err := s.db.Exec(constants.DeletePlayer, playerId, locationName)
 
 	if err != nil {
