@@ -38,6 +38,7 @@ func main() {
 	key := os.Getenv("ENCRYPTION_KEY")
 	keyB64, err := base64.StdEncoding.DecodeString(key)
 
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,7 +51,7 @@ func main() {
 	index.InitControllers(database.GetDB(), encryptionService)
 
 	// encryptNames(database.GetDB(), encryptionService)
-	// addPlayers(database.GetDB(), encryptionService)
+	addPlayers(database.GetDB(), encryptionService)
 	// addSavedGames(database.GetDB(), encryptionService)
 
 	//Afterwards, mount that router onto this one.
