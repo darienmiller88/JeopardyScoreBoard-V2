@@ -51,7 +51,7 @@ func main() {
 	index.InitControllers(database.GetDB(), encryptionService)
 
 	// encryptNames(database.GetDB(), encryptionService)
-	addPlayers(database.GetDB(), encryptionService)
+	// addPlayers(database.GetDB(), encryptionService)
 	// addSavedGames(database.GetDB(), encryptionService)
 
 	//Afterwards, mount that router onto this one.
