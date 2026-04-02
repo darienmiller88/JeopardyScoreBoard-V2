@@ -23,14 +23,14 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	//Add chi routes here
 	t.Teams = append(t.Teams, models.Team{
 		ID: 0,
-		TeamName: "Pelham Bay",
+		TeamName: "Elmwood",
 		Score: 0,
 		PlayerNames: []string{
 			
 		},
 	}, models.Team{
 		ID: 1,
-		TeamName: "Grand Concourse",
+		TeamName: "Flushing",
 		Score: 0,
 		PlayerNames: []string{
 			
@@ -41,7 +41,6 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	t.Router.Get("/{id}", t.GetTeamPlayersByTeamId)
 	t.Router.Post("/{id}/add-points", t.AddPoints)
 	t.Router.Post("/{id}/minus-points", t.MinusPoints)
-
 
 	templ, err := template.ParseGlob("templates/partials/*.html")
 
