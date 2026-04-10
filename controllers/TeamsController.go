@@ -27,14 +27,20 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 		TeamName: "5030 Broadway",
 		Score: 0,
 		PlayerNames: []string{
-			
+			"player 1",
+			"player 2",		
+			"player 3",
+			"player 4",
 		},
 	}, models.Team{
 		ID: 1,
 		TeamName: "Pelham Bay",
 		Score: 0,
 		PlayerNames: []string{
-			
+			"player 5",
+			"player 6",		
+			"player 7",
+			"player 8",
 		},
 	})
 
