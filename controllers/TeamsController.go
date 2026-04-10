@@ -24,14 +24,14 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	//Add chi routes here
 	t.Teams = append(t.Teams, models.Team{
 		ID: 0,
-		TeamName: "Elmwood",
+		TeamName: "5030 Broadway",
 		Score: 0,
 		PlayerNames: []string{
 			
 		},
 	}, models.Team{
 		ID: 1,
-		TeamName: "Flushing",
+		TeamName: "Pelham Bay",
 		Score: 0,
 		PlayerNames: []string{
 			
