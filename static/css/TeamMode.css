@@ -9,6 +9,26 @@
     font-size: 3rem;
 }
 
+.team-page-header__select-row{
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-top: 1rem;
+    /* border: 2px solid red; */
+}
+
+.team-page-header__select-row select{
+    width: 12rem;
+}
+
+.team-page-header__select-row button{
+    padding: 0.5rem 2rem;
+    background-color: transparent;
+    border: 2px solid var(--primary);
+    border-radius: 0.75rem;
+    color: var(--primary);
+}
+
 /* ── Team Grid ────────────────────────────────────────── */
 
 .team-grid {
