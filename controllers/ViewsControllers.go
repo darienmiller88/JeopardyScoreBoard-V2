@@ -127,9 +127,8 @@ func getUser(r *http.Request) string {
 	return cookie.Value
 }
 
-
-func (v *ViewsController) PointTotalsPage(res http.ResponseWriter, req *http.Request) {
-    talentNames := []string{
+func (v *ViewsController) PointTotals(res http.ResponseWriter, req *http.Request) {
+	talentNames := []string{
         "Christopher Taylor",
         "Kiefer Inson",
         "Tony Switzer",
@@ -164,13 +163,7 @@ func (v *ViewsController) PointTotalsPage(res http.ResponseWriter, req *http.Req
         "JudgeScores": judgeScores,
     }
 
-    if err := v.templates["PointTotals"].Execute(res, data); err != nil {
-        http.Error(res, err.Error(), http.StatusInternalServerError)
-    }
-}
-
-func (v *ViewsController) PointTotals(res http.ResponseWriter, req *http.Request) {
-	if err := v.templates["PointTotals"].Execute(res, nil); err != nil {
+	if err := v.templates["PointTotals"].Execute(res, data); err != nil {
         http.Error(res, err.Error(), http.StatusInternalServerError)
     }
 }
