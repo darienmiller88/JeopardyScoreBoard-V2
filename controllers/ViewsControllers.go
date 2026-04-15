@@ -14,6 +14,7 @@ import (
 
 type ViewsController struct{
 	templates        map[string]*template.Template
+	logInTemplate   *template.Template
 	Router          *chi.Mux
 	SavedGameService services.SaveGameService
 	LocationService  services.LocationService
@@ -33,6 +34,7 @@ func (v *ViewsController) Init(
 	v.PlayerService = PlayerService
 	v.SavedGameService = SavedGameService
 	v.TeamService = TeamService
+	v.logInTemplate = template.Must(template.ParseFiles("templates/LogIn.html"))
 
 	//Initialize template map
 	v.InitTemplateMap()
@@ -42,6 +44,7 @@ func (v *ViewsController) Init(
 	v.Router.Get("/team-mode", v.TeamMode)
 	v.Router.Get("/add-player", v.AddPlayerPage)
 	v.Router.Get("/view-games", v.ViewGames)
+	v.Router.Get("/talent-show", v.TalentShow)
 	v.Router.Get("/log-in", v.LogIn)
 	v.Router.NotFound(v.NotFound)
 }
@@ -71,6 +74,31 @@ func (v *ViewsController) InitTemplateMap(){
 		
 		v.templates[name] = template.Must(template.ParseFiles(files...))
 	}	
+}
+
+func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request){
+	data := map[string]any{
+		"TalentShowSlots": []string{
+			"Christopher Taylor",
+			"Kiefer Inson",
+			"Tony Switzer",
+			"CAYENNE NO_LUCK aka Justin Jacob",
+			"Jadel Nunez",
+			"Carla O’Brien & Josh Wilson",
+			"Chloe Crisano",
+			"Tony B. Rivers",
+			"Money",
+			"Kenny Shiver & Angie Eason",
+			"Rachel Fonseca & Sophie Thurschwell",
+			"Carlos Mendoza",
+			"Woody Tanor",
+			"Denise Farmer",
+		},
+	}
+
+	if err := v.templates["TalentShow"].Execute(res, data); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
@@ -142,7 +170,7 @@ func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
 }
 
 func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
-	if err := v.templates["LogIn"].Execute(res, nil); err != nil{
+	if err := v.logInTemplate.Execute(res, nil); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }

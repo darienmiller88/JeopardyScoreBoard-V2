@@ -12,4 +12,14 @@
 <div>
     Talent Show
 </div>
+
+ <div class="select-wrapper">
+    <select class="talent-show-select">
+        <!-- <option value="">Select Team</option> -->
+        {{ range .TalentShowSlots }}
+        <option value="{{ . }}">{{ . }}</option>
+        {{ end }}
+    </select>
+    <button class="team-card__btn-assign">Assign</button>
+</div>
 {{ end }}
