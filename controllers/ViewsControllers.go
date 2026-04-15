@@ -61,6 +61,7 @@ func (v *ViewsController) Init(
 	v.Router.Get("/view-games", v.ViewGames)
 	v.Router.Get("/talent-show", v.TalentShow)
 	v.Router.Get("/log-in", v.LogIn)
+	v.Router.Get("/sign-out", v.SignOut)
 	v.Router.Post("/log-in", v.HandleLogIn)
 	v.Router.NotFound(v.NotFound)
 }
@@ -220,6 +221,18 @@ func (v *ViewsController) HandleLogIn(res http.ResponseWriter, req *http.Request
 	})
 
 	http.Redirect(res, req, "/talent-show", http.StatusSeeOther)
+}
+
+func (v *ViewsController) SignOut(res http.ResponseWriter, req *http.Request) {
+	http.SetCookie(res, &http.Cookie{
+		Name:     "auth",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1, // 🔥 deletes cookie
+		HttpOnly: true,
+	})
+
+	http.Redirect(res, req, "/log-in", http.StatusSeeOther)
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request) {
