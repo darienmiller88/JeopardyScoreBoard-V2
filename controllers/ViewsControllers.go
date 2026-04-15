@@ -23,7 +23,8 @@ var allowedUsers = map[string]bool{
 	"lindalaul":        true,
 }
 
-var passwordHash = []byte("$2a$12$9zqH0OZV6FZCqzQ6lK3Q3u6F9mQ9pYJx0kZcZ5Y8QeV1wF6ZrY9eK")
+// judge -> talent -> score
+var scores = map[string]map[string]float64{}
 
 type ViewsController struct {
 	templates        map[string]*template.Template
@@ -63,6 +64,10 @@ func (v *ViewsController) Init(
 	v.Router.Get("/log-in", v.LogIn)
 	v.Router.Get("/sign-out", v.SignOut)
 	v.Router.Post("/log-in", v.HandleLogIn)
+
+	//new routes
+	v.Router.Get("/talent-show/card", v.GetTalentCard)
+	v.Router.Post("/talent-show/score", v.UpdateTalentScore)
 	v.Router.NotFound(v.NotFound)
 }
 
@@ -91,6 +96,77 @@ func (v *ViewsController) InitTemplateMap() {
 
 		v.templates[name] = template.Must(template.ParseFiles(files...))
 	}
+}
+
+func getUser(r *http.Request) string {
+	cookie, err := r.Cookie("auth")
+	if err != nil {
+		return ""
+	}
+	return cookie.Value
+}
+
+func (v *ViewsController) GetTalentCard(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	name := r.URL.Query().Get("talent")
+
+	if user == "" || name == "" {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	// Initialize map if needed
+	if scores[user] == nil {
+		scores[user] = make(map[string]float64)
+	}
+
+	score := scores[user][name]
+
+	data := map[string]any{
+		"Name":  name,
+		"Score": score,
+	}
+
+	tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
+	tmpl.Execute(w, data)
+}
+
+func (v *ViewsController) UpdateTalentScore(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+
+	name := r.FormValue("name")
+	action := r.FormValue("action")
+
+	if user == "" || name == "" {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	if scores[user] == nil {
+		scores[user] = make(map[string]float64)
+	}
+
+	current := scores[user][name]
+
+	switch action {
+	case "plus":
+		current += 0.5
+	case "minus":
+		current -= 0.5
+		if current < 0 {
+			current = 0
+		}
+	}
+
+	scores[user][name] = current
+
+	data := map[string]any{
+		"Name":  name,
+		"Score": current,
+	}
+
+	tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
+	tmpl.Execute(w, data)
 }
 
 func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request) {
