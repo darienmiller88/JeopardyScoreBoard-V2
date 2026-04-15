@@ -45,6 +45,7 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	})
 
 	t.Router.Get("/", t.GetTeams)
+	t.Router.Get("/team-names", t.GetTeamNames)
 	t.Router.Get("/{id}", t.GetTeamPlayersByTeamId)
 	t.Router.Post("/{id}/add-points", t.AddPoints)
 	t.Router.Post("/{id}/minus-points", t.MinusPoints)
@@ -91,6 +92,12 @@ func (t *TeamsController) MinusPoints(res http.ResponseWriter, req *http.Request
 		ID    int
 		Score int
 	}{idInt, t.Teams[idInt].Score})
+}
+
+func (t *TeamsController) GetTeamNames(res http.ResponseWriter, req *http.Request) {
+	if err := t.template.ExecuteTemplate(res, "team_cards", t.Teams); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (t *TeamsController) GetTeams(res http.ResponseWriter, req *http.Request) {

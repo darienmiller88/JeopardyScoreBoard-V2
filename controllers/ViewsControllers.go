@@ -18,14 +18,16 @@ type ViewsController struct{
 	SavedGameService services.SaveGameService
 	LocationService  services.LocationService
 	PlayerService    services.PlayerService
+	TeamService     services.TeamService
 }
 
-func (v *ViewsController) Init(LocationService services.LocationService, PlayerService services.PlayerService, SavedGameService services.SaveGameService){
+func (v *ViewsController) Init(LocationService services.LocationService, PlayerService services.PlayerService, SavedGameService services.SaveGameService, TeamService services.TeamService){
 	v.Router    = chi.NewRouter()
 	v.templates = make(map[string]*template.Template)
 	v.LocationService = LocationService
 	v.PlayerService = PlayerService
 	v.SavedGameService = SavedGameService
+	v.TeamService = TeamService
 
 	//Initialize template map
 	v.InitTemplateMap()
@@ -73,7 +75,18 @@ func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request)
 }
 
 func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
-	if err := v.templates["TeamMode"].Execute(res, nil); err != nil{
+	teamNamesResult := v.TeamService.GetAllTeamNames()
+
+	if teamNamesResult.Err != nil {
+		http.Error(res, teamNamesResult.Err.Error(), teamNamesResult.StatusCode)
+		return
+	}
+
+	data := map[string]any{
+		"TeamNames": teamNamesResult.ResultData,
+	}
+
+	if err := v.templates["TeamMode"].Execute(res, data); err != nil{
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -107,15 +120,15 @@ func (v *ViewsController) AddPlayerPage(res http.ResponseWriter, req *http.Reque
 }
 
 func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
-	result := v.SavedGameService.GetAllSavedGames()
+	savedGamesResult := v.SavedGameService.GetAllSavedGames()
 
-	if result.Err != nil {
-		http.Error(res, result.Err.Error(), http.StatusInternalServerError)
+	if savedGamesResult.Err != nil {
+		http.Error(res, savedGamesResult.Err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	data := template.FuncMap{
-		"Games": result.ResultData,
+		"Games": savedGamesResult.ResultData,
 	}
 
 	if err := v.templates["ViewGames"].Execute(res, data); err != nil{

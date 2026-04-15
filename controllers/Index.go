@@ -34,6 +34,9 @@ func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.Encry
 			TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
 			EncryptionService: encryptionService,
 		},
+		&services.TeamServiceImpl{
+			TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
+		},
 	)
 
 	//Initialize the controllers, and inject the service and repo implementation

@@ -29,7 +29,9 @@
     <div class="team-page-header__select-row">
         <select class="team-card__select">
             <option value="">Select Team</option>
-            <option value="1">Clark Kent</option>
+            {{ range .TeamNames }}
+            <option value="{{ . }}">{{ . }}</option>
+            {{ end }}
         </select>
         <button class="team-card__btn-assign">Assign</button>
     </div>
