@@ -34,18 +34,34 @@ var actualNames = map[string]string{
 // judge -> talent -> score
 var scores = map[string]map[string]float64{}
 
+var talentNames = []string{
+	"Christopher Taylor",
+	"Kiefer Inson",
+	"Tony Switzer",
+	"CAYENNE NO_LUCK aka Justin Jacob",
+	"Grand Concourse TOP",
+	"Carla O'Brien & Josh Wilson",
+	"Chloe Crisano",
+	"Tony B. Rivers",
+	"Money",
+	"Kenny Shiver & Angie Eason",
+	"Rachel Fonseca & Sophie Thurschwell",
+	"Carlos Mendoza",
+	"Woody Tanor",
+	"Denise Farmer",
+}
+
 type TalentCard struct {
-    ID    int
-    Name  string
-    Score float64
+	ID    int
+	Name  string
+	Score float64
 }
 
 type TalentTotal struct {
-    Name   string
-    Judge  string
-    Score  float64
+	Index int
+	Name  string
+	Score float64
 }
-
 
 type ViewsController struct {
 	templates        map[string]*template.Template
@@ -55,6 +71,17 @@ type ViewsController struct {
 	LocationService  services.LocationService
 	PlayerService    services.PlayerService
 	TeamService      services.TeamService
+}
+
+func getScore(user, name string) float64 {
+	if scores[user] == nil {
+		return 10.0
+	}
+	val, exists := scores[user][name]
+	if !exists {
+		return 10.0
+	}
+	return val
 }
 
 func (v *ViewsController) Init(
@@ -71,12 +98,10 @@ func (v *ViewsController) Init(
 	v.TeamService = TeamService
 	v.logInTemplate = template.Must(template.ParseFiles("templates/LogIn.html"))
 
-	//Initialize template map
 	v.InitTemplateMap()
 
 	v.Router.Use(middlewares.AuthMiddleware)
 
-	//Initialize view routes
 	v.Router.Get("/", v.CreateGame)
 	v.Router.Get("/team-mode", v.TeamMode)
 	v.Router.Get("/add-player", v.AddPlayerPage)
@@ -84,8 +109,7 @@ func (v *ViewsController) Init(
 	v.Router.Get("/log-in", v.LogIn)
 	v.Router.Get("/sign-out", v.SignOut)
 	v.Router.Post("/log-in", v.HandleLogIn)
-	
-	//new routes
+
 	v.Router.Get("/talent-show", v.TalentShow)
 	v.Router.Post("/talent-show/score", v.UpdateTalentScore)
 	v.Router.Get("/point-totals", v.PointTotals)
@@ -93,16 +117,12 @@ func (v *ViewsController) Init(
 }
 
 func (v *ViewsController) InitTemplateMap() {
-	// Get all partial files
 	partialFiles, err := filepath.Glob("./templates/partials/*.html")
-
 	if err != nil {
 		panic(fmt.Sprintf("Error loading partials: %v", err))
 	}
 
-	//Get all pages
 	entries, err := os.ReadDir("./templates/pages")
-
 	if err != nil {
 		panic(err)
 	}
@@ -110,7 +130,6 @@ func (v *ViewsController) InitTemplateMap() {
 	for _, entry := range entries {
 		name, _ := strings.CutSuffix(entry.Name(), ".html")
 
-		//For each page, build the following file stack: Base html, all partials, Page.html
 		files := []string{"templates/Base.html"}
 		files = append(files, partialFiles...)
 		files = append(files, fmt.Sprintf("templates/pages/%s.html", name))
@@ -127,146 +146,90 @@ func getUser(r *http.Request) string {
 	return cookie.Value
 }
 
-func (v *ViewsController) PointTotals(res http.ResponseWriter, req *http.Request) {
-	talentNames := []string{
-        "Christopher Taylor",
-        "Kiefer Inson",
-        "Tony Switzer",
-        "CAYENNE NO_LUCK aka Justin Jacob",
-        "Grand Concourse TOP",
-        "Carla O'Brien & Josh Wilson",
-        "Chloe Crisano",
-        "Tony B. Rivers",
-        "Money",
-        "Kenny Shiver & Angie Eason",
-        "Rachel Fonseca & Sophie Thurschwell",
-        "Carlos Mendoza",
-        "Woody Tanor",
-        "Denise Farmer",
-    }
+func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request) {
+	user := getUser(req)
+	actualName := actualNames[user]
 
-    // Build a map: judge -> []TalentTotal
-    judgeScores := map[string][]TalentTotal{}
-    for judge := range allowedUsers {
-        totals := make([]TalentTotal, len(talentNames))
-        for i, name := range talentNames {
-            score := 0.0
-            if scores[judge] != nil {
-                score = scores[judge][name]
-            }
-            totals[i] = TalentTotal{Name: name, Score: score}
-        }
-        judgeScores[judge] = totals
-    }
+	if scores[user] == nil {
+		scores[user] = make(map[string]float64)
+	}
 
-    data := map[string]any{
-        "JudgeScores": judgeScores,
-    }
+	cards := make([]TalentCard, len(talentNames))
+	for i, name := range talentNames {
+		cards[i] = TalentCard{
+			ID:    i,
+			Name:  name,
+			Score: getScore(user, name),
+		}
+	}
 
-	if err := v.templates["PointTotals"].Execute(res, data); err != nil {
-        http.Error(res, err.Error(), http.StatusInternalServerError)
-    }
+	data := map[string]any{
+		"Cards": cards,
+		"user":  actualName,
+	}
+
+	if err := v.templates["TalentShow"].Execute(res, data); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (v *ViewsController) UpdateTalentScore(w http.ResponseWriter, r *http.Request) {
-    user := getUser(r)
-    name := r.FormValue("name")
-    action := r.FormValue("action")
+	user := getUser(r)
+	name := r.FormValue("name")
+	action := r.FormValue("action")
 
-    if user == "" || name == "" {
-        http.Error(w, "Bad request", http.StatusBadRequest)
-        return
-    }
+	if user == "" || name == "" {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
 
-    if scores[user] == nil {
-        scores[user] = make(map[string]float64)
-    }
+	if scores[user] == nil {
+		scores[user] = make(map[string]float64)
+	}
 
-    current := scores[user][name]
-    switch action {
-    case "plus":
-        current += 0.5
-    case "minus":
-        current -= 0.5
-        if current < 0 {
-            current = 0
-        }
-    }
-    scores[user][name] = current
+	current := getScore(user, name)
+	switch action {
+	case "plus":
+		current += 0.5
+	case "minus":
+		current -= 0.5
+		if current < 0 {
+			current = 0
+		}
+	}
+	scores[user][name] = current
 
-    // Find the index of this talent to reconstruct the card
-    talentNames := []string{
-        "Christopher Taylor",
-        "Kiefer Inson",
-        "Tony Switzer",
-        "CAYENNE NO_LUCK aka Justin Jacob",
-        "Grand Concourse TOP",
-        "Carla O'Brien & Josh Wilson",
-        "Chloe Crisano",
-        "Tony B. Rivers",
-        "Money",
-        "Kenny Shiver & Angie Eason",
-        "Rachel Fonseca & Sophie Thurschwell",
-        "Carlos Mendoza",
-        "Woody Tanor",
-        "Denise Farmer",
-    }
+	id := 0
+	for i, n := range talentNames {
+		if n == name {
+			id = i
+			break
+		}
+	}
 
-    id := 0
-    for i, n := range talentNames {
-        if n == name {
-            id = i
-            break
-        }
-    }
+	card := TalentCard{ID: id, Name: name, Score: current}
 
-    card := TalentCard{ID: id, Name: name, Score: current}
-
-    tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
-    tmpl.ExecuteTemplate(w, "talentcard", card)
+	tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
+	tmpl.ExecuteTemplate(w, "talentcard", card)
 }
 
-func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request) {
-    user := getUser(req)
-	actualName := actualNames[user]
-    talentNames := []string{
-        "Christopher Taylor",
-        "Kiefer Inson",
-        "Tony Switzer",
-        "CAYENNE NO_LUCK aka Justin Jacob",
-        "Grand Concourse TOP",
-        "Carla O'Brien & Josh Wilson",
-        "Chloe Crisano",
-        "Tony B. Rivers",
-        "Money",
-        "Kenny Shiver & Angie Eason",
-        "Rachel Fonseca & Sophie Thurschwell",
-        "Carlos Mendoza",
-        "Woody Tanor",
-        "Denise Farmer",
-    }
+func (v *ViewsController) PointTotals(res http.ResponseWriter, req *http.Request) {
+	totals := make([]TalentTotal, len(talentNames))
+	for i, name := range talentNames {
+		var sum float64
+		for judge := range allowedUsers {
+			sum += getScore(judge, name)
+		}
+		totals[i] = TalentTotal{Index: i + 1, Name: name, Score: sum}
+	}
 
-    if scores[user] == nil {
-        scores[user] = make(map[string]float64)
-    }
+	data := map[string]any{
+		"Totals": totals,
+	}
 
-    cards := make([]TalentCard, len(talentNames))
-    for i, name := range talentNames {
-        cards[i] = TalentCard{
-            ID:    i,
-            Name:  name,
-            Score: scores[user][name],
-        }
-    }
-
-    data := map[string]any{
-        "Cards": cards,
-		"user": actualName,
-    }
-
-    if err := v.templates["TalentShow"].Execute(res, data); err != nil {
-        http.Error(res, err.Error(), http.StatusInternalServerError)
-    }
+	if err := v.templates["PointTotals"].Execute(res, data); err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request) {
@@ -363,7 +326,6 @@ func (v *ViewsController) HandleLogIn(res http.ResponseWriter, req *http.Request
 		return
 	}
 
-	// ✅ Set session cookie
 	http.SetCookie(res, &http.Cookie{
 		Name:     "auth",
 		Value:    username,
@@ -379,7 +341,7 @@ func (v *ViewsController) SignOut(res http.ResponseWriter, req *http.Request) {
 		Name:     "auth",
 		Value:    "",
 		Path:     "/",
-		MaxAge:   -1, // 🔥 deletes cookie
+		MaxAge:   -1,
 		HttpOnly: true,
 	})
 
