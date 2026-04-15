@@ -8,41 +8,40 @@ import (
 	"path/filepath"
 	"strings"
 
-	"JeopardyScoreBoardV2/services"
 	"JeopardyScoreBoardV2/middlewares"
+	"JeopardyScoreBoardV2/services"
 
 	"github.com/go-chi/chi/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Hardcoded users
 var allowedUsers = map[string]bool{
-	"Linda Laul":          true,
-	"Jenna Mandel-Ricci": true,
-	"Asisat Muldoon":      true,
-	"Midrene Lamy":        true,
-	"Adonis Brown":        true,
+	"jennamandelricci": true,
+	"asisatmuldoon":    true,
+	"midrenelamy":      true,
+	"adonisbrown":      true,
+	"lindalaul":        true,
 }
 
 var passwordHash = []byte("$2a$12$9zqH0OZV6FZCqzQ6lK3Q3u6F9mQ9pYJx0kZcZ5Y8QeV1wF6ZrY9eK")
 
-type ViewsController struct{
+type ViewsController struct {
 	templates        map[string]*template.Template
-	logInTemplate   *template.Template
-	Router          *chi.Mux
+	logInTemplate    *template.Template
+	Router           *chi.Mux
 	SavedGameService services.SaveGameService
 	LocationService  services.LocationService
 	PlayerService    services.PlayerService
-	TeamService     services.TeamService
+	TeamService      services.TeamService
 }
 
 func (v *ViewsController) Init(
-	LocationService services.LocationService, 
-	PlayerService services.PlayerService, 
-	SavedGameService services.SaveGameService, 
+	LocationService services.LocationService,
+	PlayerService services.PlayerService,
+	SavedGameService services.SaveGameService,
 	TeamService services.TeamService,
-){
-	v.Router    = chi.NewRouter()
+) {
+	v.Router = chi.NewRouter()
 	v.templates = make(map[string]*template.Template)
 	v.LocationService = LocationService
 	v.PlayerService = PlayerService
@@ -62,10 +61,11 @@ func (v *ViewsController) Init(
 	v.Router.Get("/view-games", v.ViewGames)
 	v.Router.Get("/talent-show", v.TalentShow)
 	v.Router.Get("/log-in", v.LogIn)
+	v.Router.Post("/log-in", v.HandleLogIn)
 	v.Router.NotFound(v.NotFound)
 }
 
-func (v *ViewsController) InitTemplateMap(){
+func (v *ViewsController) InitTemplateMap() {
 	// Get all partial files
 	partialFiles, err := filepath.Glob("./templates/partials/*.html")
 
@@ -80,19 +80,19 @@ func (v *ViewsController) InitTemplateMap(){
 		panic(err)
 	}
 
-	for _, entry := range entries{
+	for _, entry := range entries {
 		name, _ := strings.CutSuffix(entry.Name(), ".html")
-		
+
 		//For each page, build the following file stack: Base html, all partials, Page.html
 		files := []string{"templates/Base.html"}
 		files = append(files, partialFiles...)
 		files = append(files, fmt.Sprintf("templates/pages/%s.html", name))
-		
+
 		v.templates[name] = template.Must(template.ParseFiles(files...))
-	}	
+	}
 }
 
-func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request){
+func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request) {
 	data := map[string]any{
 		"TalentShowSlots": []string{
 			"Christopher Taylor",
@@ -112,18 +112,18 @@ func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request)
 		},
 	}
 
-	if err := v.templates["TalentShow"].Execute(res, data); err != nil{
+	if err := v.templates["TalentShow"].Execute(res, data); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request){
-	if err := v.templates["CreateGame"].Execute(res, nil); err != nil{
+func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request) {
+	if err := v.templates["CreateGame"].Execute(res, nil); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
+func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request) {
 	teamNamesResult := v.TeamService.GetAllTeamNames()
 
 	if teamNamesResult.Err != nil {
@@ -135,12 +135,12 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request){
 		"TeamNames": teamNamesResult.ResultData,
 	}
 
-	if err := v.templates["TeamMode"].Execute(res, data); err != nil{
+	if err := v.templates["TeamMode"].Execute(res, data); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (v *ViewsController) AddPlayerPage(res http.ResponseWriter, req *http.Request){
+func (v *ViewsController) AddPlayerPage(res http.ResponseWriter, req *http.Request) {
 	locationsResult := v.LocationService.GetAllLocations()
 
 	if locationsResult.Err != nil {
@@ -163,12 +163,12 @@ func (v *ViewsController) AddPlayerPage(res http.ResponseWriter, req *http.Reque
 		"SelectedLocation": selectedLocation,
 	}
 
-	if err := v.templates["AddPlayer"].Execute(res, data); err != nil{
+	if err := v.templates["AddPlayer"].Execute(res, data); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
+func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request) {
 	savedGamesResult := v.SavedGameService.GetAllSavedGames()
 
 	if savedGamesResult.Err != nil {
@@ -180,48 +180,51 @@ func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
 		"Games": savedGamesResult.ResultData,
 	}
 
-	if err := v.templates["ViewGames"].Execute(res, data); err != nil{
+	if err := v.templates["ViewGames"].Execute(res, data); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost {
-		username := req.FormValue("username")
-		password := req.FormValue("password")
-
-		if !allowedUsers[username] {
-			http.Redirect(res, req, "/log-in", http.StatusSeeOther)
-			return
-		}
-
-		err := bcrypt.CompareHashAndPassword(passwordHash, []byte(password))
-		if err != nil {
-			http.Redirect(res, req, "/log-in", http.StatusSeeOther)
-			return
-		}
-
-		// ✅ Set session cookie
-		http.SetCookie(res, &http.Cookie{
-			Name:     "auth",
-			Value:    "true",
-			Path:     "/",
-			HttpOnly: true,
-		})
-
-		http.Redirect(res, req, "/", http.StatusSeeOther)
-		return
-	}
-
-	// GET request → show login page
 	if err := v.logInTemplate.Execute(res, nil); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
-func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request){
+func (v *ViewsController) HandleLogIn(res http.ResponseWriter, req *http.Request) {
+	username := req.FormValue("username")
+	password := req.FormValue("password")
+
+	if !allowedUsers[username] {
+		fmt.Println("Invalid username")
+		http.Redirect(res, req, "/log-in", http.StatusSeeOther)
+		return
+	}
+
+	fmt.Println("username:", username, "password:", password)
+	correctPassword := os.Getenv("PASSWORD")
+
+	fmt.Println("value:", correctPassword == password)
+	if password != correctPassword {
+		fmt.Println("Invalid password")
+		http.Redirect(res, req, "/log-in", http.StatusSeeOther)
+		return
+	}
+
+	// ✅ Set session cookie
+	http.SetCookie(res, &http.Cookie{
+		Name:     "auth",
+		Value:    username,
+		Path:     "/",
+		HttpOnly: true,
+	})
+
+	http.Redirect(res, req, "/talent-show", http.StatusSeeOther)
+}
+
+func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNotFound)
-	if err := v.templates["NotFound"].Execute(res, nil); err != nil{
+	if err := v.templates["NotFound"].Execute(res, nil); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
-	}	
+	}
 }

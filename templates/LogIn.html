@@ -11,7 +11,7 @@
         <div style="display: flex; align-items: center; justify-content: center; min-height: 85vh;">
             <div class="glass" style="max-width: 25rem; width: 100%;">
                 <h2 class="gradient-text" style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">Sign In</h2>
-                <form hx-post="/login">
+                <form method="post" action="/log-in" style="display: flex; flex-direction: column; gap: 1rem;">
                     <label style="font-size: 0.8rem; color: var(--primary);">USERNAME</label>
                     <input type="text" name="username" placeholder="Enter username">
                     
