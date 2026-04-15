@@ -23,6 +23,14 @@ var allowedUsers = map[string]bool{
 	"lindalaul":        true,
 }
 
+var actualNames = map[string]string{
+	"jennamandelricci": "Jenna Mandel-ricci",
+	"asisatmuldoon":    "Asisat Muldoon",
+	"midrenelamy":      "Midrene Lamy",
+	"adonisbrown":      "Adonis Brown",
+	"lindalaul":        "Linda Laul",
+}
+
 // judge -> talent -> score
 var scores = map[string]map[string]float64{}
 
@@ -111,31 +119,6 @@ func getUser(r *http.Request) string {
 	return cookie.Value
 }
 
-func (v *ViewsController) GetTalentCard(w http.ResponseWriter, r *http.Request) {
-	user := getUser(r)
-	name := r.URL.Query().Get("talent")
-
-	if user == "" || name == "" {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	// Initialize map if needed
-	if scores[user] == nil {
-		scores[user] = make(map[string]float64)
-	}
-
-	score := scores[user][name]
-
-	data := map[string]any{
-		"Name":  name,
-		"Score": score,
-	}
-
-	tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
-	tmpl.Execute(w, data)
-}
-
 func (v *ViewsController) UpdateTalentScore(w http.ResponseWriter, r *http.Request) {
     user := getUser(r)
     name := r.FormValue("name")
@@ -196,7 +179,7 @@ func (v *ViewsController) UpdateTalentScore(w http.ResponseWriter, r *http.Reque
 
 func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request) {
     user := getUser(req)
-
+	actualName := actualNames[user]
     talentNames := []string{
         "Christopher Taylor",
         "Kiefer Inson",
@@ -229,6 +212,7 @@ func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request)
 
     data := map[string]any{
         "Cards": cards,
+		"user": actualName,
     }
 
     if err := v.templates["TalentShow"].Execute(res, data); err != nil {
