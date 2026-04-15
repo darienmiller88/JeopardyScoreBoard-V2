@@ -40,6 +40,13 @@ type TalentCard struct {
     Score float64
 }
 
+type TalentTotal struct {
+    Name   string
+    Judge  string
+    Score  float64
+}
+
+
 type ViewsController struct {
 	templates        map[string]*template.Template
 	logInTemplate    *template.Template
@@ -81,6 +88,7 @@ func (v *ViewsController) Init(
 	//new routes
 	v.Router.Get("/talent-show", v.TalentShow)
 	v.Router.Post("/talent-show/score", v.UpdateTalentScore)
+	v.Router.Get("/point-totals", v.PointTotals)
 	v.Router.NotFound(v.NotFound)
 }
 
@@ -117,6 +125,54 @@ func getUser(r *http.Request) string {
 		return ""
 	}
 	return cookie.Value
+}
+
+
+func (v *ViewsController) PointTotalsPage(res http.ResponseWriter, req *http.Request) {
+    talentNames := []string{
+        "Christopher Taylor",
+        "Kiefer Inson",
+        "Tony Switzer",
+        "CAYENNE NO_LUCK aka Justin Jacob",
+        "Jadel Nunez",
+        "Carla O'Brien & Josh Wilson",
+        "Chloe Crisano",
+        "Tony B. Rivers",
+        "Money",
+        "Kenny Shiver & Angie Eason",
+        "Rachel Fonseca & Sophie Thurschwell",
+        "Carlos Mendoza",
+        "Woody Tanor",
+        "Denise Farmer",
+    }
+
+    // Build a map: judge -> []TalentTotal
+    judgeScores := map[string][]TalentTotal{}
+    for judge := range allowedUsers {
+        totals := make([]TalentTotal, len(talentNames))
+        for i, name := range talentNames {
+            score := 0.0
+            if scores[judge] != nil {
+                score = scores[judge][name]
+            }
+            totals[i] = TalentTotal{Name: name, Score: score}
+        }
+        judgeScores[judge] = totals
+    }
+
+    data := map[string]any{
+        "JudgeScores": judgeScores,
+    }
+
+    if err := v.templates["PointTotals"].Execute(res, data); err != nil {
+        http.Error(res, err.Error(), http.StatusInternalServerError)
+    }
+}
+
+func (v *ViewsController) PointTotals(res http.ResponseWriter, req *http.Request) {
+	if err := v.templates["PointTotals"].Execute(res, nil); err != nil {
+        http.Error(res, err.Error(), http.StatusInternalServerError)
+    }
 }
 
 func (v *ViewsController) UpdateTalentScore(w http.ResponseWriter, r *http.Request) {
