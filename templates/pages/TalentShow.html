@@ -4,27 +4,18 @@
 <link rel="stylesheet" href="../static/css/TalentShow.css">
 {{ end }}
 
-{{ define "js" }}
-
-{{ end }}
+{{ define "js" }}{{ end }}
 
 {{ define "content" }}
-<h1>
-    Talent Show
-</h1>
+<div class="talent-show-header">
+    Linda
+</div>
 
-<select 
-    class="talent-show-select"
-    hx-get="/talent-show/card"
-    hx-target="#card-container"
-    hx-trigger="load, change"
-    hx-swap="outerHTML"
-    name="talent"
->
-    {{ range .TalentShowSlots }}
-    <option value="{{ . }}">{{ . }}</option>
-    {{ end }}
-</select>
-
-<div id="card-container"></div>
+<div class="talent-grid">
+  {{ range .Cards }}
+  <div id="card-{{ .ID }}">
+    {{ template "talentcard" . }}
+  </div>
+  {{ end }}
+</div>
 {{ end }}

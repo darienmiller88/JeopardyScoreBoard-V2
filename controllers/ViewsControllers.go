@@ -26,6 +26,12 @@ var allowedUsers = map[string]bool{
 // judge -> talent -> score
 var scores = map[string]map[string]float64{}
 
+type TalentCard struct {
+    ID    int
+    Name  string
+    Score float64
+}
+
 type ViewsController struct {
 	templates        map[string]*template.Template
 	logInTemplate    *template.Template
@@ -60,13 +66,12 @@ func (v *ViewsController) Init(
 	v.Router.Get("/team-mode", v.TeamMode)
 	v.Router.Get("/add-player", v.AddPlayerPage)
 	v.Router.Get("/view-games", v.ViewGames)
-	v.Router.Get("/talent-show", v.TalentShow)
 	v.Router.Get("/log-in", v.LogIn)
 	v.Router.Get("/sign-out", v.SignOut)
 	v.Router.Post("/log-in", v.HandleLogIn)
-
+	
 	//new routes
-	v.Router.Get("/talent-show/card", v.GetTalentCard)
+	v.Router.Get("/talent-show", v.TalentShow)
 	v.Router.Post("/talent-show/score", v.UpdateTalentScore)
 	v.Router.NotFound(v.NotFound)
 }
@@ -132,66 +137,103 @@ func (v *ViewsController) GetTalentCard(w http.ResponseWriter, r *http.Request) 
 }
 
 func (v *ViewsController) UpdateTalentScore(w http.ResponseWriter, r *http.Request) {
-	user := getUser(r)
+    user := getUser(r)
+    name := r.FormValue("name")
+    action := r.FormValue("action")
 
-	name := r.FormValue("name")
-	action := r.FormValue("action")
+    if user == "" || name == "" {
+        http.Error(w, "Bad request", http.StatusBadRequest)
+        return
+    }
 
-	if user == "" || name == "" {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
+    if scores[user] == nil {
+        scores[user] = make(map[string]float64)
+    }
 
-	if scores[user] == nil {
-		scores[user] = make(map[string]float64)
-	}
+    current := scores[user][name]
+    switch action {
+    case "plus":
+        current += 0.5
+    case "minus":
+        current -= 0.5
+        if current < 0 {
+            current = 0
+        }
+    }
+    scores[user][name] = current
 
-	current := scores[user][name]
+    // Find the index of this talent to reconstruct the card
+    talentNames := []string{
+        "Christopher Taylor",
+        "Kiefer Inson",
+        "Tony Switzer",
+        "CAYENNE NO_LUCK aka Justin Jacob",
+        "Jadel Nunez",
+        "Carla O'Brien & Josh Wilson",
+        "Chloe Crisano",
+        "Tony B. Rivers",
+        "Money",
+        "Kenny Shiver & Angie Eason",
+        "Rachel Fonseca & Sophie Thurschwell",
+        "Carlos Mendoza",
+        "Woody Tanor",
+        "Denise Farmer",
+    }
 
-	switch action {
-	case "plus":
-		current += 0.5
-	case "minus":
-		current -= 0.5
-		if current < 0 {
-			current = 0
-		}
-	}
+    id := 0
+    for i, n := range talentNames {
+        if n == name {
+            id = i
+            break
+        }
+    }
 
-	scores[user][name] = current
+    card := TalentCard{ID: id, Name: name, Score: current}
 
-	data := map[string]any{
-		"Name":  name,
-		"Score": current,
-	}
-
-	tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
-	tmpl.Execute(w, data)
+    tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
+    tmpl.ExecuteTemplate(w, "talentcard", card)
 }
 
 func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request) {
-	data := map[string]any{
-		"TalentShowSlots": []string{
-			"Christopher Taylor",
-			"Kiefer Inson",
-			"Tony Switzer",
-			"CAYENNE NO_LUCK aka Justin Jacob",
-			"Jadel Nunez",
-			"Carla O’Brien & Josh Wilson",
-			"Chloe Crisano",
-			"Tony B. Rivers",
-			"Money",
-			"Kenny Shiver & Angie Eason",
-			"Rachel Fonseca & Sophie Thurschwell",
-			"Carlos Mendoza",
-			"Woody Tanor",
-			"Denise Farmer",
-		},
-	}
+    user := getUser(req)
 
-	if err := v.templates["TalentShow"].Execute(res, data); err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-	}
+    talentNames := []string{
+        "Christopher Taylor",
+        "Kiefer Inson",
+        "Tony Switzer",
+        "CAYENNE NO_LUCK aka Justin Jacob",
+        "Jadel Nunez",
+        "Carla O'Brien & Josh Wilson",
+        "Chloe Crisano",
+        "Tony B. Rivers",
+        "Money",
+        "Kenny Shiver & Angie Eason",
+        "Rachel Fonseca & Sophie Thurschwell",
+        "Carlos Mendoza",
+        "Woody Tanor",
+        "Denise Farmer",
+    }
+
+    if scores[user] == nil {
+        scores[user] = make(map[string]float64)
+    }
+
+    cards := make([]TalentCard, len(talentNames))
+    for i, name := range talentNames {
+        cards[i] = TalentCard{
+            ID:    i,
+            Name:  name,
+            Score: scores[user][name],
+        }
+    }
+
+    data := map[string]any{
+        "Cards": cards,
+    }
+
+    if err := v.templates["TalentShow"].Execute(res, data); err != nil {
+        http.Error(res, err.Error(), http.StatusInternalServerError)
+    }
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request) {
