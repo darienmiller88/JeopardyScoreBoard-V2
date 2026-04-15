@@ -1,0 +1,25 @@
+<div id="card-container">
+    <div class="player-card glass">
+        <div class="player-name">{{ .Name }}</div>
+
+        <div class="score-controls">
+            <button 
+                class="btn btn-score minus"
+                hx-post="/talent-show/score"
+                hx-vals='{"action":"minus","name":"{{ .Name }}"}'
+                hx-target="#card-container"
+                hx-swap="outerHTML"
+            >−</button>
+
+            <div class="score">{{ printf "%.1f" .Score }}</div>
+
+            <button 
+                class="btn btn-score plus"
+                hx-post="/talent-show/score"
+                hx-vals='{"action":"plus","name":"{{ .Name }}"}'
+                hx-target="#card-container"
+                hx-swap="outerHTML"
+            >+</button>
+        </div>
+    </div>
+</div>
