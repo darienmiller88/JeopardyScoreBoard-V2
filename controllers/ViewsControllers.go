@@ -8,9 +8,23 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
 	"JeopardyScoreBoardV2/services"
+	"JeopardyScoreBoardV2/middlewares"
+
+	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/bcrypt"
 )
+
+// Hardcoded users
+var allowedUsers = map[string]bool{
+	"Linda Laul":          true,
+	"Jenna Mandel-Ricci": true,
+	"Asisat Muldoon":      true,
+	"Midrene Lamy":        true,
+	"Adonis Brown":        true,
+}
+
+var passwordHash = []byte("$2a$12$9zqH0OZV6FZCqzQ6lK3Q3u6F9mQ9pYJx0kZcZ5Y8QeV1wF6ZrY9eK")
 
 type ViewsController struct{
 	templates        map[string]*template.Template
@@ -38,6 +52,8 @@ func (v *ViewsController) Init(
 
 	//Initialize template map
 	v.InitTemplateMap()
+
+	v.Router.Use(middlewares.AuthMiddleware)
 
 	//Initialize view routes
 	v.Router.Get("/", v.CreateGame)
@@ -169,8 +185,36 @@ func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request){
 	}
 }
 
-func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request){
-	if err := v.logInTemplate.Execute(res, nil); err != nil{
+func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodPost {
+		username := req.FormValue("username")
+		password := req.FormValue("password")
+
+		if !allowedUsers[username] {
+			http.Redirect(res, req, "/log-in", http.StatusSeeOther)
+			return
+		}
+
+		err := bcrypt.CompareHashAndPassword(passwordHash, []byte(password))
+		if err != nil {
+			http.Redirect(res, req, "/log-in", http.StatusSeeOther)
+			return
+		}
+
+		// ✅ Set session cookie
+		http.SetCookie(res, &http.Cookie{
+			Name:     "auth",
+			Value:    "true",
+			Path:     "/",
+			HttpOnly: true,
+		})
+
+		http.Redirect(res, req, "/", http.StatusSeeOther)
+		return
+	}
+
+	// GET request → show login page
+	if err := v.logInTemplate.Execute(res, nil); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }

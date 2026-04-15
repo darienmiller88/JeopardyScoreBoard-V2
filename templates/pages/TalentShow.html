@@ -9,9 +9,9 @@
 {{ end }}
 
 {{ define "content" }}
-<div>
+<h1>
     Talent Show
-</div>
+</h1>
 
  <div class="select-wrapper">
     <select class="talent-show-select">
@@ -20,6 +20,15 @@
         <option value="{{ . }}">{{ . }}</option>
         {{ end }}
     </select>
-    <button class="team-card__btn-assign">Assign</button>
+</div>
+
+<div class="player-card glass">
+    <div class="player-name">NaME</div>
+
+    <div class="score-controls">
+        <button class="btn btn-score minus">−</button>
+        <div class="score">0.0</div>
+        <button class="btn btn-score plus">+</button>
+    </div>
 </div>
 {{ end }}

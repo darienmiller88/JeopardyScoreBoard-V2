@@ -1,0 +1,72 @@
+.select-wrapper{
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-top: 1rem;
+    /* border: 2px solid red; */
+}
+
+.select-wrapper select{
+    width: 12rem;
+}
+
+h1{
+    text-align: center;
+    font-size: 3rem;
+    color: var(--primary);
+    /* margin: 2rem; */
+}
+
+/* Card Styles */
+.player-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 260px;
+    margin: 1rem auto;
+}
+
+.player-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-white);
+}
+
+.score-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.score {
+    font-size: 1.8rem;
+    font-weight: 800;
+    min-width: 60px;
+    text-align: center;
+    color: var(--primary);
+}
+
+.btn-score {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    padding: 0;
+    background: var(--nav-bg);
+    color: var(--text-white);
+    border: 1px solid var(--nav-border);
+}
+
+.btn-score:hover {
+    transform: scale(1.1);
+}
+
+.minus {
+    color: var(--danger);
+}
+
+.plus {
+    color: var(--success);
+}
