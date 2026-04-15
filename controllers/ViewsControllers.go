@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"JeopardyScoreBoardV2/middlewares"
@@ -222,6 +223,10 @@ func (v *ViewsController) PointTotals(res http.ResponseWriter, req *http.Request
 		}
 		totals[i] = TalentTotal{Index: i + 1, Name: name, Score: sum}
 	}
+
+	sort.Slice(totals, func(i, j int) bool {
+		return totals[i].Score > totals[j].Score
+	})
 
 	data := map[string]any{
 		"Totals": totals,
