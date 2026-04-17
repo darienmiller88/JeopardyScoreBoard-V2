@@ -34,7 +34,7 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 		},
 	}, models.Team{
 		ID: 1,
-		TeamName: "Pelham Bay",
+		TeamName: "Flushing",
 		Score: 0,
 		PlayerNames: []string{
 			"player 5",

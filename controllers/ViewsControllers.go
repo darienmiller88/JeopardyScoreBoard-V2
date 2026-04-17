@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strings"
 
-	"JeopardyScoreBoardV2/middlewares"
 	"JeopardyScoreBoardV2/services"
 
 	"github.com/go-chi/chi/v5"
@@ -101,8 +100,6 @@ func (v *ViewsController) Init(
 
 	v.InitTemplateMap()
 
-	v.Router.Use(middlewares.AuthMiddleware)
-
 	v.Router.Get("/", v.CreateGame)
 	v.Router.Get("/team-mode", v.TeamMode)
 	v.Router.Get("/add-player", v.AddPlayerPage)
@@ -111,9 +108,9 @@ func (v *ViewsController) Init(
 	v.Router.Get("/sign-out", v.SignOut)
 	v.Router.Post("/log-in", v.HandleLogIn)
 
-	v.Router.Get("/talent-show", v.TalentShow)
-	v.Router.Post("/talent-show/score", v.UpdateTalentScore)
-	v.Router.Get("/point-totals", v.PointTotals)
+	// v.Router.Get("/talent-show", v.TalentShow)
+	// v.Router.Post("/talent-show/score", v.UpdateTalentScore)
+	// v.Router.Get("/point-totals", v.PointTotals)
 	v.Router.NotFound(v.NotFound)
 }
 
