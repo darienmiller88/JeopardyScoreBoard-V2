@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"JeopardyScoreBoardV2/services"
@@ -104,13 +103,7 @@ func (v *ViewsController) Init(
 	v.Router.Get("/team-mode", v.TeamMode)
 	v.Router.Get("/add-player", v.AddPlayerPage)
 	v.Router.Get("/view-games", v.ViewGames)
-	v.Router.Get("/log-in", v.LogIn)
-	v.Router.Get("/sign-out", v.SignOut)
-	v.Router.Post("/log-in", v.HandleLogIn)
-
-	// v.Router.Get("/talent-show", v.TalentShow)
-	// v.Router.Post("/talent-show/score", v.UpdateTalentScore)
-	// v.Router.Get("/point-totals", v.PointTotals)
+	v.Router.Post("/add-saved-game", v.SaveGame)
 	v.Router.NotFound(v.NotFound)
 }
 
@@ -136,102 +129,8 @@ func (v *ViewsController) InitTemplateMap() {
 	}
 }
 
-func getUser(r *http.Request) string {
-	cookie, err := r.Cookie("auth")
-	if err != nil {
-		return ""
-	}
-	return cookie.Value
-}
+func (v *ViewsController) SaveGame(res http.ResponseWriter, req *http.Request) {
 
-func (v *ViewsController) TalentShow(res http.ResponseWriter, req *http.Request) {
-	user := getUser(req)
-	actualName := actualNames[user]
-
-	if scores[user] == nil {
-		scores[user] = make(map[string]float64)
-	}
-
-	cards := make([]TalentCard, len(talentNames))
-	for i, name := range talentNames {
-		cards[i] = TalentCard{
-			ID:    i,
-			Name:  name,
-			Score: getScore(user, name),
-		}
-	}
-
-	data := map[string]any{
-		"Cards": cards,
-		"user":  actualName,
-	}
-
-	if err := v.templates["TalentShow"].Execute(res, data); err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func (v *ViewsController) UpdateTalentScore(w http.ResponseWriter, r *http.Request) {
-	user := getUser(r)
-	name := r.FormValue("name")
-	action := r.FormValue("action")
-
-	if user == "" || name == "" {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	if scores[user] == nil {
-		scores[user] = make(map[string]float64)
-	}
-
-	current := getScore(user, name)
-	switch action {
-	case "plus":
-		current += 0.5
-	case "minus":
-		current -= 0.5
-		if current < 0 {
-			current = 0
-		}
-	}
-	scores[user][name] = current
-
-	id := 0
-	for i, n := range talentNames {
-		if n == name {
-			id = i
-			break
-		}
-	}
-
-	card := TalentCard{ID: id, Name: name, Score: current}
-
-	tmpl := template.Must(template.ParseFiles("templates/partials/talentcard.html"))
-	tmpl.ExecuteTemplate(w, "talentcard", card)
-}
-
-func (v *ViewsController) PointTotals(res http.ResponseWriter, req *http.Request) {
-	totals := make([]TalentTotal, len(talentNames))
-	for i, name := range talentNames {
-		var sum float64
-		for judge := range allowedUsers {
-			sum += getScore(judge, name)
-		}
-		totals[i] = TalentTotal{Index: i + 1, Name: name, Score: sum}
-	}
-
-	sort.Slice(totals, func(i, j int) bool {
-		return totals[i].Score > totals[j].Score
-	})
-
-	data := map[string]any{
-		"Totals": totals,
-	}
-
-	if err := v.templates["PointTotals"].Execute(res, data); err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-	}
 }
 
 func (v *ViewsController) CreateGame(res http.ResponseWriter, req *http.Request) {
@@ -300,54 +199,6 @@ func (v *ViewsController) ViewGames(res http.ResponseWriter, req *http.Request) 
 	if err := v.templates["ViewGames"].Execute(res, data); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func (v *ViewsController) LogIn(res http.ResponseWriter, req *http.Request) {
-	if err := v.logInTemplate.Execute(res, nil); err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func (v *ViewsController) HandleLogIn(res http.ResponseWriter, req *http.Request) {
-	username := req.FormValue("username")
-	password := req.FormValue("password")
-
-	if !allowedUsers[username] {
-		fmt.Println("Invalid username")
-		http.Redirect(res, req, "/log-in", http.StatusSeeOther)
-		return
-	}
-
-	fmt.Println("username:", username, "password:", password)
-	correctPassword := os.Getenv("PASSWORD")
-
-	fmt.Println("value:", correctPassword == password)
-	if password != correctPassword {
-		fmt.Println("Invalid password")
-		http.Redirect(res, req, "/log-in", http.StatusSeeOther)
-		return
-	}
-
-	http.SetCookie(res, &http.Cookie{
-		Name:     "auth",
-		Value:    username,
-		Path:     "/",
-		HttpOnly: true,
-	})
-
-	http.Redirect(res, req, "/talent-show", http.StatusSeeOther)
-}
-
-func (v *ViewsController) SignOut(res http.ResponseWriter, req *http.Request) {
-	http.SetCookie(res, &http.Cookie{
-		Name:     "auth",
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	})
-
-	http.Redirect(res, req, "/log-in", http.StatusSeeOther)
 }
 
 func (v *ViewsController) NotFound(res http.ResponseWriter, req *http.Request) {
