@@ -5,22 +5,6 @@
 {{ end }}
 
 {{ define "js" }}
-<script>
-    document.body.addEventListener("htmx:afterRequest", function (e) {
-        const btn = e.detail.elt;
-        const teamCard = btn.closest(".team-card");
-
-        if (!teamCard){
-            return;
-        } 
-        
-        const input = teamCard.querySelector(".team-card__points-input");
-
-        if (input) {
-            input.value = "";
-        }
-    });
-</script>
 {{ end }}
 
 {{ define "content" }}

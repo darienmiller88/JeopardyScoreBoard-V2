@@ -8,6 +8,7 @@
             <button class="btn btn-clear">Clear</button>
         </div>
 
+        <!-- This gets swapped out for a new score -->
         <div class="glass score-counter">
             <span id="score-{{ .ID }}" class="score-counter__value">{{ .Score }}</span>
         </div>
@@ -19,7 +20,10 @@
                 hx-target="#score-{{ .ID }}"
                 hx-swap="outerHTML"
                 hx-include="#points-input-{{ .ID }}"
+                hx-on::after-request="document.getElementById('points-input-{{ .ID }}').value = ''"
             >-</button>
+
+            <!-- But the number here stays after plus or minus is clicked -->
             <input 
                 id="points-input-{{ .ID }}"
                 name="points"
@@ -34,6 +38,7 @@
                 hx-target="#score-{{ .ID }}"
                 hx-swap="outerHTML"
                 hx-include="#points-input-{{ .ID }}"
+                hx-on::after-request="document.getElementById('points-input-{{ .ID }}').value = ''"
             >+</button>
         </div>
 

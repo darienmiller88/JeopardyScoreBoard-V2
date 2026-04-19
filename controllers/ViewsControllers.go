@@ -13,74 +13,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Hardcoded users
-var allowedUsers = map[string]bool{
-	"jennamandelricci": true,
-	"asisatmuldoon":    true,
-	"midrenelamy":      true,
-	"adonisbrown":      true,
-	"lindalaul":        true,
-}
-
-var actualNames = map[string]string{
-	"jennamandelricci": "Jenna Mandel-ricci",
-	"asisatmuldoon":    "Asisat Muldoon",
-	"midrenelamy":      "Midrene Lamy",
-	"adonisbrown":      "Adonis Brown",
-	"lindalaul":        "Linda Laul",
-}
-
-// judge -> talent -> score
-var scores = map[string]map[string]float64{}
-
-var talentNames = []string{
-	"Christopher Taylor",
-	"Kiefer Inson",
-	"Tony Switzer",
-	"CAYENNE NO_LUCK aka Justin Jacob",
-	"Grand Concourse TOP",
-	"Carla O'Brien & Josh Wilson",
-	"Chloe Crisano",
-	"Tony B. Rivers",
-	"Money",
-	"Kenny Shiver & Angie Eason",
-	"Rachel Fonseca & Sophie Thurschwell",
-	"Carlos Mendoza",
-	"Woody Tanor",
-	"Denise Farmer",
-}
-
-type TalentCard struct {
-	ID    int
-	Name  string
-	Score float64
-}
-
-type TalentTotal struct {
-	Index int
-	Name  string
-	Score float64
-}
-
 type ViewsController struct {
 	templates        map[string]*template.Template
-	logInTemplate    *template.Template
 	Router           *chi.Mux
 	SavedGameService services.SaveGameService
 	LocationService  services.LocationService
 	PlayerService    services.PlayerService
 	TeamService      services.TeamService
-}
-
-func getScore(user, name string) float64 {
-	if scores[user] == nil {
-		return 10.0
-	}
-	val, exists := scores[user][name]
-	if !exists {
-		return 10.0
-	}
-	return val
 }
 
 func (v *ViewsController) Init(
@@ -95,7 +34,6 @@ func (v *ViewsController) Init(
 	v.PlayerService = PlayerService
 	v.SavedGameService = SavedGameService
 	v.TeamService = TeamService
-	v.logInTemplate = template.Must(template.ParseFiles("templates/LogIn.html"))
 
 	v.InitTemplateMap()
 
@@ -147,6 +85,7 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	//provide the team names to the template
 	data := map[string]any{
 		"TeamNames": teamNamesResult.ResultData,
 	}
