@@ -3,6 +3,7 @@ package controllers
 import (
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/services"
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -22,33 +23,34 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	t.Router = chi.NewRouter()	
 
 	//Add chi routes here
-	t.Teams = append(t.Teams, models.Team{
-		ID: 0,
-		TeamName: "5030 Broadway",
-		Score: 0,
-		PlayerNames: []string{
-			"player 1",
-			"player 2",		
-			"player 3",
-			"player 4",
-		},
-	}, models.Team{
-		ID: 1,
-		TeamName: "Flushing",
-		Score: 0,
-		PlayerNames: []string{
-			"player 5",
-			"player 6",		
-			"player 7",
-			"player 8",
-		},
-	})
+	// t.Teams = append(t.Teams, models.Team{
+	// 	ID: 0,
+	// 	TeamName: "5030 Broadway",
+	// 	Score: 0,
+	// 	PlayerNames: []string{
+	// 		"player 1",
+	// 		"player 2",		
+	// 		"player 3",
+	// 		"player 4",
+	// 	},
+	// }, models.Team{
+	// 	ID: 1,
+	// 	TeamName: "Flushing",
+	// 	Score: 0,
+	// 	PlayerNames: []string{
+	// 		"player 5",
+	// 		"player 6",		
+	// 		"player 7",
+	// 		"player 8",
+	// 	},
+	// })
 
 	t.Router.Get("/", t.GetTeams)
 	t.Router.Get("/team-names", t.GetTeamNames)
 	t.Router.Get("/{id}", t.GetTeamPlayersByTeamId)
 	t.Router.Post("/{id}/add-points", t.AddPoints)
 	t.Router.Post("/{id}/minus-points", t.MinusPoints)
+	t.Router.Post("/add-team", t.AddTeam)
 
 	templ, err := template.ParseGlob("templates/partials/*.html")
 
@@ -58,6 +60,29 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 
 	t.template = templ
 }
+
+func (t *TeamsController) AddTeam(res http.ResponseWriter, req *http.Request){
+	teamName := req.FormValue("teamName")
+
+	if teamName == "" {
+		http.Error(res, "Invalid team name", http.StatusBadRequest)
+		return
+	}
+
+	team := models.Team{
+		ID: len(t.Teams),
+		TeamName: teamName,
+		Score: 0,
+	}
+
+	t.Teams = append(t.Teams, team)
+
+	fmt.Println("team name:", teamName)
+	if err := t.template.ExecuteTemplate(res, "team_card", team); err != nil{
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
+} 
 
 func (t *TeamsController) AddPoints(res http.ResponseWriter, req *http.Request) {
 	id := chi.URLParam(req, "id")

@@ -11,12 +11,18 @@
 <div class="team-page-header">
     <h1 class="gradient-text">Team Battle</h1>
     <div class="team-page-header__select-row">
-        <select class="team-card__select">
+        <select id="team-select" class="team-card__select" name="teamName">
             {{ range .TeamNames }}
             <option value="{{ . }}">{{ . }}</option>
             {{ end }}
         </select>
-        <button class="team-card__btn-assign">Assign</button>
+        <button 
+            class="team-card__btn-assign" 
+            hx-include="#team-select" 
+            hx-post="/teams/add-team"
+            hx-target="#teams-target"
+            hx-swap="beforeend"
+        >Assign</button>
     </div>
 </div>
 
@@ -24,10 +30,6 @@
 <div 
     id="teams-target"
     class="team-grid"
-    hx-get="/teams"
-    hx-swap="outerHTML"
-    hx-target="#teams-target"
-    hx-trigger="load"
 >
     
 </div>
