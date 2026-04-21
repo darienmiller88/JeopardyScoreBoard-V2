@@ -1,9 +1,14 @@
 {{ define "team_card" }}
-<div id="{{ .ID }}" class="glass team-card">
+<div id="team-{{ .ID }}" class="glass team-card">
     <h2 class="team-card__name">{{ .TeamName }}</h2>
     <div class="team-card__actions">
         <button class="btn btn-reset">Reset</button>
-        <button class="btn btn-clear">Clear</button>
+        <button 
+            class="btn btn-clear"
+            hx-delete="/teams/{{ .ID }}"
+            hx-target="#team-{{ .ID }}"
+            hx-swap="delete"
+        >Clear</button>
     </div>
 
     <!-- This gets swapped out for a new score -->

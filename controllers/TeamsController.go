@@ -3,7 +3,6 @@ package controllers
 import (
 	"JeopardyScoreBoardV2/models"
 	"JeopardyScoreBoardV2/services"
-	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -12,38 +11,14 @@ import (
 )
 
 type TeamsController struct {
-	Teams        []models.Team
-	Router       *chi.Mux
-	template     *template.Template
-	TeamService  services.TeamService
+	Teams       []models.Team
+	Router      *chi.Mux
+	template    *template.Template
+	TeamService services.TeamService
 }
 
-// 
 func (t *TeamsController) Init(teamService services.TeamService) {
-	t.Router = chi.NewRouter()	
-
-	//Add chi routes here
-	// t.Teams = append(t.Teams, models.Team{
-	// 	ID: 0,
-	// 	TeamName: "5030 Broadway",
-	// 	Score: 0,
-	// 	PlayerNames: []string{
-	// 		"player 1",
-	// 		"player 2",		
-	// 		"player 3",
-	// 		"player 4",
-	// 	},
-	// }, models.Team{
-	// 	ID: 1,
-	// 	TeamName: "Flushing",
-	// 	Score: 0,
-	// 	PlayerNames: []string{
-	// 		"player 5",
-	// 		"player 6",		
-	// 		"player 7",
-	// 		"player 8",
-	// 	},
-	// })
+	t.Router = chi.NewRouter()
 
 	t.Router.Get("/", t.GetTeams)
 	t.Router.Get("/team-names", t.GetTeamNames)
@@ -51,6 +26,7 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	t.Router.Post("/{id}/add-points", t.AddPoints)
 	t.Router.Post("/{id}/minus-points", t.MinusPoints)
 	t.Router.Post("/add-team", t.AddTeam)
+	t.Router.Delete("/{id}", t.DeleteTeam)
 
 	templ, err := template.ParseGlob("templates/partials/*.html")
 
@@ -61,7 +37,15 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	t.template = templ
 }
 
-func (t *TeamsController) AddTeam(res http.ResponseWriter, req *http.Request){
+func (t *TeamsController) DeleteTeam(res http.ResponseWriter, req *http.Request){
+	id := chi.URLParam(req, "id")
+	idInt, _ := strconv.Atoi(id)
+	t.Teams = append(t.Teams[:idInt], t.Teams[idInt+1:]...)
+
+	res.WriteHeader(http.StatusOK)
+}
+
+func (t *TeamsController) AddTeam(res http.ResponseWriter, req *http.Request) {
 	teamName := req.FormValue("teamName")
 
 	if teamName == "" {
@@ -70,19 +54,18 @@ func (t *TeamsController) AddTeam(res http.ResponseWriter, req *http.Request){
 	}
 
 	team := models.Team{
-		ID: len(t.Teams),
+		ID:       len(t.Teams),
+		Score:    0,
 		TeamName: teamName,
-		Score: 0,
 	}
 
 	t.Teams = append(t.Teams, team)
 
-	fmt.Println("team name:", teamName)
-	if err := t.template.ExecuteTemplate(res, "team_card", team); err != nil{
+	if err := t.template.ExecuteTemplate(res, "team_card", team); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
-} 
+}
 
 func (t *TeamsController) AddPoints(res http.ResponseWriter, req *http.Request) {
 	id := chi.URLParam(req, "id")
@@ -90,9 +73,9 @@ func (t *TeamsController) AddPoints(res http.ResponseWriter, req *http.Request) 
 	points, _ := strconv.Atoi(req.FormValue("points"))
 
 	// fallback if input is empty
-    if points == 0 { 
-		points = 100 
-	} 
+	if points == 0 {
+		points = 100
+	}
 
 	t.Teams[idInt].Score += points
 
@@ -107,8 +90,8 @@ func (t *TeamsController) MinusPoints(res http.ResponseWriter, req *http.Request
 	idInt, _ := strconv.Atoi(id)
 
 	points, _ := strconv.Atoi(req.FormValue("points"))
-    if points == 0 { 
-		points = 100 
+	if points == 0 {
+		points = 100
 	}
 
 	t.Teams[idInt].Score -= points
@@ -120,13 +103,13 @@ func (t *TeamsController) MinusPoints(res http.ResponseWriter, req *http.Request
 }
 
 func (t *TeamsController) GetTeamNames(res http.ResponseWriter, req *http.Request) {
-	if err := t.template.ExecuteTemplate(res, "team_cards", t.Teams); err != nil{
+	if err := t.template.ExecuteTemplate(res, "team_cards", t.Teams); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (t *TeamsController) GetTeams(res http.ResponseWriter, req *http.Request) {
-	if err := t.template.ExecuteTemplate(res, "team_cards", t.Teams); err != nil{
+	if err := t.template.ExecuteTemplate(res, "team_cards", t.Teams); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -137,7 +120,7 @@ func (t *TeamsController) GetTeamPlayersByTeamId(res http.ResponseWriter, req *h
 
 	team := t.Teams[idInt]
 
-	if err := t.template.ExecuteTemplate(res, "team_players", team.PlayerNames); err != nil{
+	if err := t.template.ExecuteTemplate(res, "team_players", team.PlayerNames); err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 	}
 }

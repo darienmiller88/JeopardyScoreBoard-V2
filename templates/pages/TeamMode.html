@@ -8,9 +8,9 @@
 {{ end }}
 
 {{ define "content" }}
-<div class="team-page-header">
+<div class="team-page-header" x-data="{ teamCount: 0 }">
     <h1 class="gradient-text">Team Battle</h1>
-    <div class="team-page-header__select-row">
+    <div class="team-page-header__select-row" x-show="teamCount < 2">
         <select id="team-select" class="team-card__select" name="teamName">
             {{ range .TeamNames }}
             <option value="{{ . }}">{{ . }}</option>
@@ -22,6 +22,7 @@
             hx-post="/teams/add-team"
             hx-target="#teams-target"
             hx-swap="beforeend"
+            @htmx:after-request.window="teamCount++"
         >Assign</button>
     </div>
 </div>
