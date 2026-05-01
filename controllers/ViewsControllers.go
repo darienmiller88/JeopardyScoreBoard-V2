@@ -88,6 +88,7 @@ func (v *ViewsController) TeamMode(res http.ResponseWriter, req *http.Request) {
 	//provide the team names to the template
 	data := map[string]any{
 		"TeamNames": teamNamesResult.ResultData,
+		"TeamCount": len(teamNamesResult.ResultData),
 	}
 
 	if err := v.templates["TeamMode"].Execute(res, data); err != nil {

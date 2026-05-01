@@ -30,6 +30,11 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 
 	templ, err := template.ParseGlob("templates/partials/*.html")
 
+	t.Teams = []models.Team{
+		{ID: 0, TeamName: "Team 1", Score: 0, PlayerNames: []string{"Player 1", "Player 2"}},
+		{ID: 1, TeamName: "Team 2", Score: 0, PlayerNames: []string{"Player 3", "Player 4"}},
+	}
+
 	if err != nil {
 		panic(err)
 	}
