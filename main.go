@@ -23,7 +23,7 @@ import (
 
 //push from work laptop. changed my author email
 //push from old hp, oligatory push of thr day pt 3 lol
-//gonna try to understand what i did
+//gonna try to understand what i did. and wrap up this project
 func main() {
 	//Load env file immediately at the start of the program
 	godotenv.Load()
