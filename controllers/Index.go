@@ -9,16 +9,25 @@ import (
 	"JeopardyScoreBoardV2/encryption"
 )
 
-type Index struct{
+type IndexController struct{
 	Router *chi.Mux
-	viewsController ViewsController
-	locationsController LocationsController
-	playersController PlayersController
-	savedGamesController SavedGamesController
-	teamController TeamsController
 }
 
-func (i *Index) InitControllers(db *sqlx.DB, encryptionService *encryption.EncryptionService){
+func NewIndexController(db *sqlx.DB, encryptionService *encryption.EncryptionService) *IndexController {
+	i := &IndexController{
+		Router: chi.NewRouter(),
+	}
+
+	i.registerRoutes(db, encryptionService)
+
+	return i
+}
+
+func (i *IndexController) registerRoutes(db *sqlx.DB, encryptionService *encryption.EncryptionService) {
+
+}
+
+func (i *IndexController) InitControllers(db *sqlx.DB, encryptionService *encryption.EncryptionService){
 	i.Router = chi.NewRouter()
 
 	//Initialize the views controller, and inject the following services

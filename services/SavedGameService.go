@@ -17,7 +17,7 @@ type SaveGameService interface{
 	GetAllSavedGames()                                models.Result[[]models.SavedGame]
 }
 
-type SaveGameServiceImpl struct{
+type saveGameService struct{
 	SavedGameRepository repositories.SavedGameRepository 
 	LocationRepository  repositories.LocationRepository
 	PlayerRepository    repositories.PlayerRepository
@@ -25,15 +25,31 @@ type SaveGameServiceImpl struct{
 	EncryptionService   *encryption.EncryptionService 
 }
 
-func (s *SaveGameServiceImpl) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.PlayerDTO]{
+func NewSaveGameService(
+	savedGameRepository repositories.SavedGameRepository,
+	locationRepository repositories.LocationRepository,
+	playerRepository repositories.PlayerRepository,
+	teamRepository repositories.TeamRepository,
+	encryptionService *encryption.EncryptionService,
+) SaveGameService{
+	return &saveGameService{
+		SavedGameRepository: savedGameRepository,
+		LocationRepository:  locationRepository,
+		PlayerRepository:    playerRepository,
+		TeamRepository:      teamRepository,
+		EncryptionService:   encryptionService,
+	}
+}
+
+func (s *saveGameService) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.PlayerDTO]{
 	return s.SavedGameRepository.GetAllPlayersFromSavedGame(savedGameId)
 }
 
-func (s *SaveGameServiceImpl) GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]{
+func (s *saveGameService) GetAllSavedGamesFromLocation(locationName string) models.Result[[]models.SavedGame]{
 	return s.SavedGameRepository.GetAllSavedGamesFromLocationDB(locationName)
 }
 
-func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGame]{
+func (s *saveGameService) GetAllSavedGames() models.Result[[]models.SavedGame]{
 	return s.SavedGameRepository.GetAllSavedGamesDB()
 }
 
@@ -54,7 +70,7 @@ func (s *SaveGameServiceImpl) GetAllSavedGames() models.Result[[]models.SavedGam
 
 Winners for each type of game, and the total score will be calculated server side.
 */
-func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
+func (s *saveGameService) AddSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame]{
 	//Validate the game to ensure it's either a team game or saved game, and that both have at
 	//least one player or team participating.
 	if err := savedGame.Validate(); err != nil{
@@ -103,12 +119,12 @@ func (s *SaveGameServiceImpl) AddSavedGame(savedGame models.SavedGame) models.Re
 	return s.SavedGameRepository.AddSavedGameDB(savedGame)
 }
 
-func (s *SaveGameServiceImpl) DeleteSavedGame(savedGameId int) models.Result[string]{
+func (s *saveGameService) DeleteSavedGame(savedGameId int) models.Result[string]{
 	return s.SavedGameRepository.DeleteSavedGameDB(savedGameId)
 }
 
 //Checks if an location id actually exists
-func (s *SaveGameServiceImpl) isLocationIdValid(locationId int) models.Result[models.Location]{
+func (s *saveGameService) isLocationIdValid(locationId int) models.Result[models.Location]{
 	result := s.LocationRepository.GetLocationById(locationId)
 
 	if result.Err != nil {
@@ -120,7 +136,7 @@ func (s *SaveGameServiceImpl) isLocationIdValid(locationId int) models.Result[mo
 
 
 //checks if a list of players is valid (exists in the database)
-func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Result[[]models.Player] {
+func (s *saveGameService) arePlayersValid(players []models.Player) models.Result[[]models.Player] {
     names := make([]string, len(players))
 
     for i, player := range players {
@@ -141,7 +157,7 @@ func (s *SaveGameServiceImpl) arePlayersValid(players []models.Player) models.Re
 }
 
 //Checks if teams are valid by seeing if their ids exist.
-func (s *SaveGameServiceImpl) areTeamsValid(teams []models.Team) models.Result[[]models.Team]{
+func (s *saveGameService) areTeamsValid(teams []models.Team) models.Result[[]models.Team]{
 	teamIds := make([]int, len(teams))
 
     for i, team := range teams {

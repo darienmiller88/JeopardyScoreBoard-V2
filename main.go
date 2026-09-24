@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	// "context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -14,16 +14,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
-	"github.com/redis/go-redis/v9"
+	// "github.com/redis/go-redis/v9"
 
 	"JeopardyScoreBoardV2/controllers"
 	"JeopardyScoreBoardV2/database"
 	"JeopardyScoreBoardV2/encryption"
 )
 
-//push from work laptop. changed my author email
-//push from old hp, oligatory push of thr day pt 3 lol
-//gonna try to understand what i did. and wrap up this project
 func main() {
 	//Load env file immediately at the start of the program
 	godotenv.Load()
@@ -38,20 +35,20 @@ func main() {
 	database.Init()
 	defer database.CloseSQLDB()
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password
-		DB:       0,  // use default DB
-		Protocol: 2,
-	})
+	// rdb := redis.NewClient(&redis.Options{
+	// 	Addr:     "localhost:6379",
+	// 	Password: "", // no password
+	// 	DB:       0,  // use default DB
+	// 	Protocol: 2,
+	// })
 
-	ctx := context.Background()
-
+	// ctx := context.Background()
 
 
 	key := os.Getenv("ENCRYPTION_KEY")
 	keyB64, err := base64.StdEncoding.DecodeString(key)
 
+	
 
 	if err != nil {
 		log.Fatal(err)

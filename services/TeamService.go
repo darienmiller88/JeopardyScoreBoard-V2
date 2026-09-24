@@ -11,18 +11,24 @@ type TeamService interface {
 	GetAllTeams() models.Result[[]models.Team]
 }
 
-type TeamServiceImpl struct {
+type teamService struct {
 	TeamRepository repositories.TeamRepository
 }
 
-func (t *TeamServiceImpl) GetTeamWithAllPlayers(teamId int) models.Result[models.Team]{
+func NewTeamService(teamRepository repositories.TeamRepository) TeamService {
+	return &teamService{
+		TeamRepository: teamRepository,
+	}
+}
+
+func (t *teamService) GetTeamWithAllPlayers(teamId int) models.Result[models.Team]{
 	return t.TeamRepository.GetTeamWithAllPlayersDB(teamId)
 }
 
-func (t *TeamServiceImpl) GetAllTeamNames() models.Result[[]string]{
+func (t *teamService) GetAllTeamNames() models.Result[[]string]{
 	return t.TeamRepository.GetAllTeamNamesDB()
 }
 
-func (t *TeamServiceImpl) GetAllTeams() models.Result[[]models.Team]{
+func (t *teamService) GetAllTeams() models.Result[[]models.Team]{
 	return t.TeamRepository.GetAllTeamsDB()
 }

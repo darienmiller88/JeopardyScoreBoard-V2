@@ -14,12 +14,16 @@ type LocationsController struct{
 	locationService services.LocationService
 }
 
-func (l *LocationsController) Init(service services.LocationService){
-	l.Router = chi.NewRouter()
-	l.locationService = service
+func NewLocationsController(service services.LocationService) *LocationsController {
+	l := &LocationsController{
+		Router: chi.NewRouter(),
+		locationService: service,
+	}
 
 	l.Router.Get("/", l.getLocations)
 	l.Router.Get("/{location_name}", l.getLocationByName)
+
+	return l
 }
 
 func (l *LocationsController) getLocations(res http.ResponseWriter, req *http.Request){
