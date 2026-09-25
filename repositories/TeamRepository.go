@@ -14,24 +14,35 @@ import (
 )
 
 type TeamRepository interface {
+
+	//Get a team with all of the players on that team
 	GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team]
+
+	// Get all team names (to be put on a select tag on the front end)
 	GetAllTeamNamesDB()                 models.Result[[]string]
+
+	// Get all teams in the database
 	GetAllTeamsDB()                     models.Result[[]models.Team]
+
+	// Get all teams by their IDs
 	GetAllTeamsByIds(teamIds []int)     models.Result[[]models.Team]
 }   
 
-type sqlTeamRepository struct {
+type teamRepository struct {
 	db *sqlx.DB
 	encryptionService *encryption.EncryptionService
 }
 
 // Receive new Instance of MongoPlayerCardRepository.
-func GetSqlTeamRepository(newDB *sqlx.DB, encryptionService *encryption.EncryptionService) *sqlTeamRepository {
-	return &sqlTeamRepository{db: newDB, encryptionService: encryptionService}
+func NewTeamRepository(newDB *sqlx.DB, encryptionService *encryption.EncryptionService) TeamRepository {
+	return &teamRepository{
+		db: newDB, 
+		encryptionService: encryptionService,
+	}
 }
 
 //Get a team with all of the players on that team
-func (s *sqlTeamRepository) GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team]{
+func (s *teamRepository) GetTeamWithAllPlayersDB(teamId int) models.Result[models.Team]{
 	team := models.Team{}
 
 	if err := s.db.Get(&team, constants.GetTeamById, teamId); err != nil{
@@ -54,7 +65,7 @@ func (s *sqlTeamRepository) GetTeamWithAllPlayersDB(teamId int) models.Result[mo
 }	
 
 //Get all team names (to be put on a select tag on the front end)
-func (s *sqlTeamRepository) GetAllTeamNamesDB() models.Result[[]string]{
+func (s *teamRepository) GetAllTeamNamesDB() models.Result[[]string]{
 	teamNames := []string{}
 
 	if err := s.db.Select(&teamNames, constants.GetAllTeamsByName); err != nil{
@@ -65,7 +76,7 @@ func (s *sqlTeamRepository) GetAllTeamNamesDB() models.Result[[]string]{
 }
 
 //Checks if a winning team exists
-func (s *sqlTeamRepository) GetAllTeamsDB() models.Result[[]models.Team]{
+func (s *teamRepository) GetAllTeamsDB() models.Result[[]models.Team]{
 	teams := []models.Team{}
 
 	if err := s.db.Get(&teams, constants.GetAllTeams); err != nil{
@@ -76,7 +87,7 @@ func (s *sqlTeamRepository) GetAllTeamsDB() models.Result[[]models.Team]{
 }
 
 //Checks if a winning team exists
-func (s *sqlTeamRepository) GetAllTeamsByIds(teamIds []int) models.Result[[]models.Team]{
+func (s *teamRepository) GetAllTeamsByIds(teamIds []int) models.Result[[]models.Team]{
 	teams := []models.Team{}
 
 	if err := s.db.Get(&teams, constants.GetTeamsByIds, pq.Array(teamIds)); err != nil{

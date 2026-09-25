@@ -12,31 +12,44 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 )
 
 type PlayerRepository interface {
+
+	//UpdatePlayerName updates a players name for a given location.
 	UpdatePlayerName(oldPlayerName string, newPlayerName string, locationName string) models.Result[models.Player]
+	
+	//AddPlayerToLocation adds a player to a given location.
 	AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player]
+	
+	//GetPlayersFromLocation retrieves all players from a given location.
 	GetPlayersFromLocation(locationName string) models.Result[[]models.Player]
+	
+	//RemovePlayer removes a player from a given location.
 	RemovePlayer(playerId string, locationName string) models.Result[models.Player]
+	
+	//GetAllPlayersFromAllLocations retrieves all players from all locations.
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
+	
+	//GetPlayersByNames retrieves players matching a list of plaintext names.
 	GetPlayersByNames(players []string) models.Result[[]models.Player]
+
+	//GetPlayerByName retrieves a single player by plaintext name.
 	GetPlayerByName(playerName string) models.Result[models.Player]
 }
 
-type sqlPlayerRepository struct {
+type playerRepository struct {
 	db                *sqlx.DB
 	encryptionService *encryption.EncryptionService
 }
 
 // Receive new Instance of MongoPlayerCardRepository.
-func GetSqlPlayerRepository(newDB *sqlx.DB, encryptionService *encryption.EncryptionService) *sqlPlayerRepository {
-	return &sqlPlayerRepository{db: newDB, encryptionService: encryptionService}
+func NewPlayerRepository(newDB *sqlx.DB, encryptionService *encryption.EncryptionService) PlayerRepository {
+	return &playerRepository{db: newDB, encryptionService: encryptionService}
 }
 
 // Add a single player to a given location.
-func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
+func (s *playerRepository) AddPlayerToLocation(locationName string, player models.Player) models.Result[models.Player] {
 	//First, encrypt the player name the client has sent, and receive the ciphertext.
 	encryptedName, err := s.encryptionService.Encrypt(player.PlayerName)
 
@@ -86,7 +99,7 @@ func (s *sqlPlayerRepository) AddPlayerToLocation(locationName string, player mo
 }
 
 // Function to update a players name for a given location.
-func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerId string, newPlayerName string, locationName string) models.Result[models.Player] {
+func (s *playerRepository) UpdatePlayerName(oldPlayerId string, newPlayerName string, locationName string) models.Result[models.Player] {
 	//Encrypt the new name
 	encryptedName, err := s.encryptionService.Encrypt(newPlayerName)
 
@@ -143,7 +156,7 @@ func (s *sqlPlayerRepository) UpdatePlayerName(oldPlayerId string, newPlayerName
 }
 
 // Remove a single player from a given location.
-func (s *sqlPlayerRepository) RemovePlayer(playerId string, locationName string) models.Result[models.Player] {
+func (s *playerRepository) RemovePlayer(playerId string, locationName string) models.Result[models.Player] {
 	result, err := s.db.Exec(constants.DeletePlayer, playerId, locationName)
 
 	if err != nil {
@@ -178,7 +191,7 @@ func (s *sqlPlayerRepository) RemovePlayer(playerId string, locationName string)
 //
 // The database only stores encrypted names, so decryption must happen
 // after retrieval and before returning API data.
-func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
+func (s *playerRepository) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
 	players := []models.Player{}
 
 	// Query players by location (still contains encrypted names)
@@ -198,7 +211,7 @@ func (s *sqlPlayerRepository) GetPlayersFromLocation(locationName string) models
 
 // GetAllPlayersFromAllLocations retrieves every player across all locations,
 // then decrypts their names for safe API consumption.
-func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
+func (s *playerRepository) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
 	players := []models.Player{}
 
 	// Raw DB fetch (encrypted data)
@@ -219,7 +232,7 @@ func (s *sqlPlayerRepository) GetAllPlayersFromAllLocations() models.Result[[]mo
 // GetPlayersByNames retrieves players matching a list of plaintext names.
 // The SQL uses hashes to locate the correct rows, then we decrypt
 // the stored encrypted names before returning them.
-func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player] {
+func (s *playerRepository) GetPlayersByNames(players []string) models.Result[[]models.Player] {
 	validPlayers := []models.Player{}
 
 	// pq.Array allows passing Go slice into SQL ANY() comparison
@@ -240,7 +253,7 @@ func (s *sqlPlayerRepository) GetPlayersByNames(players []string) models.Result[
 // GetPlayerByName retrieves a single player by plaintext name.
 // The lookup is performed via hash in SQL, then the encrypted
 // name is decrypted before returning.
-func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
+func (s *playerRepository) GetPlayerByName(playerName string) models.Result[models.Player] {
 	player := models.Player{}
 
 	// Fetch the row by player hash (contains encrypted name)
@@ -268,7 +281,7 @@ func (s *sqlPlayerRepository) GetPlayerByName(playerName string) models.Result[m
 //
 // We pass the slice by value, but modify elements by index so the
 // changes persist in the returned slice.
-func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Result[[]models.Player] {
+func (s *playerRepository) decryptPlayers(players []models.Player) models.Result[[]models.Player] {
 	for i := range players {
 
 		// Decrypt the stored ciphertext from the DB
@@ -289,12 +302,12 @@ func (s *sqlPlayerRepository) decryptPlayers(players []models.Player) models.Res
 }
 
 
-func (s *sqlPlayerRepository) getPlayerNameInitials(playerName string) string {
+func (s *playerRepository) getPlayerNameInitials(playerName string) string {
 	//Name is validated before insertion, so it SHOULD have exactly 2 parts, ex -> jane doe
 		fields := strings.Fields(playerName)
 
 		//Extract the first char from the first name and last
-		firstNameInitial, lastNameInitial := string([]rune(fields[0])[0]), string([]rune(fields[1])[0])
+		firstNameInitial, lastNameInitial := string(fields[0][0]), string(fields[1][0])
 
 		//combine both initials and return it as: (J)ane (D)oe -> JD
 		return strings.ToUpper(firstNameInitial + lastNameInitial)

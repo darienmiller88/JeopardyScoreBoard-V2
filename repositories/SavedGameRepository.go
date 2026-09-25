@@ -12,7 +12,11 @@ import (
 )
 
 type SavedGameRepository interface {
+
+	//Add a new saved game to the database
 	AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame]
+
+	//Delete a saved game by its ID
 	DeleteSavedGameDB(savedGameId int) models.Result[string]
 	
 	//Get all saved games from a single location
@@ -28,18 +32,18 @@ type SavedGameRepository interface {
 	GetSavedGameById(savedGameId int) models.Result[models.SavedGame]
 }
 
-type sqlSavedGameRepository struct {
+type savedGameRepository struct {
 	db *sqlx.DB
 	encryptionService *encryption.EncryptionService
 }
 
 // Receive new Instance of MongoPlayerCardRepository.
-func GetSqlSavedGameRepository(newDB *sqlx.DB, 	encryptionService *encryption.EncryptionService) *sqlSavedGameRepository {
-	return &sqlSavedGameRepository{db: newDB, encryptionService: encryptionService}
+func NewSavedGameRepository(newDB *sqlx.DB, 	encryptionService *encryption.EncryptionService) SavedGameRepository {
+	return &savedGameRepository{db: newDB, encryptionService: encryptionService}
 }
 
 //Get all players from a single saved game
-func (s *sqlSavedGameRepository) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.PlayerDTO]{
+func (s *savedGameRepository) GetAllPlayersFromSavedGame(savedGameId string) models.Result[[]models.PlayerDTO]{
 	playersFromSavedGame := []models.SavedGamePlayer{}
 
 	if err := s.db.Select(&playersFromSavedGame, constants.GetAllPlayersFromSavedGame, savedGameId); err != nil {
@@ -61,7 +65,7 @@ func (s *sqlSavedGameRepository) GetAllPlayersFromSavedGame(savedGameId string) 
 }
 
 // Get all Saved games from database with players.
-func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
+func (s *savedGameRepository) GetAllSavedGamesDB() models.Result[[]models.SavedGame] {
 	savedGames := []models.SavedGame{}
 
 	if err := s.db.Select(&savedGames, constants.GetAllSavedGames); err != nil {
@@ -130,7 +134,7 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesDB() models.Result[[]models.Sav
 }
 
 //Get a saved game with a particular id
-func (s *sqlSavedGameRepository) GetSavedGameById(savedGameId int) models.Result[models.SavedGame]{
+func (s *savedGameRepository) GetSavedGameById(savedGameId int) models.Result[models.SavedGame]{
 	savedGame := models.SavedGame{}
 
 	if err := s.db.Get(&savedGame, constants.GetSavedGameById, savedGameId); err != nil {
@@ -147,7 +151,7 @@ func (s *sqlSavedGameRepository) GetSavedGameById(savedGameId int) models.Result
 }
 
 // Get all saved games played at a specific location.
-func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame] {
+func (s *savedGameRepository) GetAllSavedGamesFromLocationDB(locationName string) models.Result[[]models.SavedGame] {
 	savedGames := []models.SavedGame{}
 
 	if err := s.db.Select(&savedGames, constants.GetAllSavedGamesFromLocation, locationName); err != nil {
@@ -164,7 +168,7 @@ func (s *sqlSavedGameRepository) GetAllSavedGamesFromLocationDB(locationName str
 }
 
 // Delete a saved game
-func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId int) models.Result[string] {
+func (s *savedGameRepository) DeleteSavedGameDB(savedGameId int) models.Result[string] {
 	result, err := s.db.Exec(constants.DeleteSavedGame, savedGameId)
 
 	if err != nil {
@@ -185,7 +189,7 @@ func (s *sqlSavedGameRepository) DeleteSavedGameDB(savedGameId int) models.Resul
 }
 
 // Add a new saved game
-func (s *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame] {
+func (s *savedGameRepository) AddSavedGameDB(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	if savedGame.IsPlayerGame {
 		return s.addStandardSavedGame(savedGame)
 	} else {
@@ -193,7 +197,7 @@ func (s *sqlSavedGameRepository) AddSavedGameDB(savedGame models.SavedGame) mode
 	}
 }
 
-func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
+func (s *savedGameRepository) addStandardSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	// Start transaction
 	tx, err := s.db.Beginx() 
 
@@ -252,7 +256,7 @@ func (s *sqlSavedGameRepository) addStandardSavedGame(savedGame models.SavedGame
 	return utils.GetResult(nil, http.StatusCreated, savedGame)
 }
 
-func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
+func (s *savedGameRepository) addTeamSavedGame(savedGame models.SavedGame) models.Result[models.SavedGame] {
 	// Start transaction
 	tx, err := s.db.Beginx()
 
@@ -298,7 +302,7 @@ func (s *sqlSavedGameRepository) addTeamSavedGame(savedGame models.SavedGame) mo
 	return utils.GetResult(nil, http.StatusCreated, savedGame)
 }
 
-func (s *sqlSavedGameRepository) getSavedGamesWithDecryptedWinningPlayerName(savedGames []models.SavedGame) models.Result[[]models.SavedGame]{
+func (s *savedGameRepository) getSavedGamesWithDecryptedWinningPlayerName(savedGames []models.SavedGame) models.Result[[]models.SavedGame]{
 	//Decrypt the winning player name for each saved game 
 	for i := range savedGames {
 		decryptedName, err := s.encryptionService.Decrypt(savedGames[i].WinningPlayerNameEncrypted)

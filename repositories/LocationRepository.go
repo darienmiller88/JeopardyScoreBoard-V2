@@ -16,23 +16,32 @@ import (
 //LocationRepository interface to allow mocking when testing the service. The test can provide the service
 //a dummy implementation
 type LocationRepository interface{
+
+	// GetLocation retrieves a single location name
 	GetLocation(locationName string)  models.Result[string]
+
+	// GetLocationById retrieves a single location by its ID
 	GetLocationById(locationId int)   models.Result[models.Location]
+
+	// GetAllLocations retrieves all location names in a string slice
 	GetAllLocations()                 models.Result[[]string]
 }
 
-type sqlLocationRepository struct{
+type locationRepository struct{
 	db *sqlx.DB
 	encryptionService *encryption.EncryptionService
 }
 
 //Receive a new instance of Location repository using postgres as the database. 
-func GetSqlLocationRepository(newDb *sqlx.DB, encryptionService *encryption.EncryptionService) *sqlLocationRepository{
-	return &sqlLocationRepository{ db: newDb, encryptionService: encryptionService }
+func NewLocationRepository(newDb *sqlx.DB, encryptionService *encryption.EncryptionService) LocationRepository{
+	return &locationRepository{ 
+		db: newDb, 
+		encryptionService: encryptionService,
+	}
 }
 
 //Retrieve all Locations from database
-func (s *sqlLocationRepository) GetAllLocations() models.Result[[]string]{
+func (s *locationRepository) GetAllLocations() models.Result[[]string]{
 	locations := []string{}
 	
 	if err := s.db.Select(&locations, constants.GetAllLocations); err != nil{
@@ -43,7 +52,7 @@ func (s *sqlLocationRepository) GetAllLocations() models.Result[[]string]{
 }
 
 //Get one location from the database
-func (s *sqlLocationRepository) GetLocation(locationName string) models.Result[string]{
+func (s *locationRepository) GetLocation(locationName string) models.Result[string]{
 	location := ""
 	
 	if err := s.db.Get(&location, constants.GetLocation, locationName); err != nil{
@@ -58,7 +67,7 @@ func (s *sqlLocationRepository) GetLocation(locationName string) models.Result[s
 }
 
 //Get one location from the database
-func (s *sqlLocationRepository) GetLocationById(locationId int) models.Result[models.Location]{
+func (s *locationRepository) GetLocationById(locationId int) models.Result[models.Location]{
 	location := models.Location{}
 	
 	if err := s.db.Get(&location, constants.GetLocationById, locationId); err != nil{
