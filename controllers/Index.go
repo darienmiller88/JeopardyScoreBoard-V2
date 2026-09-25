@@ -23,52 +23,31 @@ func NewIndexController(db *sqlx.DB, encryptionService *encryption.EncryptionSer
 	return i
 }
 
-func (i *IndexController) registerRoutes(db *sqlx.DB, encryptionService *encryption.EncryptionService) {
+func (i *IndexController) registerRoutes(db *sqlx.DB, es *encryption.EncryptionService) {
+	sgs := services.NewSaveGameService(
+			repositories.NewSavedGameRepository(db, es),
+			repositories.NewLocationRepository(db, es),
+			repositories.NewPlayerRepository(db, es),
+			repositories.NewTeamRepository(db, es),
+			es,
+		)
 
-}
-
-func (i *IndexController) InitControllers(db *sqlx.DB, encryptionService *encryption.EncryptionService){
-	i.Router = chi.NewRouter()
-
-	//Initialize the views controller, and inject the following services
-	i.viewsController.Init(
-		&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) },
-		&services.PlayerServiceImpl{ 
-			PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
-		},
-		&services.SaveGameServiceImpl{
-			LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
-			SavedGameRepository: repositories.GetSqlSavedGameRepository(db, encryptionService),
-			PlayerRepository: repositories.GetSqlPlayerRepository(db,encryptionService),
-			TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
-			EncryptionService: encryptionService,
-		},
-		&services.TeamServiceImpl{
-			TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
-		},
+	vc := NewViewsController(
+		services.NewLocationService(repositories.NewLocationRepository(db, es)),
+		services.NewPlayerService(repositories.NewPlayerRepository(db, es)),
+		sgs,
+		services.NewTeamService(repositories.NewTeamRepository(db, es)),
 	)
-
-	//Initialize the controllers, and inject the service and repo implementation
-	i.locationsController.Init(&services.LocationServiceImpl{ Repository: repositories.GetSqlLocationRepository(db, encryptionService) })
-	i.playersController.Init(&services.PlayerServiceImpl{ 
-		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
-	})
-	i.savedGamesController.Init(&services.SaveGameServiceImpl{ 
-		SavedGameRepository: repositories.GetSqlSavedGameRepository(db, encryptionService),
-		LocationRepository: repositories.GetSqlLocationRepository(db, encryptionService),
-		TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
-		PlayerRepository: repositories.GetSqlPlayerRepository(db, encryptionService),
-		EncryptionService: encryptionService,
-	})
-	i.teamController.Init(&services.TeamServiceImpl{
-		TeamRepository: repositories.GetSqlTeamRepository(db, encryptionService),
-	})
+	pc := NewPlayersController(services.NewPlayerService(repositories.NewPlayerRepository(db, es)))
+	lc := NewLocationsController(services.NewLocationService(repositories.NewLocationRepository(db, es)))
+	sgc := NewSavedGamesController(sgs)
+	tc := NewTeamsController(services.NewTeamService(repositories.NewTeamRepository(db, es)))
 
 	//Afterwards, mount the views router onto this router, which wiil be mounted onto the main chi router
 	//in main.go
-	i.Router.Mount("/", i.viewsController.Router)
-	i.Router.Mount("/locations", i.locationsController.Router)
-	i.Router.Mount("/players", i.playersController.Router)
-	i.Router.Mount("/savedgames", i.savedGamesController.Router)
-	i.Router.Mount("/teams", i.teamController.Router)
+	i.Router.Mount("/", vc.Router)
+	i.Router.Mount("/locations", lc.Router)
+	i.Router.Mount("/players", pc.Router)
+	i.Router.Mount("/savedgames", sgc.Router)
+	i.Router.Mount("/teams", tc.Router)
 }

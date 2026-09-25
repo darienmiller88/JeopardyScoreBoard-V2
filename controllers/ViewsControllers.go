@@ -22,20 +22,28 @@ type ViewsController struct {
 	TeamService      services.TeamService
 }
 
-func (v *ViewsController) Init(
+func NewViewsController(
 	LocationService services.LocationService,
 	PlayerService services.PlayerService,
 	SavedGameService services.SaveGameService,
 	TeamService services.TeamService,
-) {
-	v.Router = chi.NewRouter()
-	v.templates = make(map[string]*template.Template)
-	v.LocationService = LocationService
-	v.PlayerService = PlayerService
-	v.SavedGameService = SavedGameService
-	v.TeamService = TeamService
+) *ViewsController {
+	vc := &ViewsController{
+		templates:        make(map[string]*template.Template),
+		Router:           chi.NewRouter(),
+		SavedGameService: SavedGameService,
+		LocationService:  LocationService,
+		PlayerService:    PlayerService,
+		TeamService:      TeamService,
+	}
 
-	v.InitTemplateMap()
+	vc.registerRoutes()
+
+	return vc
+}
+
+func (v *ViewsController) registerRoutes() {
+	v.initTemplateMap()
 
 	v.Router.Get("/", v.CreateGame)
 	v.Router.Get("/team-mode", v.TeamMode)
@@ -45,7 +53,7 @@ func (v *ViewsController) Init(
 	v.Router.NotFound(v.NotFound)
 }
 
-func (v *ViewsController) InitTemplateMap() {
+func (v *ViewsController) initTemplateMap() {
 	partialFiles, err := filepath.Glob("./templates/partials/*.html")
 	if err != nil {
 		panic(fmt.Sprintf("Error loading partials: %v", err))

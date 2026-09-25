@@ -17,25 +17,26 @@ type SavedGamesController struct {
 	savedGameService services.SaveGameService
 }
 
-func (s *SavedGamesController) Init(service services.SaveGameService) {
-	s.Router = chi.NewRouter()
-	s.savedGameService = service
+func NewSavedGamesController(service services.SaveGameService) *SavedGamesController {
+	sc := &SavedGamesController{
+		Router: chi.NewRouter(),
+		savedGameService: service,
+		template: template.Must(template.New("").Funcs(template.FuncMap{
+									"add": func(a, b int) int { return a + b },
+								}).ParseGlob("templates/partials/*.html")),
+	}
 
+	sc.registerRoutes()
+
+	return sc
+}
+
+func (s *SavedGamesController) registerRoutes(){
 	s.Router.Get("/{id}/players", s.GetAllPlayersFromSavedGame)
 	s.Router.Get("/", s.GetAllSavedGames)
 	s.Router.Post("/", s.AddSavedGame)
 	s.Router.Get("/{location_name}", s.GetAllSavedGamesFromLocation)
 	s.Router.Delete("/{id}", s.DeleteSavedGame)
-
-	t, err := template.New("").Funcs(template.FuncMap{
-		"add": func(a, b int) int { return a + b },
-	}).ParseGlob("templates/partials/*.html")
-
-	if err != nil {
-		panic(err)
-	}
-
-	s.template = t
 }
 
 func (s *SavedGamesController) GetAllPlayersFromSavedGame(res http.ResponseWriter, req *http.Request){

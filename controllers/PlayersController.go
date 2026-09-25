@@ -16,23 +16,24 @@ type PlayersController struct {
 	playerService services.PlayerService
 }
 
-func (p *PlayersController) Init(service services.PlayerService) {
-	p.Router = chi.NewRouter()
-	p.playerService = service
+func NewPlayersController(service services.PlayerService) *PlayersController {
+	pc := &PlayersController{
+		playerService: service,
+		Router: chi.NewRouter(),
+		template: template.Must(template.ParseGlob("templates/partials/*.html")),
+	}
 
+	pc.registerRoutes()
+
+	return pc
+}
+
+func (p *PlayersController) registerRoutes(){
 	p.Router.Get("/", p.GetAllPlayersForPlayerListSection)
 	p.Router.Get("/by-location", p.GetAllPlayersFromOneLocation)
 	p.Router.Put("/", p.UpdatePlayerName)
 	p.Router.Delete("/", p.RemovePlayer)
 	p.Router.Post("/", p.AddPlayerToLocation)
-
-	t, err := template.ParseGlob("templates/partials/*.html")
-
-	if err != nil {
-		panic(err)
-	}
-
-	p.template = t
 }
 
 func (p *PlayersController) GetAllPlayersForPlayerListSection(res http.ResponseWriter, req *http.Request){

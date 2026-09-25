@@ -16,18 +16,18 @@ type PlayerService interface {
 	GetAllPlayersFromAllLocations() models.Result[[]models.Player]
 }
 
-type playerServiceImpl struct {
+type playerService struct {
 	PlayerRepository repositories.PlayerRepository
 }
 
-func NewPlayerServiceImpl(playerRepository repositories.PlayerRepository) PlayerService {
-	return &playerServiceImpl{
+func NewPlayerService(playerRepository repositories.PlayerRepository) PlayerService {
+	return &playerService{
 		PlayerRepository: playerRepository,
 	}
 }
 
 // Update a players old name to be a new name.
-func (p *playerServiceImpl) UpdatePlayerName(oldPlayerId string, firstName string, lastName string, locationName string) models.Result[models.Player] {
+func (p *playerService) UpdatePlayerName(oldPlayerId string, firstName string, lastName string, locationName string) models.Result[models.Player] {
 	player := models.Player{}
 
 	//Set the player name to be the first name plus last name
@@ -44,7 +44,7 @@ func (p *playerServiceImpl) UpdatePlayerName(oldPlayerId string, firstName strin
 	return p.PlayerRepository.UpdatePlayerName(oldPlayerId, player.PlayerName, locationName)
 }
 
-func (p *playerServiceImpl) AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player] {
+func (p *playerService) AddPlayerToLocation(locationName string, firstName string, lastName string) models.Result[models.Player] {
 	player := models.Player{}
 
 	//set the player name by using the first name and last name.
@@ -62,14 +62,14 @@ func (p *playerServiceImpl) AddPlayerToLocation(locationName string, firstName s
 }
 
 // Remove a player belonging to a certain location by using their name and location.
-func (p *playerServiceImpl) RemovePlayer(playerId string, locationName string) models.Result[models.Player] {
+func (p *playerService) RemovePlayer(playerId string, locationName string) models.Result[models.Player] {
 	return p.PlayerRepository.RemovePlayer(playerId, locationName)
 }
 
-func (p *playerServiceImpl) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
+func (p *playerService) GetAllPlayersFromAllLocations() models.Result[[]models.Player] {
 	return p.PlayerRepository.GetAllPlayersFromAllLocations()
 }
 
-func (p *playerServiceImpl) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
+func (p *playerService) GetPlayersFromLocation(locationName string) models.Result[[]models.Player] {
 	return p.PlayerRepository.GetPlayersFromLocation(locationName)
 }

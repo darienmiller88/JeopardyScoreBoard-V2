@@ -17,9 +17,21 @@ type TeamsController struct {
 	TeamService services.TeamService
 }
 
-func (t *TeamsController) Init(teamService services.TeamService) {
-	t.Router = chi.NewRouter()
+func NewTeamsController(service services.TeamService) *TeamsController {
+ 	tmpl := template.Must(template.ParseGlob("templates/partials/*.html"))
+	t := &TeamsController{
+		TeamService: service,
+		template:    tmpl,
+		Router:      chi.NewRouter(),
+		Teams: []models.Team{},
+	}
 
+	t.registerRoutes()
+
+	return t
+}
+
+func (t *TeamsController) registerRoutes() {
 	t.Router.Get("/", t.GetTeams)
 	t.Router.Get("/team-names", t.GetTeamNames)
 	t.Router.Get("/{id}", t.GetTeamPlayersByTeamId)
@@ -27,19 +39,6 @@ func (t *TeamsController) Init(teamService services.TeamService) {
 	t.Router.Post("/{id}/minus-points", t.MinusPoints)
 	t.Router.Post("/add-team", t.AddTeam)
 	t.Router.Delete("/{id}", t.DeleteTeam)
-
-	templ, err := template.ParseGlob("templates/partials/*.html")
-
-	t.Teams = []models.Team{
-		{ID: 0, TeamName: "Team 1", Score: 0, PlayerNames: []string{"Player 1", "Player 2"}},
-		{ID: 1, TeamName: "Team 2", Score: 0, PlayerNames: []string{"Player 3", "Player 4"}},
-	}
-
-	if err != nil {
-		panic(err)
-	}
-
-	t.template = templ
 }
 
 func (t *TeamsController) DeleteTeam(res http.ResponseWriter, req *http.Request){

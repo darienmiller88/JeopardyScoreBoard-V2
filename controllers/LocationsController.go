@@ -20,10 +20,14 @@ func NewLocationsController(service services.LocationService) *LocationsControll
 		locationService: service,
 	}
 
-	l.Router.Get("/", l.getLocations)
-	l.Router.Get("/{location_name}", l.getLocationByName)
+	l.registerRoutes()
 
 	return l
+}
+
+func (l *LocationsController) registerRoutes() {
+	l.Router.Get("/", l.getLocations)
+	l.Router.Get("/{location_name}", l.getLocationByName)
 }
 
 func (l *LocationsController) getLocations(res http.ResponseWriter, req *http.Request){
